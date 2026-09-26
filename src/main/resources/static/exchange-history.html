@@ -14,8 +14,8 @@
     <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container">
             <a class="navbar-brand" href="index.html">
-                <i class="bi bi-arrow-left-right text-gradient fs-3"></i>
-                <span class="text-gradient">SkillExchange</span>
+                <span class="brand-icon-box"><i class="bi bi-arrow-left-right"></i></span>
+                <span class="brand-title">SkillExchange</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
                 <span class="navbar-toggler-icon"></span>
@@ -41,25 +41,26 @@
         <div id="alertContainer"></div>
 
         <div class="mb-4">
-            <h3 class="fw-bold mb-1">Exchange History & Records</h3>
+            <div class="text-uppercase fw-bold text-muted small mb-1" style="font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.06em;">Records & Verification</div>
+            <h2 class="fw-bold mb-1">Exchange History & Reviews</h2>
             <p class="text-muted small mb-0">Track active sessions, completed peer learning exchanges, and provide mutual reviews</p>
         </div>
 
         <!-- History Filter Tabs -->
         <ul class="nav nav-pills mb-4 gap-2">
             <li class="nav-item">
-                <button class="nav-link active rounded-pill px-4" data-bs-toggle="pill" data-bs-target="#activeTab" onclick="filterHistory('ACTIVE')">
+                <button class="nav-link active fw-bold px-3 py-2" data-bs-toggle="pill" data-bs-target="#activeTab" onclick="filterHistory('ACTIVE')">
                     <i class="bi bi-play-circle me-1"></i> Active Exchanges
                 </button>
             </li>
             <li class="nav-item">
-                <button class="nav-link rounded-pill px-4" data-bs-toggle="pill" data-bs-target="#completedTab" onclick="filterHistory('COMPLETED')">
+                <button class="nav-link fw-bold px-3 py-2" data-bs-toggle="pill" data-bs-target="#completedTab" onclick="filterHistory('COMPLETED')">
                     <i class="bi bi-check-circle me-1"></i> Completed Exchanges
                 </button>
             </li>
             <li class="nav-item">
-                <button class="nav-link rounded-pill px-4" data-bs-toggle="pill" data-bs-target="#allRequestsTab" onclick="loadAllRequestsHistory()">
-                    <i class="bi bi-clock-history me-1"></i> All Proposals (Pending / Rejected)
+                <button class="nav-link fw-bold px-3 py-2" data-bs-toggle="pill" data-bs-target="#allRequestsTab" onclick="loadAllRequestsHistory()">
+                    <i class="bi bi-clock-history me-1"></i> All Proposals
                 </button>
             </li>
         </ul>
@@ -68,7 +69,10 @@
             <!-- Exchanges Grid (Active or Completed) -->
             <div class="tab-pane fade show active" id="activeTab">
                 <div class="card card-custom p-4">
-                    <h5 class="fw-bold mb-3" id="exchangeSectionTitle">Active Skill Exchanges</h5>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="fw-bold mb-0" id="exchangeSectionTitle">Active Skill Exchanges</h4>
+                        <span class="badge badge-custom bg-light text-dark" style="font-family: var(--font-mono);">Peer Records</span>
+                    </div>
                     <div id="exchangesList" class="d-flex flex-column gap-3">
                         <div class="text-center py-4 text-muted small">Loading exchanges...</div>
                     </div>
@@ -78,10 +82,13 @@
             <!-- All Proposals Tab (Pending / Rejected) -->
             <div class="tab-pane fade" id="allRequestsTab">
                 <div class="card card-custom p-4">
-                    <h5 class="fw-bold mb-3">All Proposals History</h5>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="fw-bold mb-0">All Proposals History</h4>
+                        <span class="badge badge-custom bg-light text-dark" style="font-family: var(--font-mono);">Audit Log</span>
+                    </div>
                     <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead class="table-light">
+                        <table class="table table-hover align-middle border" style="border-color: var(--border-color) !important;">
+                            <thead class="table-light border-bottom" style="border-color: var(--border-color) !important; font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase;">
                                 <tr>
                                     <th>Direction</th>
                                     <th>Participant</th>
@@ -110,29 +117,29 @@
                     <h5 class="modal-title fw-bold"><i class="bi bi-star-fill text-warning me-2"></i>Rate & Review Peer Student</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body p-4">
                     <input type="hidden" id="revExchangeId">
                     <input type="hidden" id="revStudentId">
 
                     <div class="text-center mb-4">
-                        <h6 class="fw-semibold mb-2">How was your learning experience with <span id="revStudentName" class="text-primary-custom">Student</span>?</h6>
+                        <h6 class="fw-bold mb-2">How was your learning experience with <span id="revStudentName" class="text-dark text-decoration-underline">Student</span>?</h6>
                         <!-- 5 Star Selection -->
-                        <div class="d-flex justify-content-center gap-2 fs-2 text-warning" id="starPicker">
+                        <div class="d-flex justify-content-center gap-2 fs-2 text-warning my-2" id="starPicker">
                             <i class="bi bi-star-fill cursor-pointer" onclick="setStars(1)"></i>
                             <i class="bi bi-star-fill cursor-pointer" onclick="setStars(2)"></i>
                             <i class="bi bi-star-fill cursor-pointer" onclick="setStars(3)"></i>
                             <i class="bi bi-star-fill cursor-pointer" onclick="setStars(4)"></i>
                             <i class="bi bi-star-fill cursor-pointer" onclick="setStars(5)"></i>
                         </div>
-                        <span class="small text-muted" id="starLabel">5 Stars (Excellent)</span>
+                        <span class="small fw-bold text-muted" id="starLabel" style="font-family: var(--font-mono);">5 Stars (Excellent)</span>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Review Feedback / Comments</label>
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-uppercase small" style="font-family: var(--font-mono); font-size: 0.72rem;">Review Feedback & Insights</label>
                         <textarea id="revComment" class="form-control" rows="3" placeholder="Explain what you learned, punctuality, clarity of explanation..."></textarea>
                     </div>
 
-                    <button class="btn btn-warning w-100 fw-bold" onclick="submitReview()">
+                    <button class="btn btn-primary-custom w-100 fw-bold" onclick="submitReview()">
                         <i class="bi bi-check-circle me-1"></i> Submit Review
                     </button>
                 </div>
@@ -171,35 +178,36 @@
 
                     return `
                         <div class="card card-custom p-4 mb-2">
-                            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+                            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
                                 <div>
-                                    <h5 class="fw-bold mb-1"><i class="bi bi-arrow-left-right text-primary-custom me-2"></i>Exchange with ${peerName}</h5>
-                                    <small class="text-muted">Started on ${new Date(e.startDate).toLocaleDateString()} &bull; Mode: <strong>${e.learningMode}</strong></small>
+                                    <div class="text-uppercase fw-bold text-muted small mb-1" style="font-family: var(--font-mono); font-size: 0.72rem;">Peer Match</div>
+                                    <h4 class="fw-bold mb-1">${peerName}</h4>
+                                    <small class="text-muted" style="font-family: var(--font-mono); font-size: 0.75rem;">Started: ${new Date(e.startDate).toLocaleDateString()} &bull; Mode: <strong>${e.learningMode}</strong></small>
                                 </div>
-                                <span class="badge ${status === 'ACTIVE' ? 'bg-primary' : 'bg-success'} px-3 py-1">${e.status}</span>
+                                <span class="badge badge-custom ${status === 'ACTIVE' ? 'bg-dark text-white' : 'bg-emerald text-white'} px-3 py-1" style="font-family: var(--font-mono);">${e.status}</span>
                             </div>
 
-                            <div class="row g-2 p-3 rounded mb-3" style="background-color: var(--light-bg); border: 1px solid var(--border-color);">
+                            <div class="row g-2 p-3 mb-3 border border-dark" style="background-color: var(--canvas-bg); border-width: 2px !important; border-radius: var(--radius-sm);">
                                 <div class="col-sm-6">
-                                    <span class="text-muted small d-block">You Taught:</span>
-                                    <strong class="text-primary-custom">${mySkill}</strong>
+                                    <span class="text-muted small d-block text-uppercase fw-bold" style="font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.05em;">You Taught</span>
+                                    <strong class="text-dark fs-6">${mySkill}</strong>
                                 </div>
                                 <div class="col-sm-6">
-                                    <span class="text-muted small d-block">You Learned:</span>
-                                    <strong class="text-pink-custom">${peerSkill}</strong>
+                                    <span class="text-muted small d-block text-uppercase fw-bold" style="font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.05em;">You Learned</span>
+                                    <strong class="text-dark fs-6">${peerSkill}</strong>
                                 </div>
                             </div>
 
-                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 pt-2 border-top" style="border-color: var(--border-color) !important;">
                                 <a href="chat.html?partnerId=${peerId}" class="btn btn-sm btn-outline-custom">
                                     <i class="bi bi-chat-dots me-1"></i> Open Chat
                                 </a>
 
                                 ${status === 'COMPLETED' ? `
                                     ${e.reviewedByCurrentStudent ? `
-                                        <span class="badge badge-custom badge-verified py-2 px-3"><i class="bi bi-check2-circle me-1"></i> Reviewed</span>
+                                        <span class="verified-pill"><i class="bi bi-check2-circle me-1"></i> Reviewed</span>
                                     ` : `
-                                        <button class="btn btn-sm btn-warning fw-bold text-dark" onclick="openReviewModal(${e.id}, ${peerId}, '${peerName}')">
+                                        <button class="btn btn-sm btn-warning text-dark fw-bold" onclick="openReviewModal(${e.id}, ${peerId}, '${peerName}')">
                                             <i class="bi bi-star-fill me-1"></i> Leave Review
                                         </button>
                                     `}
@@ -222,13 +230,13 @@
                     const isOutgoing = r.senderId === myId;
                     return `
                         <tr>
-                            <td><span class="badge ${isOutgoing ? 'bg-secondary' : 'bg-primary'}">${isOutgoing ? 'Sent' : 'Received'}</span></td>
-                            <td>${isOutgoing ? r.receiverName : r.senderName}</td>
+                            <td><span class="badge badge-custom ${isOutgoing ? 'bg-secondary' : 'bg-dark'} text-white" style="font-family: var(--font-mono); font-size: 0.72rem;">${isOutgoing ? 'OUTGOING' : 'INCOMING'}</span></td>
+                            <td class="fw-bold">${isOutgoing ? r.receiverName : r.senderName}</td>
                             <td>${r.skillOfferedName}</td>
                             <td>${r.skillRequestedName}</td>
                             <td><span class="badge badge-custom badge-${r.learningMode.toLowerCase()}">${r.learningMode}</span></td>
-                            <td><span class="badge bg-light text-dark border">${r.status}</span></td>
-                            <td class="small text-muted">${new Date(r.createdAt).toLocaleDateString()}</td>
+                            <td><span class="badge badge-custom bg-light text-dark" style="font-family: var(--font-mono); font-size: 0.72rem;">${r.status}</span></td>
+                            <td class="small text-muted" style="font-family: var(--font-mono);">${new Date(r.createdAt).toLocaleDateString()}</td>
                         </tr>
                     `;
                 }).join('');

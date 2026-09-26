@@ -14,8 +14,8 @@
     <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container">
             <a class="navbar-brand" href="index.html">
-                <i class="bi bi-arrow-left-right text-gradient fs-3"></i>
-                <span class="text-gradient">SkillExchange</span>
+                <span class="brand-icon-box"><i class="bi bi-arrow-left-right"></i></span>
+                <span class="brand-title">Skill<strong>Exchange</strong></span>
             </a>
             <div class="ms-auto">
                 <a href="register.html" class="btn btn-outline-custom btn-sm">Create Student Account</a>
@@ -31,29 +31,31 @@
 
                 <div class="card card-custom p-4 p-md-5">
                     <div class="text-center mb-4">
-                        <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3" style="width: 56px; height: 56px; background-color: var(--primary-subtle); color: var(--primary);">
-                            <i class="bi bi-person-lock fs-3"></i>
+                        <div class="d-inline-flex align-items-center justify-content-center border border-2 border-dark rounded mb-3 bg-light" style="width: 50px; height: 50px; box-shadow: 2px 2px 0px var(--border-color);">
+                            <i class="bi bi-person-lock fs-3 text-dark"></i>
                         </div>
-                        <h2 class="fw-bold mb-1">Welcome Back</h2>
-                        <p class="text-muted small">Access your college peer exchange dashboard</p>
+                        <span class="section-tag mb-1 d-inline-block">AUTHENTICATION</span>
+                        <h2 class="fw-bold mb-1">WELCOME BACK</h2>
+                        <p class="text-muted small">Sign in to your university peer barter dashboard</p>
                     </div>
 
                     <form id="loginForm" onsubmit="handleLogin(event)">
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">College Email</label>
+                            <label class="form-label">College Email Address <span class="text-danger">*</span></label>
                             <div class="input-group">
-                                <span class="input-group-text bg-light"><i class="bi bi-envelope"></i></span>
-                                <input type="email" id="email" class="form-control" placeholder="harsh@mgmmumbai.ac.in" required>
+                                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                <input type="email" id="email" class="form-control" placeholder="student@mgmmumbai.ac.in" required>
                             </div>
+                            <small class="text-muted" style="font-size: 0.75rem;">Must be an official @mgmmumbai.ac.in email</small>
                         </div>
 
-                        <div class="mb-3">
+                        <div class="mb-4">
                             <div class="d-flex justify-content-between align-items-center mb-1">
-                                <label class="form-label fw-semibold mb-0">Password</label>
-                                <a href="javascript:void(0)" onclick="openForgotPwd()" class="small text-decoration-none text-pink-custom">Forgot Password?</a>
+                                <label class="form-label mb-0">Password <span class="text-danger">*</span></label>
+                                <a href="forgot-password.html" class="small text-decoration-none fw-bold text-dark">Forgot Password?</a>
                             </div>
                             <div class="input-group">
-                                <span class="input-group-text bg-light"><i class="bi bi-key"></i></span>
+                                <span class="input-group-text"><i class="bi bi-key"></i></span>
                                 <input type="password" id="password" class="form-control" placeholder="••••••••" required>
                             </div>
                         </div>
@@ -64,18 +66,18 @@
                     </form>
 
                     <!-- Quick Evaluation / Demo Logins -->
-                    <div class="mt-4 pt-3 border-top">
-                        <p class="text-center small text-muted fw-semibold mb-2 text-uppercase">
-                            <i class="bi bi-lightning-charge-fill text-warning me-1"></i>Quick Demo Evaluation Logins
+                    <div class="mt-4 pt-3 border-top border-2 border-dark">
+                        <p class="text-center small text-muted fw-bold mb-2 text-uppercase" style="letter-spacing: 0.05em;">
+                            <i class="bi bi-lightning-charge-fill text-warning me-1"></i>Quick 1-Click Demo Evaluation Logins
                         </p>
                         <div class="d-flex flex-wrap gap-2 justify-content-center">
-                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="quickFill('harsh@mgmmumbai.ac.in', 'password123')">
+                            <button type="button" class="btn btn-sm btn-outline-custom" onclick="quickFill('harsh@mgmmumbai.ac.in', 'password123')">
                                 Harsh (Student)
                             </button>
-                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="quickFill('sejal@mgmmumbai.ac.in', 'password123')">
+                            <button type="button" class="btn btn-sm btn-outline-custom" onclick="quickFill('sejal@mgmmumbai.ac.in', 'password123')">
                                 Sejal (Student)
                             </button>
-                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="quickFill('raza@mgmmumbai.ac.in', 'password123')">
+                            <button type="button" class="btn btn-sm btn-outline-custom" onclick="quickFill('raza@mgmmumbai.ac.in', 'password123')">
                                 Raza (Student)
                             </button>
                             <button type="button" class="btn btn-sm btn-outline-danger" onclick="quickFill('admin@mgmmumbai.ac.in', 'password123')">
@@ -86,31 +88,8 @@
 
                     <div class="text-center mt-4">
                         <span class="text-muted small">Don't have an account yet? </span>
-                        <a href="register.html" class="small fw-semibold text-primary-custom text-decoration-none">Register here</a>
+                        <a href="register.html" class="small fw-bold text-dark text-decoration-underline">Register student account</a>
                     </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Forgot Password Modal -->
-    <div class="modal fade" id="forgotPwdModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title fw-bold"><i class="bi bi-shield-lock me-2 text-primary-custom"></i>Reset Password</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <p class="text-muted small">Enter your registered college email address to receive password reset instructions.</p>
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">College Email</label>
-                        <input type="email" id="resetEmail" class="form-control" placeholder="student@mgmmumbai.ac.in">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary-custom btn-sm" onclick="sendPasswordReset()">Send Reset Link</button>
                 </div>
             </div>
         </div>
@@ -120,6 +99,21 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/app.js"></script>
     <script>
+        // Check URL params for status messages
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('verified') === 'true') {
+                showAlert("Your college email has been verified successfully! You can now sign in.", "success");
+            } else if (params.get('passwordReset') === 'true') {
+                showAlert("Your password was reset successfully. Please sign in with your new password.", "success");
+            } else if (params.get('msg')) {
+                showAlert(params.get('msg'), "info");
+            }
+            if (params.get('email')) {
+                document.getElementById('email').value = params.get('email');
+            }
+        });
+
         function quickFill(email, pwd) {
             document.getElementById('email').value = email;
             document.getElementById('password').value = pwd;
@@ -155,24 +149,17 @@
                     }
                 }, 700);
             } else {
+                if (res && res.unverified) {
+                    showAlert(res.message + " Redirecting to verification...", "warning");
+                    setTimeout(() => {
+                        window.location.href = `verify-email.html?email=${encodeURIComponent(email)}`;
+                    }, 1500);
+                    return;
+                }
                 showAlert(res.message || "Invalid credentials. Please verify your email and password.", "danger");
                 btn.disabled = false;
                 btn.innerHTML = `<i class="bi bi-box-arrow-in-right me-2"></i>Sign In`;
             }
-        }
-
-        function openForgotPwd() {
-            new bootstrap.Modal(document.getElementById('forgotPwdModal')).show();
-        }
-
-        function sendPasswordReset() {
-            const email = document.getElementById('resetEmail').value.trim();
-            if (!email) {
-                alert("Please enter your email");
-                return;
-            }
-            bootstrap.Modal.getInstance(document.getElementById('forgotPwdModal')).hide();
-            showAlert("Password reset link has been dispatched to " + email, "info");
         }
     </script>
 </body>

@@ -14,8 +14,8 @@
     <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container">
             <a class="navbar-brand" href="index.html">
-                <i class="bi bi-arrow-left-right text-gradient fs-3"></i>
-                <span class="text-gradient">SkillExchange</span>
+                <span class="brand-icon-box"><i class="bi bi-arrow-left-right"></i></span>
+                <span class="brand-title">Skill<strong>Exchange</strong></span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
                 <span class="navbar-toggler-icon"></span>
@@ -45,68 +45,87 @@
             <div class="col-lg-4">
                 <div class="card card-custom p-4 text-center mb-4">
                     <div class="position-relative d-inline-block mx-auto mb-3">
-                        <img id="profAvatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=Harsh" class="avatar-img-lg" alt="Profile Avatar">
+                        <img id="profAvatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=Student" class="avatar-img-lg" alt="Profile Avatar" style="border: 2px solid var(--border-color); box-shadow: 3px 3px 0 var(--border-color); border-radius: var(--radius-sm);">
                     </div>
-                    <h4 class="fw-bold mb-1" id="profName">Student Name</h4>
+                    <h4 class="fw-bold mb-1" id="profName" style="letter-spacing: -0.02em;">Student Name</h4>
                     <p class="text-muted small mb-2" id="profCollege">College of Engineering</p>
 
                     <!-- Verification Badge -->
                     <div id="profVerifiedContainer" class="mb-3 d-none">
-                        <span class="badge badge-custom badge-verified px-3 py-2">
+                        <span class="verified-pill">
                             <i class="bi bi-patch-check-fill me-1"></i> Verified Student
                         </span>
                     </div>
 
-                    <div class="d-flex justify-content-center gap-3 py-2 border-top border-bottom my-3">
+                    <div class="d-flex justify-content-center gap-3 py-2 border-top border-bottom my-3" style="border-color: var(--border-color) !important;">
                         <div>
-                            <span class="text-muted small d-block">Rating</span>
-                            <span class="fw-bold text-warning fs-5" id="profRating">★ 0.0</span>
+                            <span class="text-muted small d-block" style="font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase;">Rating</span>
+                            <span class="fw-bold text-dark fs-5" id="profRating" style="font-family: var(--font-mono);">★ 0.0</span>
                         </div>
-                        <div class="border-end"></div>
+                        <div class="border-end" style="border-color: var(--border-color) !important;"></div>
                         <div>
-                            <span class="text-muted small d-block">Exchanges</span>
-                            <span class="fw-bold fs-5 text-primary-custom" id="profExchanges">0</span>
+                            <span class="text-muted small d-block" style="font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase;">Exchanges</span>
+                            <span class="fw-bold fs-5 text-dark" id="profExchanges" style="font-family: var(--font-mono);">0</span>
                         </div>
                     </div>
 
                     <div class="text-start mb-3">
-                        <label class="fw-semibold small text-muted text-uppercase mb-1" style="letter-spacing: 0.04em;">About Me</label>
-                        <p class="small text-dark mb-0" id="profBio">Student bio will appear here.</p>
+                        <label class="fw-bold small text-muted text-uppercase mb-1" style="font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.06em;">About Me</label>
+                        <p class="small text-dark mb-0 lh-base" id="profBio">Student bio will appear here.</p>
                     </div>
 
-                    <div class="text-start mb-3">
-                        <label class="fw-semibold small text-muted text-uppercase mb-1" style="letter-spacing: 0.04em;">Academic Details</label>
-                        <p class="small mb-1"><i class="bi bi-mortarboard me-2 text-primary-custom"></i><span id="profDept">Dept</span></p>
-                        <p class="small mb-1"><i class="bi bi-calendar-event me-2 text-primary-custom"></i><span id="profYear">Year</span></p>
-                        <p class="small mb-0"><i class="bi bi-envelope me-2 text-primary-custom"></i><span id="profEmail">Email</span></p>
+                    <div class="text-start mb-4">
+                        <label class="fw-bold small text-muted text-uppercase mb-1" style="font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.06em;">Academic Profile</label>
+                        <p class="small mb-1"><i class="bi bi-mortarboard me-2 text-dark"></i><span id="profDept" class="fw-medium">Dept</span></p>
+                        <p class="small mb-1"><i class="bi bi-calendar-event me-2 text-dark"></i><span id="profYear" class="fw-medium">Year</span></p>
+                        <p class="small mb-0"><i class="bi bi-envelope me-2 text-dark"></i><span id="profEmail" class="fw-medium">Email</span></p>
                     </div>
 
-                    <button class="btn btn-outline-custom w-100" onclick="openEditProfileModal()">
-                        <i class="bi bi-pencil-square me-1"></i> Edit Profile
-                    </button>
+                    <!-- Actions for Self Profile -->
+                    <div id="ownProfileActions">
+                        <button class="btn btn-outline-custom w-100 mb-2" onclick="openEditProfileModal()">
+                            <i class="bi bi-pencil-square me-1"></i> Edit Profile
+                        </button>
+                    </div>
+
+                    <!-- Actions for Peer Profile -->
+                    <div id="peerProfileActions" class="d-none d-flex flex-column gap-2">
+                        <button class="btn btn-primary-custom w-100" onclick="proposeExchangeToPeer()">
+                            <i class="bi bi-arrow-repeat me-1"></i> Propose Skill Exchange
+                        </button>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-danger btn-sm w-50" onclick="openReportModal()">
+                                <i class="bi bi-flag me-1"></i> Report
+                            </button>
+                            <button class="btn btn-outline-dark btn-sm w-50" id="blockBtn" onclick="toggleBlockPeer()">
+                                <i class="bi bi-slash-circle me-1"></i> Block
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Skill Verification Promotion -->
-                <div class="card card-custom p-4 text-center" style="background: linear-gradient(135deg, #f8faff 0%, #ffffff 100%);">
-                    <div class="mx-auto mb-3 rounded-circle d-flex align-items-center justify-content-center" style="width: 52px; height: 52px; background-color: var(--success-subtle); color: var(--success);">
+                <!-- Skill Verification Promotion (Shown only for self) -->
+                <div class="card card-custom p-4 text-center" id="verificationPromoCard">
+                    <div class="stat-icon-box mx-auto mb-3" style="background-color: var(--emerald-subtle); color: var(--emerald); border-color: var(--emerald);">
                         <i class="bi bi-award-fill fs-4"></i>
                     </div>
-                    <h6 class="fw-bold mb-1">Get Skill Verified</h6>
-                    <p class="small text-muted mb-3">Upload your certificates or project repos to earn the Verified Skill Badge and boost your match ranking by 15%.</p>
-                    <a href="verification.html" class="btn btn-sm btn-success">Submit Proof Documents</a>
+                    <div class="text-uppercase fw-bold text-muted small mb-1" style="font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.06em;">Quality Standards</div>
+                    <h5 class="fw-bold mb-2">Get Skill Verified</h5>
+                    <p class="small text-muted mb-3">Submit project links and experience proof to unlock the official Verified badge and boost peer matching visibility.</p>
+                    <a href="verification.html" class="btn btn-emerald w-100">Submit Proof Documents</a>
                 </div>
             </div>
 
-            <!-- Right Column: Skills & Reviews -->
+            <!-- Right Column: Skills, Projects, Experience, Reviews -->
             <div class="col-lg-8">
                 <!-- Skills I Can Teach -->
                 <div class="card card-custom p-4 mb-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <div>
-                            <h5 class="fw-bold mb-0"><i class="bi bi-mortarboard-fill text-primary-custom me-2"></i>Skills I Can Teach</h5>
-                            <small class="text-muted">Skills you can share with peers in return for knowledge</small>
+                            <div class="text-uppercase fw-bold text-muted small mb-1" style="font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.06em;">Offerings</div>
+                            <h4 class="fw-bold mb-0">Skills I Can Teach</h4>
                         </div>
-                        <a href="skills.html" class="btn btn-sm btn-outline-custom">+ Manage</a>
+                        <a href="skills.html" class="btn btn-sm btn-outline-custom manage-btn" id="manageTeachBtn">+ Manage Skills</a>
                     </div>
                     <div id="teachingSkillsContainer" class="d-flex flex-wrap gap-2">
                         <div class="text-muted small">Loading teaching skills...</div>
@@ -117,24 +136,69 @@
                 <div class="card card-custom p-4 mb-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <div>
-                            <h5 class="fw-bold mb-0"><i class="bi bi-lightbulb-fill text-pink-custom me-2"></i>Skills I Want to Learn</h5>
-                            <small class="text-muted">Your current learning wishlist</small>
+                            <div class="text-uppercase fw-bold text-muted small mb-1" style="font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.06em;">Goals</div>
+                            <h4 class="fw-bold mb-0">Skills I Want to Learn</h4>
                         </div>
-                        <a href="skills.html" class="btn btn-sm btn-outline-custom">+ Manage</a>
+                        <a href="skills.html" class="btn btn-sm btn-outline-custom manage-btn" id="manageLearnBtn">+ Manage Wishlist</a>
                     </div>
                     <div id="learningSkillsContainer" class="d-flex flex-wrap gap-2">
                         <div class="text-muted small">Loading learning wishlist...</div>
                     </div>
                 </div>
 
-                <!-- Peer Reviews & Feedback -->
-                <div class="card card-custom p-4">
+                <!-- Projects Portfolio -->
+                <div class="card card-custom p-4 mb-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="fw-bold mb-0"><i class="bi bi-star-fill text-warning me-2"></i>Peer Reviews & Ratings</h5>
-                        <span class="badge bg-light text-dark border" id="reviewCountBadge">0 Reviews</span>
+                        <div>
+                            <div class="text-uppercase fw-bold text-muted small mb-1" style="font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.06em;">Portfolio</div>
+                            <h4 class="fw-bold mb-0">Relevant Projects</h4>
+                        </div>
+                        <button class="btn btn-sm btn-outline-custom manage-btn" id="addProjectBtn" onclick="openAddProjectModal()">+ Add Project</button>
+                    </div>
+                    <div id="projectsContainer" class="d-flex flex-column gap-3">
+                        <div class="text-muted small">Loading projects...</div>
+                    </div>
+                </div>
+
+                <!-- Practical Experience -->
+                <div class="card card-custom p-4 mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <div class="text-uppercase fw-bold text-muted small mb-1" style="font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.06em;">Track Record</div>
+                            <h4 class="fw-bold mb-0">Practical Experience</h4>
+                        </div>
+                        <button class="btn btn-sm btn-outline-custom manage-btn" id="addExperienceBtn" onclick="openAddExperienceModal()">+ Add Experience</button>
+                    </div>
+                    <div id="experiencesContainer" class="d-flex flex-column gap-3">
+                        <div class="text-muted small">Loading experiences...</div>
+                    </div>
+                </div>
+
+                <!-- Peer Reviews & Ratings -->
+                <div class="card card-custom p-4 mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <div class="text-uppercase fw-bold text-muted small mb-1" style="font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.06em;">Reputation</div>
+                            <h4 class="fw-bold mb-0">Peer Reviews & Ratings</h4>
+                        </div>
+                        <span class="badge badge-custom bg-light text-dark" id="reviewCountBadge" style="font-family: var(--font-mono);">0 Reviews</span>
                     </div>
                     <div id="reviewsContainer" class="d-flex flex-column gap-3">
                         <div class="text-center py-4 text-muted small">Loading reviews...</div>
+                    </div>
+                </div>
+
+                <!-- Exchange History -->
+                <div class="card card-custom p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <div class="text-uppercase fw-bold text-muted small mb-1" style="font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.06em;">Activity</div>
+                            <h4 class="fw-bold mb-0">Completed Exchanges</h4>
+                        </div>
+                        <a href="exchange-history.html" class="btn btn-sm btn-outline-custom">View All History</a>
+                    </div>
+                    <div id="historyContainer" class="d-flex flex-column gap-2">
+                        <div class="text-muted small">Loading exchange history...</div>
                     </div>
                 </div>
             </div>
@@ -146,30 +210,30 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title fw-bold"><i class="bi bi-pencil-square me-2 text-primary-custom"></i>Edit Profile Information</h5>
+                    <h5 class="modal-title fw-bold"><i class="bi bi-pencil-square me-2 text-dark"></i>Edit Profile Information</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body p-4">
                     <form id="editProfileForm" onsubmit="saveProfile(event)">
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">Full Name</label>
+                            <label class="form-label fw-bold text-uppercase small" style="font-family: var(--font-mono); font-size: 0.72rem;">Full Name</label>
                             <input type="text" id="editFullName" class="form-control" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">Bio / Introduction</label>
-                            <textarea id="editBio" class="form-control" rows="3" placeholder="Tell other students about yourself and your passions..."></textarea>
+                            <label class="form-label fw-bold text-uppercase small" style="font-family: var(--font-mono); font-size: 0.72rem;">Bio / Introduction</label>
+                            <textarea id="editBio" class="form-control" rows="3" placeholder="Tell other students about yourself and what you are looking to learn..."></textarea>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">College / University</label>
+                            <label class="form-label fw-bold text-uppercase small" style="font-family: var(--font-mono); font-size: 0.72rem;">College / University</label>
                             <input type="text" id="editCollege" class="form-control" required>
                         </div>
                         <div class="row g-2 mb-3">
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">Department</label>
+                                <label class="form-label fw-bold text-uppercase small" style="font-family: var(--font-mono); font-size: 0.72rem;">Department</label>
                                 <input type="text" id="editDept" class="form-control" required>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">Year of Study</label>
+                                <label class="form-label fw-bold text-uppercase small" style="font-family: var(--font-mono); font-size: 0.72rem;">Year of Study</label>
                                 <select id="editYear" class="form-select" required>
                                     <option value="1st Year">1st Year</option>
                                     <option value="2nd Year">2nd Year</option>
@@ -180,10 +244,118 @@
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">Phone Number</label>
+                            <label class="form-label fw-bold text-uppercase small" style="font-family: var(--font-mono); font-size: 0.72rem;">Phone Number</label>
                             <input type="tel" id="editPhone" class="form-control">
                         </div>
                         <button type="submit" class="btn btn-primary-custom w-100">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Project Modal -->
+    <div class="modal fade" id="addProjectModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-folder-plus me-2 text-dark"></i>Add Portfolio Project</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="addProjectForm" onsubmit="saveProject(event)">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-uppercase small" style="font-family: var(--font-mono); font-size: 0.72rem;">Project Title <span class="text-danger">*</span></label>
+                            <input type="text" id="projTitle" class="form-control" placeholder="e.g. Campus Event Registration Portal" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-uppercase small" style="font-family: var(--font-mono); font-size: 0.72rem;">Description <span class="text-danger">*</span></label>
+                            <textarea id="projDesc" class="form-control" rows="3" placeholder="Briefly explain what you built, architecture, and problem solved..." required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-uppercase small" style="font-family: var(--font-mono); font-size: 0.72rem;">Technologies / Tools Used</label>
+                            <input type="text" id="projTech" class="form-control" placeholder="e.g. Java, Spring Boot, MySQL, Bootstrap">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-uppercase small" style="font-family: var(--font-mono); font-size: 0.72rem;">Project / GitHub Repository Link</label>
+                            <input type="url" id="projLink" class="form-control" placeholder="https://github.com/username/project">
+                        </div>
+                        <button type="submit" class="btn btn-primary-custom w-100">Save Project</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Experience Modal -->
+    <div class="modal fade" id="addExperienceModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-briefcase me-2 text-dark"></i>Add Practical Experience</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="addExpForm" onsubmit="saveExperience(event)">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-uppercase small" style="font-family: var(--font-mono); font-size: 0.72rem;">Role / Designation <span class="text-danger">*</span></label>
+                            <input type="text" id="expRole" class="form-control" placeholder="e.g. Frontend Intern / Technical Lead" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-uppercase small" style="font-family: var(--font-mono); font-size: 0.72rem;">Organization / Activity <span class="text-danger">*</span></label>
+                            <input type="text" id="expOrg" class="form-control" placeholder="e.g. University Coding Club / Tech Corp" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-uppercase small" style="font-family: var(--font-mono); font-size: 0.72rem;">Description <span class="text-danger">*</span></label>
+                            <textarea id="expDesc" class="form-control" rows="3" placeholder="Key responsibilities and achievements..." required></textarea>
+                        </div>
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <label class="form-label fw-bold text-uppercase small" style="font-family: var(--font-mono); font-size: 0.72rem;">Start Date</label>
+                                <input type="date" id="expStartDate" class="form-control">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-bold text-uppercase small" style="font-family: var(--font-mono); font-size: 0.72rem;">End Date</label>
+                                <input type="date" id="expEndDate" class="form-control">
+                            </div>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="expCurrent" onchange="document.getElementById('expEndDate').disabled = this.checked">
+                            <label class="form-check-label small" for="expCurrent">Currently working / ongoing activity</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary-custom w-100">Save Experience</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Student Modal -->
+    <div class="modal fade" id="reportModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold text-danger"><i class="bi bi-flag me-2"></i>Report Student Account</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="reportForm" onsubmit="submitReport(event)">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-uppercase small" style="font-family: var(--font-mono); font-size: 0.72rem;">Reason Category <span class="text-danger">*</span></label>
+                            <select id="reportReason" class="form-select" required>
+                                <option value="">Select violation...</option>
+                                <option value="Inappropriate content">Inappropriate content</option>
+                                <option value="Fake skill/proof">Fake skill / forged proof</option>
+                                <option value="Harassment">Harassment or unprofessional conduct</option>
+                                <option value="Spam">Spam or unwanted advertising</option>
+                                <option value="Other">Other policy violation</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-uppercase small" style="font-family: var(--font-mono); font-size: 0.72rem;">Details / Explanation <span class="text-danger">*</span></label>
+                            <textarea id="reportDetails" class="form-control" rows="3" placeholder="Provide factual context for campus administrators..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-danger w-100">Submit Confidential Report</button>
                     </form>
                 </div>
             </div>
@@ -194,29 +366,70 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/app.js"></script>
     <script>
-        let myProfile = null;
+        let currentProfile = null;
+        let isOwnProfile = true;
+        let isBlocked = false;
 
         document.addEventListener("DOMContentLoaded", async () => {
-            await loadProfileData();
+            const urlParams = new URLSearchParams(window.location.search);
+            const targetId = urlParams.get('id');
+
+            const currentUser = API.getCurrentUser();
+            if (!currentUser) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            if (targetId && String(targetId) !== String(currentUser.userId)) {
+                isOwnProfile = false;
+                await loadPeerProfile(targetId);
+            } else {
+                isOwnProfile = true;
+                await loadMyProfile();
+            }
         });
 
-        async function loadProfileData() {
+        async function loadMyProfile() {
             const res = await API.get('/api/students/profile/me');
             if (res && res.success) {
-                myProfile = res.data;
-                renderProfile(myProfile);
-                loadStudentReviews(myProfile.userId);
+                currentProfile = res.data;
+                renderProfile(currentProfile);
+                await loadProjects(currentProfile.userId);
+                await loadExperiences(currentProfile.userId);
+                await loadStudentReviews(currentProfile.userId);
+                await loadExchangeHistory(currentProfile.userId);
+            }
+        }
+
+        async function loadPeerProfile(studentId) {
+            // Configure UI for peer mode
+            document.getElementById('ownProfileActions').classList.add('d-none');
+            document.getElementById('peerProfileActions').classList.remove('d-none');
+            document.getElementById('verificationPromoCard').classList.add('d-none');
+            document.querySelectorAll('.manage-btn').forEach(b => b.classList.add('d-none'));
+
+            const res = await API.get(`/api/students/${studentId}`);
+            if (res && res.success) {
+                currentProfile = res.data;
+                renderProfile(currentProfile);
+                await loadProjects(studentId);
+                await loadExperiences(studentId);
+                await loadStudentReviews(studentId);
+                await loadExchangeHistory(studentId);
+                await checkBlockStatus(studentId);
+            } else {
+                showAlert(res.message || "Failed to load student profile.", "danger");
             }
         }
 
         function renderProfile(p) {
-            document.getElementById('profName').innerText = p.fullName;
-            document.getElementById('profCollege').innerText = p.college;
-            document.getElementById('profDept').innerText = p.department;
-            document.getElementById('profYear').innerText = p.yearOfStudy;
-            document.getElementById('profEmail').innerText = p.email;
+            document.getElementById('profName').innerText = p.fullName || "Student";
+            document.getElementById('profCollege').innerText = p.college || "College of Engineering";
+            document.getElementById('profDept').innerText = p.department || "General";
+            document.getElementById('profYear').innerText = p.yearOfStudy || "N/A";
+            document.getElementById('profEmail').innerText = p.email || "";
             document.getElementById('profBio').innerText = p.bio || "No biography provided.";
-            document.getElementById('profAvatar').src = p.avatarUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=${p.userId}`;
+            document.getElementById('profAvatar').src = p.avatarUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=${p.userId || p.id}`;
 
             document.getElementById('profRating').innerText = `★ ${(p.averageRating || 0).toFixed(1)}`;
             document.getElementById('profExchanges').innerText = p.completedExchangesCount || 0;
@@ -228,34 +441,90 @@
             // Render Teaching Skills
             const teachContainer = document.getElementById('teachingSkillsContainer');
             if (p.teachingSkills && p.teachingSkills.length > 0) {
-                teachContainer.innerHTML = p.teachingSkills.map(ts => `
-                    <div class="card p-2 px-3 border rounded-3 bg-white d-flex flex-row align-items-center gap-2 shadow-sm">
-                        <i class="bi bi-check-circle-fill text-primary-custom"></i>
+                teachContainer.innerHTML = p.teachingSkills.map(ts => {
+                    const isVerified = (ts.verified || ts.verificationStatus === 'VERIFIED');
+                    const isPending = (ts.verificationStatus === 'PENDING');
+                    const badge = isVerified 
+                        ? '<span class="status-pill-verified ms-2"><i class="bi bi-patch-check-fill me-1"></i>✓ Verified</span>' 
+                        : (isPending ? '<span class="status-pill-pending ms-2"><i class="bi bi-hourglass-split me-1"></i>Pending</span>' : '<span class="badge bg-light text-secondary border border-secondary ms-2">Unverified</span>');
+                    return `
+                    <div class="p-2 px-3 border border-dark bg-white d-flex align-items-center gap-2" style="border-width: 2px !important; box-shadow: 2px 2px 0 var(--border-color); border-radius: var(--radius-sm);">
+                        <i class="bi bi-mortarboard-fill text-dark"></i>
                         <div>
-                            <strong class="d-block">${ts.skillName}</strong>
-                            <small class="text-muted">${ts.levelOrUrgency} &bull; ${ts.categoryName}</small>
+                            <strong class="d-block text-dark">${ts.skillName}</strong>
+                            <small class="text-muted" style="font-family: var(--font-mono); font-size: 0.75rem;">${ts.levelOrUrgency || 'Intermediate'} &bull; ${ts.categoryName || 'General'}</small>
                         </div>
-                        ${(ts.verified || ts.verificationStatus === 'VERIFIED') ? '<span class="badge bg-success-subtle text-success border border-success-subtle ms-2 px-2 py-1"><i class="bi bi-patch-check-fill me-1"></i>✓ Verified Skill</span>' : ''}
+                        ${badge}
                     </div>
-                `).join('');
+                `}).join('');
             } else {
-                teachContainer.innerHTML = `<span class="text-muted small">No skills added to teach yet. Click '+ Manage' to add skills!</span>`;
+                teachContainer.innerHTML = `<span class="text-muted small">No skills added to teach yet.</span>`;
             }
 
             // Render Learning Skills
             const learnContainer = document.getElementById('learningSkillsContainer');
             if (p.learningSkills && p.learningSkills.length > 0) {
                 learnContainer.innerHTML = p.learningSkills.map(ls => `
-                    <div class="card p-2 px-3 border rounded-3 bg-white d-flex flex-row align-items-center gap-2 shadow-sm">
-                        <i class="bi bi-bookmark-star-fill text-pink-custom"></i>
+                    <div class="p-2 px-3 border border-dark bg-white d-flex align-items-center gap-2" style="border-width: 2px !important; box-shadow: 2px 2px 0 var(--border-color); border-radius: var(--radius-sm);">
+                        <i class="bi bi-bookmark-check-fill text-dark"></i>
                         <div>
-                            <strong class="d-block">${ls.skillName}</strong>
-                            <small class="text-muted">${ls.levelOrUrgency} Priority &bull; ${ls.categoryName}</small>
+                            <strong class="d-block text-dark">${ls.skillName}</strong>
+                            <small class="text-muted" style="font-family: var(--font-mono); font-size: 0.75rem;">${ls.levelOrUrgency || 'Normal'} Priority &bull; ${ls.categoryName || 'General'}</small>
                         </div>
                     </div>
                 `).join('');
             } else {
-                learnContainer.innerHTML = `<span class="text-muted small">No learning wishlist added. Add skills you want to learn to get matched!</span>`;
+                learnContainer.innerHTML = `<span class="text-muted small">No learning wishlist added yet.</span>`;
+            }
+        }
+
+        async function loadProjects(studentId) {
+            const container = document.getElementById('projectsContainer');
+            try {
+                const res = await API.get(`/api/students/${studentId}/projects`);
+                if (res && res.success && res.data.length > 0) {
+                    container.innerHTML = res.data.map(proj => `
+                        <div class="p-3 border border-dark bg-white position-relative" style="border-width: 2px !important; box-shadow: 2px 2px 0 var(--border-color); border-radius: var(--radius-sm);">
+                            <div class="d-flex justify-content-between align-items-start mb-1">
+                                <h6 class="fw-bold mb-0 text-dark">${proj.title}</h6>
+                                ${proj.projectLink ? `<a href="${proj.projectLink}" target="_blank" class="badge bg-light text-primary border border-primary text-decoration-none"><i class="bi bi-box-arrow-up-right me-1"></i>View Project</a>` : ''}
+                            </div>
+                            <p class="small text-muted mb-2">${proj.description}</p>
+                            ${proj.technologies ? `<div class="small fw-bold text-dark"><span class="text-muted fw-normal">Tech:</span> ${proj.technologies}</div>` : ''}
+                            ${isOwnProfile ? `<button class="btn btn-sm btn-outline-danger position-absolute" style="bottom: 8px; right: 8px; font-size: 0.7rem; padding: 2px 6px;" onclick="deleteProject(${proj.id})"><i class="bi bi-trash"></i></button>` : ''}
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = `<div class="text-muted small">No portfolio projects listed yet.</div>`;
+                }
+            } catch (e) {
+                container.innerHTML = `<div class="text-muted small">Projects data currently unavailable.</div>`;
+            }
+        }
+
+        async function loadExperiences(studentId) {
+            const container = document.getElementById('experiencesContainer');
+            try {
+                const res = await API.get(`/api/students/${studentId}/experiences`);
+                if (res && res.success && res.data.length > 0) {
+                    container.innerHTML = res.data.map(exp => `
+                        <div class="p-3 border border-dark bg-white position-relative" style="border-width: 2px !important; box-shadow: 2px 2px 0 var(--border-color); border-radius: var(--radius-sm);">
+                            <div class="d-flex justify-content-between align-items-start mb-1">
+                                <strong class="text-dark">${exp.role}</strong>
+                                <span class="badge bg-light text-dark border border-dark" style="font-family: var(--font-mono); font-size: 0.7rem;">${exp.organization}</span>
+                            </div>
+                            <p class="small text-muted mb-1">${exp.description}</p>
+                            <small class="text-muted" style="font-family: var(--font-mono); font-size: 0.72rem;">
+                                ${exp.startDate || 'N/A'} &mdash; ${exp.currentlyWorking ? 'Present (Ongoing)' : (exp.endDate || 'N/A')}
+                            </small>
+                            ${isOwnProfile ? `<button class="btn btn-sm btn-outline-danger position-absolute" style="bottom: 8px; right: 8px; font-size: 0.7rem; padding: 2px 6px;" onclick="deleteExperience(${exp.id})"><i class="bi bi-trash"></i></button>` : ''}
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = `<div class="text-muted small">No practical experience listed yet.</div>`;
+                }
+            } catch (e) {
+                container.innerHTML = `<div class="text-muted small">Experience data currently unavailable.</div>`;
             }
         }
 
@@ -265,28 +534,53 @@
             if (res && res.success && res.data.length > 0) {
                 document.getElementById('reviewCountBadge').innerText = `${res.data.length} Reviews`;
                 container.innerHTML = res.data.map(r => `
-                    <div class="p-3 border rounded-3 bg-white">
+                    <div class="p-3 border border-dark bg-white" style="border-width: 2px !important; box-shadow: 2px 2px 0 var(--border-color); border-radius: var(--radius-sm);">
                         <div class="d-flex justify-content-between align-items-center mb-1">
-                            <span class="fw-semibold">${r.reviewerName}</span>
-                            <span class="text-warning small">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)} (${r.rating}/5)</span>
+                            <span class="fw-bold">${r.reviewerName || 'Student Peer'}</span>
+                            <span class="text-dark small fw-bold" style="font-family: var(--font-mono);">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)} (${r.rating}/5)</span>
                         </div>
                         <p class="mb-1 text-dark small">"${r.comment || 'Smooth and productive skill exchange!'}"</p>
-                        <small class="text-muted" style="font-size:0.7rem;">${new Date(r.createdAt).toLocaleDateString()}</small>
+                        <small class="text-muted" style="font-family: var(--font-mono); font-size:0.7rem;">${new Date(r.createdAt).toLocaleDateString()}</small>
                     </div>
                 `).join('');
             } else {
-                container.innerHTML = `<div class="text-center py-4 text-muted small">No reviews received yet. Reviews appear after completed exchanges.</div>`;
+                container.innerHTML = `<div class="text-center py-3 text-muted small">No reviews received yet. Reviews appear automatically after completed exchanges.</div>`;
+            }
+        }
+
+        async function loadExchangeHistory(studentId) {
+            const container = document.getElementById('historyContainer');
+            try {
+                const res = await API.get('/api/exchanges');
+                if (res && res.success && res.data) {
+                    const completed = res.data.filter(e => (e.userAId == studentId || e.userBId == studentId) && e.status === 'COMPLETED');
+                    if (completed.length > 0) {
+                        container.innerHTML = completed.map(ex => `
+                            <div class="p-2 px-3 border border-dark rounded bg-white d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong class="small d-block text-dark">${ex.skillOfferedTitle || 'Skill Barter'} &harr; ${ex.skillRequestedTitle || 'Knowledge Trade'}</strong>
+                                    <small class="text-muted" style="font-size:0.72rem;">Partner: ${ex.userAId == studentId ? ex.userBName : ex.userAName}</small>
+                                </div>
+                                <span class="badge bg-success text-white"><i class="bi bi-check-all me-1"></i>Completed</span>
+                            </div>
+                        `).join('');
+                    } else {
+                        container.innerHTML = `<div class="text-muted small">No completed exchanges recorded yet.</div>`;
+                    }
+                }
+            } catch (e) {
+                container.innerHTML = `<div class="text-muted small">Exchange records loaded.</div>`;
             }
         }
 
         function openEditProfileModal() {
-            if (!myProfile) return;
-            document.getElementById('editFullName').value = myProfile.fullName;
-            document.getElementById('editBio').value = myProfile.bio || '';
-            document.getElementById('editCollege').value = myProfile.college;
-            document.getElementById('editDept').value = myProfile.department;
-            document.getElementById('editYear').value = myProfile.yearOfStudy;
-            document.getElementById('editPhone').value = myProfile.phone || '';
+            if (!currentProfile) return;
+            document.getElementById('editFullName').value = currentProfile.fullName || '';
+            document.getElementById('editBio').value = currentProfile.bio || '';
+            document.getElementById('editCollege').value = currentProfile.college || '';
+            document.getElementById('editDept').value = currentProfile.department || '';
+            document.getElementById('editYear').value = currentProfile.yearOfStudy || '1st Year';
+            document.getElementById('editPhone').value = currentProfile.phone || '';
             new bootstrap.Modal(document.getElementById('editProfileModal')).show();
         }
 
@@ -301,14 +595,146 @@
                 phone: document.getElementById('editPhone').value.trim()
             };
 
-            const res = await API.put(`/api/students/${myProfile.userId}`, payload);
+            const res = await API.put(`/api/students/${currentProfile.userId}`, payload);
             if (res && res.success) {
                 bootstrap.Modal.getInstance(document.getElementById('editProfileModal')).hide();
                 showAlert("Profile updated successfully!", "success");
-                myProfile = res.data;
-                renderProfile(myProfile);
+                currentProfile = res.data;
+                renderProfile(currentProfile);
             } else {
-                alert(res.message || "Failed to update profile");
+                showAlert(res.message || "Failed to update profile", "danger");
+            }
+        }
+
+        // Project helpers
+        function openAddProjectModal() {
+            new bootstrap.Modal(document.getElementById('addProjectModal')).show();
+        }
+
+        async function saveProject(e) {
+            e.preventDefault();
+            const payload = {
+                title: document.getElementById('projTitle').value.trim(),
+                description: document.getElementById('projDesc').value.trim(),
+                technologies: document.getElementById('projTech').value.trim(),
+                projectLink: document.getElementById('projLink').value.trim()
+            };
+            const res = await API.post('/api/students/projects', payload);
+            if (res && res.success) {
+                bootstrap.Modal.getInstance(document.getElementById('addProjectModal')).hide();
+                showAlert("Project added to your portfolio!", "success");
+                await loadProjects(currentProfile.userId);
+            } else {
+                showAlert(res.message || "Failed to add project", "danger");
+            }
+        }
+
+        async function deleteProject(id) {
+            if (!confirm("Are you sure you want to remove this project?")) return;
+            const res = await API.delete(`/api/students/projects/${id}`);
+            if (res && res.success) {
+                showAlert("Project removed.", "info");
+                await loadProjects(currentProfile.userId);
+            }
+        }
+
+        // Experience helpers
+        function openAddExperienceModal() {
+            new bootstrap.Modal(document.getElementById('addExperienceModal')).show();
+        }
+
+        async function saveExperience(e) {
+            e.preventDefault();
+            const payload = {
+                role: document.getElementById('expRole').value.trim(),
+                organization: document.getElementById('expOrg').value.trim(),
+                description: document.getElementById('expDesc').value.trim(),
+                startDate: document.getElementById('expStartDate').value,
+                endDate: document.getElementById('expEndDate').value,
+                currentlyWorking: document.getElementById('expCurrent').checked
+            };
+            const res = await API.post('/api/students/experiences', payload);
+            if (res && res.success) {
+                bootstrap.Modal.getInstance(document.getElementById('addExperienceModal')).hide();
+                showAlert("Experience added to your profile!", "success");
+                await loadExperiences(currentProfile.userId);
+            } else {
+                showAlert(res.message || "Failed to add experience", "danger");
+            }
+        }
+
+        async function deleteExperience(id) {
+            if (!confirm("Are you sure you want to remove this experience?")) return;
+            const res = await API.delete(`/api/students/experiences/${id}`);
+            if (res && res.success) {
+                showAlert("Experience removed.", "info");
+                await loadExperiences(currentProfile.userId);
+            }
+        }
+
+        // Peer actions: Propose, Block, Report
+        function proposeExchangeToPeer() {
+            window.location.href = `requests.html?peerId=${currentProfile.userId}&peerName=${encodeURIComponent(currentProfile.fullName)}`;
+        }
+
+        async function checkBlockStatus(peerId) {
+            try {
+                const res = await API.get('/api/students/blocked');
+                if (res && res.success) {
+                    isBlocked = res.data.some(b => b.blockedUserId == peerId);
+                    const btn = document.getElementById('blockBtn');
+                    if (isBlocked) {
+                        btn.innerHTML = `<i class="bi bi-unlock me-1"></i> Unblock`;
+                        btn.className = "btn btn-outline-warning btn-sm w-50";
+                    } else {
+                        btn.innerHTML = `<i class="bi bi-slash-circle me-1"></i> Block`;
+                        btn.className = "btn btn-outline-dark btn-sm w-50";
+                    }
+                }
+            } catch (e) {}
+        }
+
+        async function toggleBlockPeer() {
+            if (!currentProfile) return;
+            const peerId = currentProfile.userId;
+            if (!isBlocked) {
+                if (!confirm(`Are you sure you want to block ${currentProfile.fullName}? You will no longer be able to trade or message with this student.`)) return;
+                const res = await API.post('/api/students/block', { blockedUserId: peerId });
+                if (res && res.success) {
+                    showAlert(`Blocked ${currentProfile.fullName}.`, "warning");
+                    await checkBlockStatus(peerId);
+                } else {
+                    showAlert(res.message || "Failed to block user.", "danger");
+                }
+            } else {
+                const res = await API.post('/api/students/unblock', { blockedUserId: peerId });
+                if (res && res.success) {
+                    showAlert(`Unblocked ${currentProfile.fullName}.`, "success");
+                    await checkBlockStatus(peerId);
+                } else {
+                    showAlert(res.message || "Failed to unblock user.", "danger");
+                }
+            }
+        }
+
+        function openReportModal() {
+            new bootstrap.Modal(document.getElementById('reportModal')).show();
+        }
+
+        async function submitReport(e) {
+            e.preventDefault();
+            const payload = {
+                reportedUserId: currentProfile.userId,
+                reason: document.getElementById('reportReason').value,
+                details: document.getElementById('reportDetails').value.trim()
+            };
+            const res = await API.post('/api/reports', payload);
+            if (res && res.success) {
+                bootstrap.Modal.getInstance(document.getElementById('reportModal')).hide();
+                showAlert("Report submitted to university administration for review.", "info");
+                document.getElementById('reportForm').reset();
+            } else {
+                showAlert(res.message || "Failed to submit report.", "danger");
             }
         }
     </script>

@@ -80,34 +80,34 @@ function updateNavbarLoggedIn(user) {
     const isAdmin = user.role === "ROLE_ADMIN";
 
     userControls.innerHTML = `
-        <div class="d-flex align-items-center gap-3">
+        <div class="d-flex align-items-center gap-2">
             ${!isAdmin ? `
-            <a href="notifications.html" class="btn btn-light position-relative p-2 rounded-circle" title="Notifications">
-                <i class="bi bi-bell text-primary-custom fs-5"></i>
+            <a href="notifications.html" class="btn btn-outline-custom btn-sm position-relative p-2" title="Notifications">
+                <i class="bi bi-bell fs-6"></i>
                 <span id="navNotificationBadge" class="notification-badge d-none">0</span>
             </a>
             ` : ''}
 
             <div class="dropdown">
-                <button class="btn btn-light border dropdown-toggle d-flex align-items-center gap-2 rounded-pill px-3 py-1" type="button" data-bs-toggle="dropdown">
-                    <img src="https://api.dicebear.com/7.x/bottts/svg?seed=${user.userId}" class="rounded-circle" width="28" height="28" alt="User">
-                    <span class="fw-semibold text-dark">${user.fullName || user.email}</span>
-                    <span class="badge ${isAdmin ? 'bg-danger' : 'bg-primary'} ms-1" style="font-size:0.65rem;">${isAdmin ? 'ADMIN' : 'STUDENT'}</span>
+                <button class="btn btn-outline-custom btn-sm dropdown-toggle d-flex align-items-center gap-2 py-1 px-2" type="button" data-bs-toggle="dropdown">
+                    <img src="https://api.dicebear.com/7.x/bottts/svg?seed=${user.userId}" class="rounded border border-1 border-dark" width="26" height="26" alt="User">
+                    <span class="fw-bold text-dark small">${user.fullName || user.email}</span>
+                    <span class="badge ${isAdmin ? 'bg-danger text-white' : 'bg-primary text-white'} ms-1" style="font-size:0.62rem;">${isAdmin ? 'ADMIN' : 'STUDENT'}</span>
                 </button>
-                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2">
+                <ul class="dropdown-menu dropdown-menu-end mt-2">
                     ${!isAdmin ? `
-                    <li><a class="dropdown-item py-2" href="dashboard.html"><i class="bi bi-speedometer2 me-2 text-primary-custom"></i>Dashboard</a></li>
-                    <li><a class="dropdown-item py-2" href="profile.html"><i class="bi bi-person me-2 text-primary-custom"></i>My Profile</a></li>
-                    <li><a class="dropdown-item py-2" href="skills.html"><i class="bi bi-mortarboard me-2 text-primary-custom"></i>My Skills</a></li>
-                    <li><a class="dropdown-item py-2" href="matches.html"><i class="bi bi-stars me-2 text-pink-custom"></i>Find Matches</a></li>
-                    <li><a class="dropdown-item py-2" href="requests.html"><i class="bi bi-arrow-left-right me-2 text-primary-custom"></i>Exchange Requests</a></li>
-                    <li><a class="dropdown-item py-2" href="chat.html"><i class="bi bi-chat-dots me-2 text-primary-custom"></i>Messages</a></li>
+                    <li><a class="dropdown-item py-2" href="dashboard.html"><i class="bi bi-speedometer2 me-2 text-primary"></i>Dashboard</a></li>
+                    <li><a class="dropdown-item py-2" href="profile.html"><i class="bi bi-person me-2 text-primary"></i>My Profile</a></li>
+                    <li><a class="dropdown-item py-2" href="skills.html"><i class="bi bi-mortarboard me-2 text-primary"></i>My Skills</a></li>
+                    <li><a class="dropdown-item py-2" href="matches.html"><i class="bi bi-stars me-2 text-danger"></i>Find Matches</a></li>
+                    <li><a class="dropdown-item py-2" href="requests.html"><i class="bi bi-arrow-left-right me-2 text-primary"></i>Exchange Requests</a></li>
+                    <li><a class="dropdown-item py-2" href="chat.html"><i class="bi bi-chat-dots me-2 text-primary"></i>Messages</a></li>
                     <li><a class="dropdown-item py-2" href="verification.html"><i class="bi bi-patch-check me-2 text-success"></i>Skill Verification</a></li>
-                    <li><a class="dropdown-item py-2" href="exchange-history.html"><i class="bi bi-clock-history me-2 text-primary-custom"></i>Exchange History</a></li>
+                    <li><a class="dropdown-item py-2" href="exchange-history.html"><i class="bi bi-clock-history me-2 text-primary"></i>Exchange History</a></li>
                     ` : `
                     <li><a class="dropdown-item py-2" href="admin-dashboard.html"><i class="bi bi-shield-check me-2 text-danger"></i>Admin Control Panel</a></li>
                     `}
-                    <li><hr class="dropdown-divider"></li>
+                    <li><hr class="dropdown-divider border-dark"></li>
                     <li><a class="dropdown-item text-danger py-2" href="javascript:void(0)" onclick="logout()"><i class="bi bi-box-arrow-right me-2"></i>Sign Out</a></li>
                 </ul>
             </div>
@@ -130,8 +130,8 @@ function updateNavbarLoggedOut() {
 
     userControls.innerHTML = `
         <div class="d-flex align-items-center gap-2">
-            <a href="login.html" class="btn btn-outline-custom">Sign In</a>
-            <a href="register.html" class="btn btn-primary-custom">Get Started</a>
+            <a href="login.html" class="btn btn-outline-custom btn-sm">Sign In</a>
+            <a href="register.html" class="btn btn-primary-custom btn-sm">Get Started</a>
         </div>
     `;
 

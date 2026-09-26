@@ -14,8 +14,8 @@
     <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container">
             <a class="navbar-brand" href="index.html">
-                <i class="bi bi-arrow-left-right text-gradient fs-3"></i>
-                <span class="text-gradient">SkillExchange</span>
+                <span class="brand-icon-box"><i class="bi bi-arrow-left-right"></i></span>
+                <span class="brand-title">Skill<strong>Exchange</strong></span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
                 <span class="navbar-toggler-icon"></span>
@@ -218,34 +218,34 @@
                     <div id="vFormAlert" class="alert alert-danger d-none small mb-3"></div>
 
                     <!-- PROOF RULE BANNER -->
-                    <div class="alert alert-info py-2 px-3 mb-4 d-flex align-items-center gap-2 small">
-                        <i class="bi bi-info-circle-fill text-info fs-5"></i>
-                        <div>
-                            <strong>Verification Requirements:</strong>
-                            Projects and Experience proofs are <strong>compulsory</strong>. Certificate upload is <strong>optional</strong>.
+                    <div class="p-3 border border-2 border-dark rounded mb-4 bg-light d-flex align-items-center gap-2">
+                        <i class="bi bi-info-circle-fill text-dark fs-4"></i>
+                        <div class="small">
+                            <strong class="text-dark">Verification Standard:</strong>
+                            Projects proof and Practical Experience are <strong>COMPULSORY</strong>. Certificate upload is <strong>OPTIONAL</strong>.
                         </div>
                     </div>
 
                     <!-- SECTION A: CERTIFICATE (OPTIONAL) -->
-                    <div class="card p-3 mb-4 border rounded-3 bg-white shadow-none">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
+                    <div class="verify-section-box">
+                        <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom border-1 border-dark">
                             <h6 class="fw-bold mb-0 text-dark">
-                                <i class="bi bi-award-fill text-warning me-2"></i>A. Certificate
-                                <span class="badge bg-secondary-subtle text-secondary ms-2 fw-semibold">Certificate (Optional)</span>
+                                <i class="bi bi-award me-2"></i>A. CERTIFICATE
                             </h6>
+                            <span class="verify-tag-pill tag-optional">CERTIFICATE — OPTIONAL</span>
                         </div>
                         <p class="text-muted small mb-3">Upload an official credential, exam score, course completion certificate, or competition award. Accepted formats: PDF, JPG, PNG or valid URL.</p>
 
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label small fw-semibold text-muted">Certificate / Credential Title</label>
-                                <input type="text" id="vCertTitle" class="form-control form-control-sm" placeholder="e.g. Oracle Certified Java Programmer, Coursera Certificate">
+                                <label class="form-label small">Certificate Title</label>
+                                <input type="text" id="vCertTitle" class="form-control" placeholder="e.g. Oracle Certified Java Programmer, Coursera Certificate">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label small fw-semibold text-muted">Certificate File / Credential Link</label>
-                                <div class="input-group input-group-sm">
-                                    <input type="text" id="vCertUrl" class="form-control form-control-sm" placeholder="e.g. uploads/certificates/cert.pdf or credential URL">
-                                    <label class="btn btn-outline-secondary mb-0" for="vCertFileInput" title="Select Local File"><i class="bi bi-upload"></i></label>
+                                <label class="form-label small">Certificate File / Link</label>
+                                <div class="input-group">
+                                    <input type="text" id="vCertUrl" class="form-control" placeholder="e.g. uploads/certificates/cert.pdf or credential URL">
+                                    <label class="btn btn-outline-custom mb-0" for="vCertFileInput" title="Select Local File"><i class="bi bi-upload"></i></label>
                                     <input type="file" id="vCertFileInput" class="d-none" accept=".pdf,.jpg,.jpeg,.png" onchange="handleCertFileUpload(this)">
                                 </div>
                             </div>
@@ -253,37 +253,37 @@
                     </div>
 
                     <!-- SECTION B: PROJECTS (COMPULSORY) -->
-                    <div class="card p-3 mb-4 border border-primary-subtle bg-light-subtle rounded-3 shadow-none">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <h6 class="fw-bold mb-0 text-primary-custom">
-                                <i class="bi bi-code-slash me-2"></i>B. Projects
-                                <span class="badge bg-primary text-white ms-2">Projects (Required)</span>
+                    <div class="verify-section-box required-section">
+                        <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom border-2 border-dark">
+                            <h6 class="fw-bold mb-0 text-dark">
+                                <i class="bi bi-code-slash me-2"></i>B. PROJECT PROOF
                             </h6>
+                            <span class="verify-tag-pill tag-required">PROJECT — REQUIRED</span>
                         </div>
-                        <p class="text-muted small mb-3">You must provide at least <strong>one relevant project</strong> demonstrating this skill.</p>
+                        <p class="text-muted small mb-3">You must provide at least <strong>one relevant project</strong> demonstrating this skill in practice.</p>
 
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label small fw-bold text-dark">Project Title <span class="text-danger">*</span></label>
-                                <input type="text" id="vProjTitle" class="form-control form-control-sm" placeholder="e.g. Campus Event Management Backend" required>
+                                <label class="form-label small">Project Title <span class="text-danger">*</span></label>
+                                <input type="text" id="vProjTitle" class="form-control" placeholder="e.g. Campus Event Management Backend" required>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label small fw-bold text-dark">Technologies / Tools Used <span class="text-danger">*</span></label>
-                                <input type="text" id="vProjTech" class="form-control form-control-sm" placeholder="e.g. Java 17, Spring Boot, MySQL, REST API" required>
+                                <label class="form-label small">Technologies / Tools Used <span class="text-danger">*</span></label>
+                                <input type="text" id="vProjTech" class="form-control" placeholder="e.g. Java 17, Spring Boot, MySQL, REST API" required>
                             </div>
                             <div class="col-12">
-                                <label class="form-label small fw-bold text-dark">Project Description <span class="text-danger">*</span></label>
-                                <textarea id="vProjDesc" class="form-control form-control-sm" rows="3" placeholder="Describe the project goal, key features developed, architecture, and how this skill was applied..." required></textarea>
+                                <label class="form-label small">Project Description <span class="text-danger">*</span></label>
+                                <textarea id="vProjDesc" class="form-control" rows="3" placeholder="Describe the project goal, key features developed, architecture, and how this skill was applied..." required></textarea>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label small fw-semibold text-muted">Project Link / GitHub Link (if available)</label>
-                                <input type="url" id="vProjLink" class="form-control form-control-sm" placeholder="https://github.com/username/project-repo">
+                                <label class="form-label small">Project Link / GitHub Link</label>
+                                <input type="url" id="vProjLink" class="form-control" placeholder="https://github.com/username/project-repo">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label small fw-semibold text-muted">Project Proof / Screenshots / Files</label>
-                                <div class="input-group input-group-sm">
-                                    <input type="text" id="vProjProof" class="form-control form-control-sm" placeholder="e.g. uploads/proofs/project_demo.png">
-                                    <label class="btn btn-outline-secondary mb-0" for="vProjFileInput" title="Select File"><i class="bi bi-upload"></i></label>
+                                <label class="form-label small">Project Proof / Screenshots</label>
+                                <div class="input-group">
+                                    <input type="text" id="vProjProof" class="form-control" placeholder="e.g. uploads/proofs/project_demo.png">
+                                    <label class="btn btn-outline-custom mb-0" for="vProjFileInput" title="Select File"><i class="bi bi-upload"></i></label>
                                     <input type="file" id="vProjFileInput" class="d-none" accept=".pdf,.jpg,.jpeg,.png,.zip" onchange="handleProjFileUpload(this)">
                                 </div>
                             </div>
@@ -291,51 +291,51 @@
                     </div>
 
                     <!-- SECTION C: EXPERIENCE (COMPULSORY) -->
-                    <div class="card p-3 mb-3 border border-info-subtle bg-light-subtle rounded-3 shadow-none">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <h6 class="fw-bold mb-0 text-info-emphasis">
-                                <i class="bi bi-briefcase-fill me-2"></i>C. Experience
-                                <span class="badge bg-info text-dark ms-2">Experience (Required)</span>
+                    <div class="verify-section-box required-section">
+                        <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom border-2 border-dark">
+                            <h6 class="fw-bold mb-0 text-dark">
+                                <i class="bi bi-briefcase me-2"></i>C. PRACTICAL EXPERIENCE
                             </h6>
+                            <span class="verify-tag-pill tag-required">EXPERIENCE — REQUIRED</span>
                         </div>
                         <p class="text-muted small mb-3">You must provide <strong>relevant experience</strong> demonstrating where and how you applied this skill.</p>
 
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label small fw-bold text-dark">Experience Title / Role <span class="text-danger">*</span></label>
-                                <input type="text" id="vExpTitle" class="form-control form-control-sm" placeholder="e.g. Backend Developer Intern / Coding Club Mentor" required>
+                                <label class="form-label small">Experience Title / Role <span class="text-danger">*</span></label>
+                                <input type="text" id="vExpTitle" class="form-control" placeholder="e.g. Backend Developer Intern / Coding Club Mentor" required>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label small fw-bold text-dark">Organization / Company / College Activity Name <span class="text-danger">*</span></label>
-                                <input type="text" id="vExpOrg" class="form-control form-control-sm" placeholder="e.g. MGM Techfest / College IT Society / Tech Start" required>
+                                <label class="form-label small">Organization / College Activity Name <span class="text-danger">*</span></label>
+                                <input type="text" id="vExpOrg" class="form-control" placeholder="e.g. MGM Techfest / College IT Society / Tech Start" required>
                             </div>
                             <div class="col-12">
-                                <label class="form-label small fw-bold text-dark">Description of Work & Relevant Responsibilities <span class="text-danger">*</span></label>
-                                <textarea id="vExpDesc" class="form-control form-control-sm" rows="3" placeholder="Detail your daily responsibilities, mentoring peers, solving technical issues, or delivering solutions..." required></textarea>
+                                <label class="form-label small">Description of Work & Responsibilities <span class="text-danger">*</span></label>
+                                <textarea id="vExpDesc" class="form-control" rows="3" placeholder="Detail your daily responsibilities, mentoring peers, solving technical issues, or delivering solutions..." required></textarea>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label small fw-semibold text-muted">Duration</label>
-                                <input type="text" id="vExpDuration" class="form-control form-control-sm" placeholder="e.g. 6 Months / 1 Year">
+                                <label class="form-label small">Duration</label>
+                                <input type="text" id="vExpDuration" class="form-control" placeholder="e.g. 6 Months / 1 Year">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label small fw-bold text-dark">Start Date <span class="text-danger">*</span></label>
-                                <input type="date" id="vExpStart" class="form-control form-control-sm" required>
+                                <label class="form-label small">Start Date <span class="text-danger">*</span></label>
+                                <input type="date" id="vExpStart" class="form-control" required>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label small fw-bold text-dark">End Date or "Currently working" <span class="text-danger">*</span></label>
-                                <div class="input-group input-group-sm">
-                                    <input type="text" id="vExpEnd" class="form-control form-control-sm" placeholder="YYYY-MM-DD or Currently working" required>
-                                    <button type="button" class="btn btn-outline-secondary" onclick="document.getElementById('vExpEnd').value='Currently working'">Current</button>
+                                <label class="form-label small">End Date or Status <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <input type="text" id="vExpEnd" class="form-control" placeholder="YYYY-MM-DD or Currently working" required>
+                                    <button type="button" class="btn btn-outline-custom" onclick="document.getElementById('vExpEnd').value='Currently working'">Current</button>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                 </div>
-                <div class="modal-footer border-top bg-light d-flex justify-content-between">
-                    <small class="text-muted"><i class="bi bi-shield-lock me-1"></i> Admin verification will audit your proof.</small>
+                <div class="modal-footer border-top border-2 border-dark bg-light d-flex justify-content-between">
+                    <small class="text-muted"><i class="bi bi-shield-check me-1"></i> Admin verification will audit your proof.</small>
                     <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-outline-custom" data-bs-dismiss="modal">Cancel</button>
                         <button type="button" class="btn btn-primary-custom px-4" onclick="submitSkillVerification()">
                             <i class="bi bi-send-check me-1"></i> Submit Verification
                         </button>
@@ -437,36 +437,36 @@
 
                 switch (status) {
                     case 'VERIFIED':
-                        badgeHtml = `<span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1"><i class="bi bi-patch-check-fill me-1"></i>✓ Verified Skill</span>`;
-                        actionBtnHtml = `<button class="btn btn-sm btn-outline-success" onclick="viewVerificationDetails(${ts.skillId}, '${escapeHtml(ts.skillName)}')"><i class="bi bi-patch-check me-1"></i>View Proof</button>`;
+                        badgeHtml = `<span class="status-pill-verified"><i class="bi bi-patch-check-fill me-1"></i>✓ Verified</span>`;
+                        actionBtnHtml = `<button class="btn btn-sm btn-outline-custom" onclick="viewVerificationDetails(${ts.skillId}, '${escapeHtml(ts.skillName)}')"><i class="bi bi-patch-check me-1"></i>View Proof</button>`;
                         break;
                     case 'PENDING':
-                        badgeHtml = `<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1"><i class="bi bi-hourglass-split me-1"></i>⏳ Verification Pending</span>`;
-                        actionBtnHtml = `<button class="btn btn-sm btn-outline-secondary" onclick="viewVerificationDetails(${ts.skillId}, '${escapeHtml(ts.skillName)}')"><i class="bi bi-eye me-1"></i>View Submission</button>`;
+                        badgeHtml = `<span class="status-pill-pending"><i class="bi bi-hourglass-split me-1"></i>Pending</span>`;
+                        actionBtnHtml = `<button class="btn btn-sm btn-outline-custom" onclick="viewVerificationDetails(${ts.skillId}, '${escapeHtml(ts.skillName)}')"><i class="bi bi-eye me-1"></i>View Submission</button>`;
                         break;
                     case 'NEEDS_RESUBMISSION':
-                        badgeHtml = `<span class="badge bg-warning-subtle text-danger border border-warning-subtle px-2 py-1"><i class="bi bi-exclamation-triangle-fill me-1"></i>⚠ Needs Resubmission</span>`;
+                        badgeHtml = `<span class="status-pill-resubmit"><i class="bi bi-exclamation-triangle-fill me-1"></i>Needs Resubmission</span>`;
                         actionBtnHtml = `
-                            <button class="btn btn-sm btn-warning text-dark fw-semibold" onclick="openVerifySkillModal(${ts.skillId}, '${escapeHtml(ts.skillName)}', true)"><i class="bi bi-pencil-square me-1"></i>Update & Resubmit</button>
-                            <button class="btn btn-sm btn-outline-secondary" onclick="viewVerificationDetails(${ts.skillId}, '${escapeHtml(ts.skillName)}')"><i class="bi bi-chat-left-text me-1"></i>Feedback</button>
+                            <button class="btn btn-sm btn-pink-custom" onclick="openVerifySkillModal(${ts.skillId}, '${escapeHtml(ts.skillName)}', true)"><i class="bi bi-pencil-square me-1"></i>Resubmit</button>
+                            <button class="btn btn-sm btn-outline-custom" onclick="viewVerificationDetails(${ts.skillId}, '${escapeHtml(ts.skillName)}')"><i class="bi bi-chat-left-text me-1"></i>Feedback</button>
                         `;
                         break;
                     case 'REJECTED':
-                        badgeHtml = `<span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1"><i class="bi bi-x-circle-fill me-1"></i>❌ Rejected</span>`;
+                        badgeHtml = `<span class="status-pill-resubmit"><i class="bi bi-x-circle-fill me-1"></i>Rejected</span>`;
                         actionBtnHtml = `
-                            <button class="btn btn-sm btn-outline-primary" onclick="openVerifySkillModal(${ts.skillId}, '${escapeHtml(ts.skillName)}', true)"><i class="bi bi-arrow-clockwise me-1"></i>Resubmit</button>
-                            <button class="btn btn-sm btn-outline-secondary" onclick="viewVerificationDetails(${ts.skillId}, '${escapeHtml(ts.skillName)}')"><i class="bi bi-info-circle me-1"></i>Feedback</button>
+                            <button class="btn btn-sm btn-primary-custom" onclick="openVerifySkillModal(${ts.skillId}, '${escapeHtml(ts.skillName)}', true)"><i class="bi bi-arrow-clockwise me-1"></i>Resubmit</button>
+                            <button class="btn btn-sm btn-outline-custom" onclick="viewVerificationDetails(${ts.skillId}, '${escapeHtml(ts.skillName)}')"><i class="bi bi-info-circle me-1"></i>Feedback</button>
                         `;
                         break;
                     case 'NOT_VERIFIED':
                     default:
-                        badgeHtml = `<span class="badge bg-light text-secondary border px-2 py-1"><i class="bi bi-shield me-1"></i>Not Verified</span>`;
+                        badgeHtml = `<span class="status-pill-unverified"><i class="bi bi-shield me-1"></i>Not Verified</span>`;
                         actionBtnHtml = `<button class="btn btn-sm btn-primary-custom" onclick="openVerifySkillModal(${ts.skillId}, '${escapeHtml(ts.skillName)}')"><i class="bi bi-patch-check me-1"></i>Verify Skill</button>`;
                         break;
                 }
 
                 return `
-                    <div class="card card-custom p-3">
+                    <div class="card card-custom p-3 bg-white">
                         <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
                             <div>
                                 <div class="d-flex align-items-center gap-2 flex-wrap">
@@ -479,8 +479,8 @@
                                 <i class="bi bi-trash"></i>
                             </button>
                         </div>
-                        <div class="d-flex align-items-center justify-content-between pt-2 border-top flex-wrap gap-2">
-                            <small class="text-muted"><i class="bi bi-shield-shaded me-1"></i>Status: <strong>${status.replace('_', ' ')}</strong></small>
+                        <div class="d-flex align-items-center justify-content-between pt-2 border-top border-2 border-dark flex-wrap gap-2">
+                            <small class="text-muted"><i class="bi bi-shield-shaded me-1"></i>Status: <strong class="text-dark">${status.replace('_', ' ')}</strong></small>
                             <div class="d-flex align-items-center gap-1">
                                 ${actionBtnHtml}
                             </div>
@@ -497,9 +497,9 @@
                 return;
             }
             container.innerHTML = list.map(ls => `
-                <div class="card card-custom p-3 d-flex flex-row justify-content-between align-items-center">
+                <div class="card card-custom p-3 d-flex flex-row justify-content-between align-items-center bg-white">
                     <div>
-                        <h6 class="mb-0 fw-semibold text-dark">${ls.skillName}</h6>
+                        <h6 class="mb-0 fw-bold text-dark">${ls.skillName}</h6>
                         <small class="text-muted">${ls.levelOrUrgency} Priority &bull; ${ls.categoryName}</small>
                     </div>
                     <button class="btn btn-sm btn-outline-danger" title="Remove skill" onclick="deleteLearning(${ls.skillId})"><i class="bi bi-trash"></i></button>
@@ -524,11 +524,11 @@
             tbody.innerHTML = skills.map(s => `
                 <tr>
                     <td><strong class="text-dark">${s.name}</strong></td>
-                    <td><span class="badge bg-light text-dark border">${s.categoryName}</span></td>
+                    <td><span class="badge bg-light text-dark">${s.categoryName}</span></td>
                     <td class="small text-muted">${s.description || 'No description provided.'}</td>
                     <td class="text-end">
-                        <button class="btn btn-sm btn-outline-primary me-1" onclick="quickAddTeach(${s.id})">+ Teach</button>
-                        <button class="btn btn-sm btn-outline-secondary" onclick="quickAddLearn(${s.id})">+ Learn</button>
+                        <button class="btn btn-sm btn-primary-custom me-1" onclick="quickAddTeach(${s.id})">+ Teach</button>
+                        <button class="btn btn-sm btn-outline-custom" onclick="quickAddLearn(${s.id})">+ Learn</button>
                     </td>
                 </tr>
             `).join('');

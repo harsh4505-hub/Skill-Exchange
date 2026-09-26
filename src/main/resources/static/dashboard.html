@@ -14,8 +14,8 @@
     <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container">
             <a class="navbar-brand" href="index.html">
-                <i class="bi bi-arrow-left-right text-gradient fs-3"></i>
-                <span class="text-gradient">SkillExchange</span>
+                <span class="brand-icon-box"><i class="bi bi-arrow-left-right"></i></span>
+                <span class="brand-title">Skill<strong>Exchange</strong></span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
                 <span class="navbar-toggler-icon"></span>
@@ -41,18 +41,19 @@
         <div id="alertContainer"></div>
 
         <!-- Welcome Banner -->
-        <div class="card card-custom p-4 mb-4" style="background: linear-gradient(135deg, #f8faff 0%, #ffffff 100%);">
+        <div class="card card-custom p-4 mb-4 bg-white">
             <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
                 <div class="d-flex align-items-center gap-3">
                     <img id="dashAvatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=student" class="avatar-img-lg" alt="Avatar">
                     <div>
-                        <div class="d-flex align-items-center gap-2">
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <span class="section-tag mb-0">STUDENT PORTAL</span>
                             <h2 class="fw-bold mb-0">Welcome, <span id="dashStudentName">Student</span>!</h2>
-                            <span id="dashVerifiedBadge" class="badge badge-custom badge-verified d-none">
+                            <span id="dashVerifiedBadge" class="badge badge-verified d-none">
                                 <i class="bi bi-patch-check-fill me-1"></i> Verified Peer
                             </span>
                         </div>
-                        <p class="text-muted mb-0 small" id="dashAcademicDetails">Department &bull; College</p>
+                        <p class="text-muted mb-0 small mt-1" id="dashAcademicDetails">Department &bull; College</p>
                     </div>
                 </div>
                 <div class="d-flex gap-2">
@@ -69,62 +70,62 @@
         <!-- 4 Metric Cards -->
         <div class="row g-3 mb-4">
             <div class="col-sm-6 col-lg-3">
-                <div class="card card-custom p-3 h-100 d-flex flex-column justify-content-between">
+                <div class="card card-custom p-3 h-100 d-flex flex-column justify-content-between bg-white">
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
-                            <span class="text-muted small fw-semibold text-uppercase" style="letter-spacing: 0.04em;">Skills I Teach</span>
+                            <span class="text-muted small fw-bold text-uppercase" style="letter-spacing: 0.05em; font-size: 0.72rem;">Skills I Teach</span>
                             <h3 class="fw-bold mt-1 mb-0" id="statTeachCount">0</h3>
                         </div>
-                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 46px; height: 46px; background-color: var(--primary-subtle); color: var(--primary);">
-                            <i class="bi bi-mortarboard fs-5"></i>
+                        <div class="border border-2 border-dark rounded d-flex align-items-center justify-content-center bg-light" style="width: 44px; height: 44px; box-shadow: 2px 2px 0px var(--border-color);">
+                            <i class="bi bi-mortarboard fs-5 text-dark"></i>
                         </div>
                     </div>
-                    <a href="skills.html" class="small text-primary-custom text-decoration-none mt-3 d-inline-flex align-items-center gap-1 fw-medium">View & Add <i class="bi bi-arrow-right"></i></a>
+                    <a href="skills.html" class="small text-dark fw-bold text-decoration-underline mt-3 d-inline-flex align-items-center gap-1">View & Add <i class="bi bi-arrow-right"></i></a>
                 </div>
             </div>
 
             <div class="col-sm-6 col-lg-3">
-                <div class="card card-custom p-3 h-100 d-flex flex-column justify-content-between">
+                <div class="card card-custom p-3 h-100 d-flex flex-column justify-content-between bg-white">
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
-                            <span class="text-muted small fw-semibold text-uppercase" style="letter-spacing: 0.04em;">Skills I Want</span>
+                            <span class="text-muted small fw-bold text-uppercase" style="letter-spacing: 0.05em; font-size: 0.72rem;">Skills I Want</span>
                             <h3 class="fw-bold mt-1 mb-0" id="statLearnCount">0</h3>
                         </div>
-                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 46px; height: 46px; background-color: var(--pink-subtle); color: var(--pink-accent);">
-                            <i class="bi bi-lightbulb fs-5"></i>
+                        <div class="border border-2 border-dark rounded d-flex align-items-center justify-content-center bg-light" style="width: 44px; height: 44px; box-shadow: 2px 2px 0px var(--border-color);">
+                            <i class="bi bi-lightbulb fs-5 text-danger"></i>
                         </div>
                     </div>
-                    <a href="skills.html" class="small text-pink-custom text-decoration-none mt-3 d-inline-flex align-items-center gap-1 fw-medium">Update Wishlist <i class="bi bi-arrow-right"></i></a>
+                    <a href="skills.html" class="small text-dark fw-bold text-decoration-underline mt-3 d-inline-flex align-items-center gap-1">Update Wishlist <i class="bi bi-arrow-right"></i></a>
                 </div>
             </div>
 
             <div class="col-sm-6 col-lg-3">
-                <div class="card card-custom p-3 h-100 d-flex flex-column justify-content-between">
+                <div class="card card-custom p-3 h-100 d-flex flex-column justify-content-between bg-white">
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
-                            <span class="text-muted small fw-semibold text-uppercase" style="letter-spacing: 0.04em;">Active Exchanges</span>
+                            <span class="text-muted small fw-bold text-uppercase" style="letter-spacing: 0.05em; font-size: 0.72rem;">Active Exchanges</span>
                             <h3 class="fw-bold mt-1 mb-0" id="statActiveCount">0</h3>
                         </div>
-                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 46px; height: 46px; background-color: var(--success-subtle); color: var(--success);">
-                            <i class="bi bi-arrow-repeat fs-5"></i>
+                        <div class="border border-2 border-dark rounded d-flex align-items-center justify-content-center bg-light" style="width: 44px; height: 44px; box-shadow: 2px 2px 0px var(--border-color);">
+                            <i class="bi bi-arrow-repeat fs-5 text-success"></i>
                         </div>
                     </div>
-                    <a href="exchange-history.html" class="small text-success text-decoration-none mt-3 d-inline-flex align-items-center gap-1 fw-medium">Track Sessions <i class="bi bi-arrow-right"></i></a>
+                    <a href="exchange-history.html" class="small text-dark fw-bold text-decoration-underline mt-3 d-inline-flex align-items-center gap-1">Track Sessions <i class="bi bi-arrow-right"></i></a>
                 </div>
             </div>
 
             <div class="col-sm-6 col-lg-3">
-                <div class="card card-custom p-3 h-100 d-flex flex-column justify-content-between">
+                <div class="card card-custom p-3 h-100 d-flex flex-column justify-content-between bg-white">
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
-                            <span class="text-muted small fw-semibold text-uppercase" style="letter-spacing: 0.04em;">Completed & Rating</span>
+                            <span class="text-muted small fw-bold text-uppercase" style="letter-spacing: 0.05em; font-size: 0.72rem;">Completed & Rating</span>
                             <h3 class="fw-bold mt-1 mb-0" id="statCompleted">0 <small class="fs-6 text-warning">★ 0.0</small></h3>
                         </div>
-                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 46px; height: 46px; background-color: var(--warning-subtle); color: var(--warning);">
-                            <i class="bi bi-trophy fs-5"></i>
+                        <div class="border border-2 border-dark rounded d-flex align-items-center justify-content-center bg-light" style="width: 44px; height: 44px; box-shadow: 2px 2px 0px var(--border-color);">
+                            <i class="bi bi-trophy fs-5 text-warning"></i>
                         </div>
                     </div>
-                    <a href="profile.html" class="small text-warning text-decoration-none mt-3 d-inline-flex align-items-center gap-1 fw-medium">View Reviews <i class="bi bi-arrow-right"></i></a>
+                    <a href="profile.html" class="small text-dark fw-bold text-decoration-underline mt-3 d-inline-flex align-items-center gap-1">View Reviews <i class="bi bi-arrow-right"></i></a>
                 </div>
             </div>
         </div>
@@ -133,9 +134,9 @@
             <!-- Left Column: Recommended Matches & Pending Proposals -->
             <div class="col-lg-8">
                 <!-- Recommended Matches Preview -->
-                <div class="card card-custom p-4 mb-4">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="fw-bold mb-0"><i class="bi bi-stars text-pink-custom me-2"></i>Top Recommended Skill Matches</h5>
+                <div class="card card-custom p-4 mb-4 bg-white">
+                    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-2 border-dark">
+                        <h5 class="fw-bold mb-0"><i class="bi bi-stars text-danger me-2"></i>Top Recommended Skill Matches</h5>
                         <a href="matches.html" class="btn btn-sm btn-outline-custom">View All Matches</a>
                     </div>
                     <div id="recommendedMatchesContainer">
@@ -146,9 +147,9 @@
                 </div>
 
                 <!-- Incoming Pending Requests -->
-                <div class="card card-custom p-4">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="fw-bold mb-0"><i class="bi bi-inbox text-primary-custom me-2"></i>Incoming Exchange Proposals</h5>
+                <div class="card card-custom p-4 bg-white">
+                    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-2 border-dark">
+                        <h5 class="fw-bold mb-0"><i class="bi bi-inbox text-primary me-2"></i>Incoming Exchange Proposals</h5>
                         <a href="requests.html" class="btn btn-sm btn-outline-custom">Manage Requests</a>
                     </div>
                     <div id="pendingRequestsContainer">
@@ -159,10 +160,10 @@
 
             <!-- Right Column: Notifications & Quick Actions -->
             <div class="col-lg-4">
-                <div class="card card-custom p-4 mb-4">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="fw-bold mb-0"><i class="bi bi-bell text-primary-custom me-2"></i>Recent Alerts</h5>
-                        <a href="notifications.html" class="small text-decoration-none fw-medium">View All</a>
+                <div class="card card-custom p-4 mb-4 bg-white">
+                    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-2 border-dark">
+                        <h5 class="fw-bold mb-0"><i class="bi bi-bell text-dark me-2"></i>Recent Alerts</h5>
+                        <a href="notifications.html" class="small text-decoration-underline fw-bold text-dark">View All</a>
                     </div>
                     <div id="recentNotificationsContainer" class="d-flex flex-column gap-2">
                         <div class="text-center py-3 text-muted small">Checking notifications...</div>
@@ -170,13 +171,22 @@
                 </div>
 
                 <!-- Learning Mode Info Card -->
-                <div class="card card-custom p-4" style="background-color: var(--light-bg);">
-                    <h6 class="fw-bold mb-2"><i class="bi bi-info-circle text-primary-custom me-2"></i>Learning Modes</h6>
+                <div class="card card-custom p-4 bg-white">
+                    <h6 class="fw-bold mb-2"><i class="bi bi-info-circle text-primary me-2"></i>Supported Learning Modes</h6>
                     <p class="text-muted small mb-3">Once a match accepts your request, choose from 3 flexible modes:</p>
                     <ul class="list-unstyled small mb-0 d-flex flex-column gap-2">
-                        <li><span class="badge badge-custom badge-online me-2"><i class="bi bi-laptop"></i> Online</span> Google Meet / Zoom link via chat</li>
-                        <li><span class="badge badge-custom badge-offline me-2"><i class="bi bi-geo-alt"></i> Offline</span> College library / campus study room</li>
-                        <li><span class="badge badge-custom badge-chat me-2"><i class="bi bi-chat-text"></i> Chat</span> In-platform messaging & notes</li>
+                        <li class="p-2 border border-2 border-dark rounded d-flex align-items-center gap-2 bg-light">
+                            <span class="badge badge-online"><i class="bi bi-laptop"></i> Online</span>
+                            <span class="text-dark">Google Meet / Zoom link via chat</span>
+                        </li>
+                        <li class="p-2 border border-2 border-dark rounded d-flex align-items-center gap-2 bg-light">
+                            <span class="badge badge-offline"><i class="bi bi-geo-alt"></i> Offline</span>
+                            <span class="text-dark">College library / campus study room</span>
+                        </li>
+                        <li class="p-2 border border-2 border-dark rounded d-flex align-items-center gap-2 bg-light">
+                            <span class="badge badge-chat"><i class="bi bi-chat-text"></i> Chat</span>
+                            <span class="text-dark">In-platform messaging & notes</span>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -231,14 +241,14 @@
             if (res && res.success && res.data.length > 0) {
                 const top3 = res.data.slice(0, 3);
                 container.innerHTML = top3.map(m => `
-                    <div class="card card-custom p-3 mb-2">
+                    <div class="card card-custom p-3 mb-2 bg-white">
                         <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                             <div class="d-flex align-items-center gap-3">
                                 <img src="${m.avatarUrl || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + m.userId}" class="avatar-img" alt="${m.studentName}">
                                 <div>
                                     <div class="d-flex align-items-center gap-2">
-                                        <h6 class="mb-0 fw-semibold">${m.studentName}</h6>
-                                        ${(m.skillTheyTeachYouVerified || m.verified) ? '<span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size:0.65rem;"><i class="bi bi-patch-check-fill"></i> ✓ Verified Skill</span>' : ''}
+                                        <h6 class="mb-0 fw-bold">${m.studentName}</h6>
+                                        ${(m.skillTheyTeachYouVerified || m.verified) ? '<span class="badge badge-verified" style="font-size:0.65rem;"><i class="bi bi-patch-check-fill"></i> ✓ Verified</span>' : ''}
                                     </div>
                                     <small class="text-muted">${m.department} &bull; Rating: <strong class="text-dark">${(m.averageRating || 0).toFixed(1)}★</strong></small>
                                 </div>
@@ -248,16 +258,16 @@
                                 <a href="matches.html" class="btn btn-sm btn-primary-custom">Connect</a>
                             </div>
                         </div>
-                        <div class="mt-2 pt-2 border-top d-flex gap-2 flex-wrap small">
-                            <span class="badge bg-light text-dark border">Offers: <strong>${m.skillTheyTeachYou}</strong> ${m.skillTheyTeachYouVerified ? '<span class="badge bg-success-subtle text-success border border-success-subtle ms-1" style="font-size:0.65rem;"><i class="bi bi-patch-check-fill me-1"></i>✓ Verified</span>' : ''}</span>
-                            ${m.isMutualMatch ? `<span class="badge badge-custom badge-mutual">Wants: <strong>${m.skillYouTeachThem}</strong> (Mutual Trade)</span>` : ''}
+                        <div class="mt-2 pt-2 border-top border-2 border-dark d-flex gap-2 flex-wrap small">
+                            <span class="badge bg-light text-dark">Offers: <strong>${m.skillTheyTeachYou}</strong> ${m.skillTheyTeachYouVerified ? '<span class="badge badge-verified ms-1" style="font-size:0.65rem;"><i class="bi bi-patch-check-fill me-1"></i>✓ Verified</span>' : ''}</span>
+                            ${m.isMutualMatch ? `<span class="badge badge-mutual">Wants: <strong>${m.skillYouTeachThem}</strong> (Mutual Trade)</span>` : ''}
                         </div>
                     </div>
                 `).join('');
             } else {
                 container.innerHTML = `
                     <div class="text-center py-4 text-muted">
-                        <i class="bi bi-person-x fs-1 d-block mb-2"></i>
+                        <i class="bi bi-person-x fs-1 d-block mb-2 text-dark"></i>
                         <p class="mb-2">No skill matches found yet.</p>
                         <a href="skills.html" class="btn btn-sm btn-primary-custom">Add Skills You Want to Learn</a>
                     </div>
@@ -270,12 +280,12 @@
             const res = await API.get('/api/exchange-requests/pending');
             if (res && res.success && res.data.length > 0) {
                 container.innerHTML = res.data.slice(0, 3).map(r => `
-                    <div class="card card-custom p-3 mb-2">
+                    <div class="card card-custom p-3 mb-2 bg-white">
                         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                             <div>
                                 <h6 class="mb-1 fw-bold text-dark">${r.senderName} proposes an exchange</h6>
-                                <p class="mb-1 small text-muted">Offers: <span class="badge badge-custom badge-chat">${r.skillOfferedName}</span> ${r.skillOfferedVerified ? '<span class="badge bg-success-subtle text-success border border-success-subtle ms-1" style="font-size:0.65rem;"><i class="bi bi-patch-check-fill me-1"></i>✓ Verified</span>' : ''} for your <span class="badge badge-custom badge-mutual">${r.skillRequestedName}</span></p>
-                                <span class="badge badge-custom badge-${r.learningMode.toLowerCase()}">${r.learningMode}</span>
+                                <p class="mb-1 small text-muted">Offers: <span class="badge badge-chat">${r.skillOfferedName}</span> ${r.skillOfferedVerified ? '<span class="badge badge-verified ms-1" style="font-size:0.65rem;"><i class="bi bi-patch-check-fill me-1"></i>✓ Verified</span>' : ''} for your <span class="badge badge-mutual">${r.skillRequestedName}</span></p>
+                                <span class="badge badge-${r.learningMode.toLowerCase()}">${r.learningMode}</span>
                             </div>
                             <div class="d-flex gap-2">
                                 <button class="btn btn-sm btn-success px-3" onclick="acceptReq(${r.id})"><i class="bi bi-check2 me-1"></i> Accept</button>
@@ -294,10 +304,10 @@
             const res = await API.get('/api/notifications');
             if (res && res.success && res.data.length > 0) {
                 container.innerHTML = res.data.slice(0, 4).map(n => `
-                    <div class="p-2 border-bottom ${n.read ? 'text-muted' : 'fw-semibold text-dark'} small">
+                    <div class="p-2 border-bottom border-1 border-dark ${n.read ? 'text-muted' : 'fw-bold text-dark'} small">
                         <div class="d-flex justify-content-between">
                             <span>${n.title}</span>
-                            <span class="text-muted" style="font-size:0.7rem;">${new Date(n.createdAt).toLocaleDateString()}</span>
+                            <span class="text-muted mono-num" style="font-size:0.7rem;">${new Date(n.createdAt).toLocaleDateString()}</span>
                         </div>
                         <p class="mb-0 text-muted fw-normal" style="font-size:0.75rem;">${n.message}</p>
                     </div>

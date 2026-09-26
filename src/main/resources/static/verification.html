@@ -14,8 +14,8 @@
     <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container">
             <a class="navbar-brand" href="index.html">
-                <i class="bi bi-arrow-left-right text-gradient fs-3"></i>
-                <span class="text-gradient">SkillExchange</span>
+                <span class="brand-icon-box"><i class="bi bi-arrow-left-right"></i></span>
+                <span class="brand-title">Skill<strong>Exchange</strong></span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
                 <span class="navbar-toggler-icon"></span>
@@ -40,14 +40,12 @@
     <div class="container py-4">
         <div id="alertContainer"></div>
 
-        <div class="card card-custom p-4 mb-4" style="background: linear-gradient(135deg, #f8faff 0%, #ffffff 100%);">
+        <div class="card card-custom p-4 mb-4 bg-white">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
                 <div>
-                    <span class="badge badge-custom badge-verified px-3 py-1 mb-2">
-                        <i class="bi bi-shield-check me-1"></i> Quality & Credibility
-                    </span>
-                    <h3 class="fw-bold mb-1">Skill Verification Center</h3>
-                    <p class="text-muted small mb-0">Upload credentials, university competition certificates, or project repositories to earn the <strong>Verified Skill</strong> badge.</p>
+                    <span class="section-tag mb-1">CREDENTIALING SYSTEM</span>
+                    <h3 class="fw-bold mb-1"><i class="bi bi-shield-check text-success me-2"></i>SKILL VERIFICATION CENTER</h3>
+                    <p class="text-muted small mb-0">Upload verifiable code repositories, portfolio links, and practical experience to earn the <strong>Verified Skill</strong> badge.</p>
                 </div>
                 <button class="btn btn-primary-custom" onclick="openSubmitModal()">
                     <i class="bi bi-cloud-arrow-up me-1"></i> Submit Skill Proof
@@ -56,22 +54,22 @@
         </div>
 
         <!-- Verification Records Table -->
-        <div class="card card-custom p-4">
-            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div class="card card-custom p-4 bg-white">
+            <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-2 border-dark flex-wrap gap-2">
                 <div>
-                    <h5 class="fw-bold mb-1"><i class="bi bi-shield-check text-success me-2"></i>My Skill Verification Submissions</h5>
-                    <p class="text-muted small mb-0">Track verification statuses, review submitted evidence, and view administrative audit feedback.</p>
+                    <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-journal-check me-2"></i>My Skill Verification Submissions</h5>
+                    <p class="text-muted small mb-0">Track verification review statuses and administrative audit feedback</p>
                 </div>
             </div>
 
             <div class="table-responsive">
                 <table class="table table-hover align-middle">
-                    <thead class="table-light">
+                    <thead>
                         <tr>
                             <th>Skill</th>
-                            <th>Certificate (Optional)</th>
-                            <th>Projects (Compulsory)</th>
-                            <th>Experience (Compulsory)</th>
+                            <th>Certificate</th>
+                            <th>Project Proof</th>
+                            <th>Experience Record</th>
                             <th>Status</th>
                             <th>Admin Feedback</th>
                             <th>Submitted Date</th>
@@ -90,120 +88,130 @@
     <div class="modal fade" id="submitProofModal" tabindex="-1">
         <div class="modal-dialog modal-lg modal-dialog-scrollable">
             <div class="modal-content">
-                <div class="modal-header border-bottom">
+                <div class="modal-header border-bottom border-2 border-dark">
                     <div>
-                        <h5 class="modal-title fw-bold mb-0"><i class="bi bi-shield-check me-2 text-primary"></i>Submit Skill Verification Proof</h5>
-                        <p class="text-muted small mb-0 mt-1">Provide proof of project work and experience to earn the <strong>✓ Verified Skill</strong> credential.</p>
+                        <span class="section-tag mb-1">AUDIT SUBMISSION</span>
+                        <h5 class="modal-title fw-bold mb-0"><i class="bi bi-shield-check me-2 text-primary"></i>Submit Skill Verification Evidence</h5>
+                        <p class="text-muted small mb-0 mt-1">Provide project work and experience proof to earn the <strong>✓ Verified Skill</strong> credential.</p>
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-4">
                     <div id="vPageAlert" class="alert alert-danger d-none small mb-3"></div>
 
-                    <div class="alert alert-info py-2 px-3 mb-4 d-flex align-items-center gap-2 small">
-                        <i class="bi bi-info-circle-fill text-info fs-5"></i>
-                        <div>
-                            <strong>Verification Rule:</strong> Project and experience proof are <strong>compulsory</strong> to verify this skill. Certificate is <strong>optional</strong>.
+                    <div class="p-3 border border-2 border-dark rounded mb-4 bg-light d-flex align-items-center gap-2">
+                        <i class="bi bi-info-circle-fill text-dark fs-4"></i>
+                        <div class="small">
+                            <strong class="text-dark">Verification Standard:</strong> Project proof and experience record are <strong>COMPULSORY</strong> to verify this skill. Certificate upload is <strong>OPTIONAL</strong>.
                         </div>
                     </div>
 
                     <div class="mb-4">
-                        <label class="form-label fw-bold">Select Skill to Verify <span class="text-danger">*</span></label>
+                        <label class="form-label">Select Skill to Verify <span class="text-danger">*</span></label>
                         <select id="proofSkillSelect" class="form-select" required></select>
-                        <small class="text-muted">Must be an active skill from your 'Skills I Can Teach' list.</small>
+                        <small class="text-muted">Must be an active skill from your 'Skills I Can Teach' roster.</small>
                     </div>
 
-                    <!-- Section A: Certificate (Optional) -->
-                    <div class="card p-3 mb-4 border rounded-3 bg-white">
-                        <h6 class="fw-bold mb-1 text-dark">
-                            <i class="bi bi-award-fill text-warning me-2"></i>A. Certificate
-                            <span class="badge bg-secondary-subtle text-secondary ms-2 fw-semibold">Certificate (Optional)</span>
-                        </h6>
-                        <p class="text-muted small mb-3">Optional certificate upload. Formats: PDF, JPG, PNG or valid credential link.</p>
+                    <!-- SECTION A: CERTIFICATE (OPTIONAL) -->
+                    <div class="verify-section-box">
+                        <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom border-1 border-dark">
+                            <h6 class="fw-bold mb-0 text-dark">
+                                <i class="bi bi-award me-2"></i>A. CERTIFICATE
+                            </h6>
+                            <span class="verify-tag-pill tag-optional">CERTIFICATE — OPTIONAL</span>
+                        </div>
+                        <p class="text-muted small mb-3">Optional certificate upload. Formats: PDF, JPG, PNG or verified credential URL.</p>
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label small fw-semibold text-muted">Certificate Title</label>
-                                <input type="text" id="proofCertTitle" class="form-control form-control-sm" placeholder="e.g. HackerRank 5-Star / Oracle Certified">
+                                <label class="form-label small">Certificate Title</label>
+                                <input type="text" id="proofCertTitle" class="form-control" placeholder="e.g. Oracle Certified Associate / HackerRank 5-Star">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label small fw-semibold text-muted">Document / Proof URL</label>
-                                <input type="text" id="proofCertUrl" class="form-control form-control-sm" placeholder="uploads/certificates/cert.pdf or URL">
+                                <label class="form-label small">Credential / Document URL</label>
+                                <input type="text" id="proofCertUrl" class="form-control" placeholder="uploads/certificates/cert.pdf or URL">
                             </div>
                         </div>
                     </div>
 
-                    <!-- Section B: Projects (Compulsory) -->
-                    <div class="card p-3 mb-4 border border-primary-subtle bg-light-subtle rounded-3">
-                        <h6 class="fw-bold mb-1 text-primary-custom">
-                            <i class="bi bi-code-slash me-2"></i>B. Projects
-                            <span class="badge bg-primary text-white ms-2">Projects (Required)</span>
-                        </h6>
-                        <p class="text-muted small mb-3">Provide at least one project demonstrating this skill.</p>
+                    <!-- SECTION B: PROJECT (REQUIRED) -->
+                    <div class="verify-section-box required-section">
+                        <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom border-2 border-dark">
+                            <h6 class="fw-bold mb-0 text-dark">
+                                <i class="bi bi-code-slash me-2"></i>B. PROJECT PROOF
+                            </h6>
+                            <span class="verify-tag-pill tag-required">PROJECT — REQUIRED</span>
+                        </div>
+                        <p class="text-muted small mb-3">Provide at least one complete project applying this skill in practice.</p>
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label small fw-bold text-dark">Project Title <span class="text-danger">*</span></label>
-                                <input type="text" id="proofProjTitle" class="form-control form-control-sm" placeholder="e.g. Student Skill Exchange Portal" required>
+                                <label class="form-label small">Project Title <span class="text-danger">*</span></label>
+                                <input type="text" id="proofProjTitle" class="form-control" placeholder="e.g. Student Skill Exchange Portal" required>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label small fw-bold text-dark">Technologies / Tools Used <span class="text-danger">*</span></label>
-                                <input type="text" id="proofProjTech" class="form-control form-control-sm" placeholder="e.g. Java, Spring Boot, MySQL" required>
+                                <label class="form-label small">Technologies / Tools Used <span class="text-danger">*</span></label>
+                                <input type="text" id="proofProjTech" class="form-control" placeholder="e.g. Java 17, Spring Boot, MySQL, REST" required>
                             </div>
                             <div class="col-12">
-                                <label class="form-label small fw-bold text-dark">Project Description <span class="text-danger">*</span></label>
-                                <textarea id="proofProjDesc" class="form-control form-control-sm" rows="3" placeholder="Outline what you built, architecture, and concepts applied..." required></textarea>
+                                <label class="form-label small">Project Description <span class="text-danger">*</span></label>
+                                <textarea id="proofProjDesc" class="form-control" rows="3" placeholder="Outline what you built, system architecture, challenges solved, and concepts applied..." required></textarea>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label small fw-semibold text-muted">GitHub / Live Project Link</label>
-                                <input type="url" id="proofProjLink" class="form-control form-control-sm" placeholder="https://github.com/user/project">
+                                <label class="form-label small">GitHub Repository / Live Project Link</label>
+                                <input type="url" id="proofProjLink" class="form-control" placeholder="https://github.com/username/project">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label small fw-semibold text-muted">Project Proof / Screenshot Path</label>
-                                <input type="text" id="proofProjProof" class="form-control form-control-sm" placeholder="uploads/proofs/screenshot.png">
+                                <label class="form-label small">Screenshot / Architecture Diagram Path</label>
+                                <input type="text" id="proofProjProof" class="form-control" placeholder="uploads/proofs/system_architecture.png">
                             </div>
                         </div>
                     </div>
 
-                    <!-- Section C: Experience (Compulsory) -->
-                    <div class="card p-3 mb-3 border border-info-subtle bg-light-subtle rounded-3">
-                        <h6 class="fw-bold mb-1 text-info-emphasis">
-                            <i class="bi bi-briefcase-fill me-2"></i>C. Experience
-                            <span class="badge bg-info text-dark ms-2">Experience (Required)</span>
-                        </h6>
-                        <p class="text-muted small mb-3">Provide relevant experience demonstrating application of this skill.</p>
+                    <!-- SECTION C: EXPERIENCE (REQUIRED) -->
+                    <div class="verify-section-box required-section">
+                        <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom border-2 border-dark">
+                            <h6 class="fw-bold mb-0 text-dark">
+                                <i class="bi bi-briefcase me-2"></i>C. PRACTICAL EXPERIENCE
+                            </h6>
+                            <span class="verify-tag-pill tag-required">EXPERIENCE — REQUIRED</span>
+                        </div>
+                        <p class="text-muted small mb-3">Provide practical experience demonstrating where and how you applied this skill.</p>
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label small fw-bold text-dark">Experience Title / Role <span class="text-danger">*</span></label>
-                                <input type="text" id="proofExpTitle" class="form-control form-control-sm" placeholder="e.g. Teaching Assistant / Club Lead" required>
+                                <label class="form-label small">Experience Title / Role <span class="text-danger">*</span></label>
+                                <input type="text" id="proofExpTitle" class="form-control" placeholder="e.g. Teaching Assistant / Tech Club Lead" required>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label small fw-bold text-dark">Organization / College Activity Name <span class="text-danger">*</span></label>
-                                <input type="text" id="proofExpOrg" class="form-control form-control-sm" placeholder="e.g. MGM Techfest / IT Department" required>
+                                <label class="form-label small">Organization / College Activity Name <span class="text-danger">*</span></label>
+                                <input type="text" id="proofExpOrg" class="form-control" placeholder="e.g. MGM Techfest / IT Society / Tech Start" required>
                             </div>
                             <div class="col-12">
-                                <label class="form-label small fw-bold text-dark">Description of Work & Responsibilities <span class="text-danger">*</span></label>
-                                <textarea id="proofExpDesc" class="form-control form-control-sm" rows="3" placeholder="Detail your role, responsibilities, and technical work done..." required></textarea>
+                                <label class="form-label small">Work Description & Responsibilities <span class="text-danger">*</span></label>
+                                <textarea id="proofExpDesc" class="form-control" rows="3" placeholder="Detail your daily responsibilities, technical tasks completed, and mentoring delivered..." required></textarea>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label small fw-semibold text-muted">Duration</label>
-                                <input type="text" id="proofExpDuration" class="form-control form-control-sm" placeholder="e.g. 6 Months">
+                                <label class="form-label small">Duration</label>
+                                <input type="text" id="proofExpDuration" class="form-control" placeholder="e.g. 6 Months / 1 Year">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label small fw-bold text-dark">Start Date <span class="text-danger">*</span></label>
-                                <input type="date" id="proofExpStart" class="form-control form-control-sm" required>
+                                <label class="form-label small">Start Date <span class="text-danger">*</span></label>
+                                <input type="date" id="proofExpStart" class="form-control" required>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label small fw-bold text-dark">End Date or Currently working <span class="text-danger">*</span></label>
-                                <input type="text" id="proofExpEnd" class="form-control form-control-sm" placeholder="YYYY-MM-DD or Currently working" required>
+                                <label class="form-label small">End Date or Status <span class="text-danger">*</span></label>
+                                <input type="text" id="proofExpEnd" class="form-control" placeholder="YYYY-MM-DD or Currently working" required>
                             </div>
                         </div>
                     </div>
 
                 </div>
-                <div class="modal-footer border-top bg-light">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button class="btn btn-primary-custom px-4" onclick="submitVerificationProof()">
-                        <i class="bi bi-send-check me-1"></i> Submit for Verification
-                    </button>
+                <div class="modal-footer border-top border-2 border-dark bg-light d-flex justify-content-between">
+                    <small class="text-muted"><i class="bi bi-shield-check me-1"></i> Admin auditing will review your submission.</small>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-outline-custom" data-bs-dismiss="modal">Cancel</button>
+                        <button class="btn btn-primary-custom px-4" onclick="submitVerificationProof()">
+                            <i class="bi bi-send-check me-1"></i> Submit for Verification
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -237,22 +245,23 @@
                 tbody.innerHTML = res.data.map(v => {
                     const status = v.status || 'PENDING';
                     let statusBadge = '';
-                    if (status === 'VERIFIED') statusBadge = '<span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1"><i class="bi bi-patch-check-fill me-1"></i>✓ Verified Skill</span>';
-                    else if (status === 'PENDING') statusBadge = '<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1"><i class="bi bi-hourglass-split me-1"></i>⏳ Verification Pending</span>';
-                    else if (status === 'NEEDS_RESUBMISSION') statusBadge = '<span class="badge bg-warning-subtle text-danger border border-warning-subtle px-2 py-1"><i class="bi bi-exclamation-triangle-fill me-1"></i>⚠ Needs Resubmission</span>';
-                    else if (status === 'REJECTED') statusBadge = '<span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1"><i class="bi bi-x-circle-fill me-1"></i>❌ Rejected</span>';
+                    if (status === 'VERIFIED') statusBadge = '<span class="status-pill-verified"><i class="bi bi-patch-check-fill me-1"></i>✓ Verified</span>';
+                    else if (status === 'PENDING') statusBadge = '<span class="status-pill-pending"><i class="bi bi-hourglass-split me-1"></i>Pending</span>';
+                    else if (status === 'NEEDS_RESUBMISSION') statusBadge = '<span class="status-pill-resubmit"><i class="bi bi-exclamation-triangle-fill me-1"></i>Needs Resubmission</span>';
+                    else if (status === 'REJECTED') statusBadge = '<span class="status-pill-resubmit"><i class="bi bi-x-circle-fill me-1"></i>Rejected</span>';
+                    else statusBadge = '<span class="status-pill-unverified">Not Verified</span>';
 
                     return `
                         <tr>
-                            <td><strong class="text-primary-custom fs-6">${v.skillName}</strong></td>
-                            <td>${v.certificateName ? `<div class="fw-semibold small">${v.certificateName}</div>` : '<span class="text-muted small fst-italic">None (Optional)</span>'}</td>
-                            <td><div class="fw-semibold small">${v.projectTitle || 'N/A'}</div><small class="text-muted">${v.projectTechnologies || ''}</small></td>
-                            <td><div class="fw-semibold small">${v.experienceTitle || 'N/A'}</div><small class="text-muted">${v.experienceOrganization || ''}</small></td>
+                            <td><strong class="text-dark fs-6">${v.skillName}</strong></td>
+                            <td>${v.certificateName ? `<div class="fw-bold small text-dark">${v.certificateName}</div>` : '<span class="text-muted small">None (Optional)</span>'}</td>
+                            <td><div class="fw-bold small text-dark">${v.projectTitle || 'N/A'}</div><small class="text-muted">${v.projectTechnologies || ''}</small></td>
+                            <td><div class="fw-bold small text-dark">${v.experienceTitle || 'N/A'}</div><small class="text-muted">${v.experienceOrganization || ''}</small></td>
                             <td>${statusBadge}</td>
                             <td class="small text-muted">${v.adminComment || 'Awaiting administrator review'}</td>
-                            <td class="small text-muted">${v.submissionDate ? new Date(v.submissionDate).toLocaleDateString() : 'N/A'}</td>
+                            <td class="small text-muted mono-num">${v.submissionDate ? new Date(v.submissionDate).toLocaleDateString() : 'N/A'}</td>
                             <td class="text-end">
-                                <a href="skills.html" class="btn btn-sm btn-outline-primary">
+                                <a href="skills.html" class="btn btn-sm btn-outline-custom">
                                     <i class="bi bi-box-arrow-up-right me-1"></i> My Skills
                                 </a>
                             </td>
@@ -294,7 +303,7 @@
 
             if (!hasProject || !hasExperience) {
                 alertDiv.className = 'alert alert-danger small mb-3';
-                alertDiv.innerHTML = `<strong>Validation Failed:</strong> Project and experience proof are required to verify this skill. Certificate is optional.`;
+                alertDiv.innerHTML = `<strong>Validation Failed:</strong> Project proof and experience record are required to verify this skill. Certificate is optional.`;
                 alertDiv.classList.remove('d-none');
                 return;
             }
@@ -325,7 +334,7 @@
                 loadVerifications();
             } else {
                 alertDiv.className = 'alert alert-danger small mb-3';
-                alertDiv.innerText = res.message || "Project and experience proof are required to verify this skill. Certificate is optional.";
+                alertDiv.innerText = res.message || "Project proof and experience record are required to verify this skill. Certificate is optional.";
                 alertDiv.classList.remove('d-none');
             }
         }

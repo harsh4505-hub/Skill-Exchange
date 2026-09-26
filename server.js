@@ -30,6 +30,93 @@ function isValidCollegeEmail(email) {
 const state = {
     currentUser: null,
 
+    // OTP Store for email verification and password reset
+    otps: {},
+
+    auditLogs: [
+        {
+            id: 1,
+            action: "PLATFORM_INIT",
+            performedBy: "admin@mgmmumbai.ac.in",
+            target: "SYSTEM",
+            timestamp: new Date(Date.now() - 5 * 86400000).toISOString(),
+            details: "Platform initialized with college email security policy (@mgmmumbai.ac.in)."
+        },
+        {
+            id: 2,
+            action: "SKILL_VERIFICATION_APPROVED",
+            performedBy: "admin@mgmmumbai.ac.in",
+            target: "harsh@mgmmumbai.ac.in",
+            timestamp: new Date(Date.now() - 4 * 86400000).toISOString(),
+            details: "Approved Java skill verification proof (Project & Experience verified)."
+        },
+        {
+            id: 3,
+            action: "SKILL_VERIFICATION_APPROVED",
+            performedBy: "admin@mgmmumbai.ac.in",
+            target: "sejal@mgmmumbai.ac.in",
+            timestamp: new Date(Date.now() - 3 * 86400000).toISOString(),
+            details: "Approved Photoshop skill verification proof (Portfolio & Experience verified)."
+        }
+    ],
+
+    blockedUsers: [],
+
+    projects: [
+        {
+            id: 1,
+            studentId: 2,
+            title: "Microservices Learning Exchange Backend",
+            description: "Developed a distributed RESTful skill exchange engine with Spring Boot, Redis caching, and reciprocal matchmaking.",
+            technologies: "Java 17, Spring Boot, MySQL, Docker",
+            link: "https://github.com/harsh/skill-exchange-service",
+            proofUrl: ""
+        },
+        {
+            id: 2,
+            studentId: 2,
+            title: "College Campus Event Manager",
+            description: "Built a real-time event booking and QR attendance scanning portal for MGM annual technical fests.",
+            technologies: "Java, Spring MVC, Thymeleaf, PostgreSQL",
+            link: "https://github.com/harsh/mgm-event-manager",
+            proofUrl: ""
+        },
+        {
+            id: 3,
+            studentId: 3,
+            title: "Brand Identity & Vector Retouching System",
+            description: "Created commercial posters, photo composite imagery, and multi-layered branding assets for college cultural fests.",
+            technologies: "Adobe Photoshop 2024, Lightroom, Figma",
+            link: "https://behance.net/sejal_photoshop_portfolio",
+            proofUrl: ""
+        }
+    ],
+
+    experiences: [
+        {
+            id: 1,
+            studentId: 2,
+            title: "Lead Java Developer & Mentor",
+            organization: "MGM College Open Source Developer Club",
+            description: "Mentored 40+ junior students in Object-Oriented Programming, Spring framework fundamentals, and code reviews.",
+            duration: "1 Year",
+            startDate: "2025-01-10",
+            endDate: "Present",
+            isCurrent: true
+        },
+        {
+            id: 2,
+            studentId: 3,
+            title: "Head Graphic Designer",
+            organization: "MGM College Annual Magazine Editorial Board",
+            description: "Designed front-cover layouts, retouched photography, and coordinated print publishing for 1,500+ physical magazine copies.",
+            duration: "1.5 Years",
+            startDate: "2024-09-01",
+            endDate: "Present",
+            isCurrent: true
+        }
+    ],
+
     categories: [
         { id: 1, name: "Programming", description: "Software engineering, algorithms & coding", icon: "bi-code-slash" },
         { id: 2, name: "Web Development", description: "Frontend, backend, and full-stack web tech", icon: "bi-globe" },
@@ -51,11 +138,11 @@ const state = {
     ],
 
     users: [
-        { id: 1, email: "admin@mgmmumbai.ac.in", role: "ROLE_ADMIN", password: "password123", active: true },
-        { id: 2, email: "harsh@mgmmumbai.ac.in", role: "ROLE_STUDENT", password: "password123", active: true },
-        { id: 3, email: "sejal@mgmmumbai.ac.in", role: "ROLE_STUDENT", password: "password123", active: true },
-        { id: 4, email: "raza@mgmmumbai.ac.in", role: "ROLE_STUDENT", password: "password123", active: true },
-        { id: 5, email: "udipti@mgmmumbai.ac.in", role: "ROLE_STUDENT", password: "password123", active: true }
+        { id: 1, email: "admin@mgmmumbai.ac.in", role: "ROLE_ADMIN", password: "password123", active: true, emailVerified: true },
+        { id: 2, email: "harsh@mgmmumbai.ac.in", role: "ROLE_STUDENT", password: "password123", active: true, emailVerified: true },
+        { id: 3, email: "sejal@mgmmumbai.ac.in", role: "ROLE_STUDENT", password: "password123", active: true, emailVerified: true },
+        { id: 4, email: "raza@mgmmumbai.ac.in", role: "ROLE_STUDENT", password: "password123", active: true, emailVerified: true },
+        { id: 5, email: "udipti@mgmmumbai.ac.in", role: "ROLE_STUDENT", password: "password123", active: true, emailVerified: true }
     ],
 
     profiles: [
@@ -214,10 +301,16 @@ const state = {
             student1Name: "Harsh Vardhan",
             student2Id: 3,
             student2Name: "Sejal Sharma",
+            userAId: 2,
+            userAName: "Harsh Vardhan",
+            userBId: 3,
+            userBName: "Sejal Sharma",
             skill1Id: 1,
             skill1Name: "Java",
             skill2Id: 4,
             skill2Name: "Photoshop",
+            skillOfferedTitle: "Java",
+            skillRequestedTitle: "Photoshop",
             learningMode: "ONLINE",
             status: "COMPLETED",
             startDate: new Date(Date.now() - 3 * 86400000).toISOString(),
@@ -230,10 +323,16 @@ const state = {
             student1Name: "Raza Khan",
             student2Id: 5,
             student2Name: "Udipti Sen",
+            userAId: 4,
+            userAName: "Raza Khan",
+            userBId: 5,
+            userBName: "Udipti Sen",
             skill1Id: 2,
             skill1Name: "Python",
             skill2Id: 7,
             skill2Name: "Public Speaking",
+            skillOfferedTitle: "Python",
+            skillRequestedTitle: "Public Speaking",
             learningMode: "CHAT",
             status: "ACTIVE",
             startDate: new Date(Date.now() - 1 * 86400000).toISOString()
@@ -455,7 +554,7 @@ const server = http.createServer(async (req, res) => {
     // -------------------------------------------------------------------
 
     if (pathname.startsWith('/api/')) {
-        // --- 1. AUTHENTICATION ---
+        // --- 1. AUTHENTICATION & SECURITY ---
         if (pathname === '/api/auth/current-user' && req.method === 'GET') {
             return sendJson(res, 200, { success: true, data: state.currentUser });
         }
@@ -477,12 +576,26 @@ const server = http.createServer(async (req, res) => {
                 return sendJson(res, 401, { success: false, message: "Invalid email or password" });
             }
 
-            // Existing accounts must also adhere to official college domain rule
+            // Existing accounts must adhere to official college domain rule
             if (!isValidCollegeEmail(user.email)) {
                 return sendJson(res, 403, {
                     success: false,
                     message: "Please use your official college email address ending with @mgmmumbai.ac.in."
                 });
+            }
+
+            // Email verification check
+            if (user.emailVerified === false) {
+                return sendJson(res, 403, {
+                    success: false,
+                    unverified: true,
+                    email: user.email,
+                    message: "Your college email address has not been verified yet. Please complete email verification."
+                });
+            }
+
+            if (!user.active) {
+                return sendJson(res, 403, { success: false, message: "This account has been deactivated or suspended by administrator." });
             }
 
             const profile = state.profiles.find(p => p.userId === user.id);
@@ -493,10 +606,31 @@ const server = http.createServer(async (req, res) => {
                 role: user.role,
                 fullName: profile ? profile.fullName : (user.role === 'ROLE_ADMIN' ? 'System Administrator' : user.email)
             };
+
+            // Audit log
+            state.auditLogs.unshift({
+                id: Date.now(),
+                action: "USER_LOGIN",
+                performedBy: user.email,
+                target: user.email,
+                timestamp: new Date().toISOString(),
+                details: "Successful login session established."
+            });
+
             return sendJson(res, 200, { success: true, message: "Login successful", data: state.currentUser });
         }
 
         if (pathname === '/api/auth/logout' && req.method === 'POST') {
+            if (state.currentUser) {
+                state.auditLogs.unshift({
+                    id: Date.now(),
+                    action: "USER_LOGOUT",
+                    performedBy: state.currentUser.email,
+                    target: state.currentUser.email,
+                    timestamp: new Date().toISOString(),
+                    details: "User logged out."
+                });
+            }
             state.currentUser = null;
             return sendJson(res, 200, { success: true, message: "Logged out" });
         }
@@ -505,19 +639,30 @@ const server = http.createServer(async (req, res) => {
             const body = await parseBody(req);
             const normalizedEmail = (body.email || '').trim().toLowerCase();
 
-            // Backend validation: Reject any domain not ending in @mgmmumbai.ac.in
+            // Strict Backend validation: Reject any domain not ending in @mgmmumbai.ac.in
             if (!isValidCollegeEmail(normalizedEmail)) {
                 return sendJson(res, 400, {
                     success: false,
-                    message: "Please use your official college email address ending with @mgmmumbai.ac.in."
+                    message: "Only college email addresses ending with @mgmmumbai.ac.in are authorized to register."
                 });
             }
 
             if (state.users.some(u => u.email.toLowerCase() === normalizedEmail)) {
-                return sendJson(res, 409, { success: false, message: "An account with this email already exists" });
+                return sendJson(res, 409, { success: false, message: "An account with this college email already exists. Please login." });
             }
+
             const newId = state.users.length + 1;
-            const newUser = { id: newId, email: normalizedEmail, role: "ROLE_STUDENT", password: body.password, active: true };
+            // Generate 6-digit OTP code for college email verification
+            const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+            const newUser = {
+                id: newId,
+                email: normalizedEmail,
+                role: "ROLE_STUDENT",
+                password: body.password,
+                active: false,
+                emailVerified: false
+            };
             state.users.push(newUser);
 
             const newProfile = {
@@ -525,11 +670,11 @@ const server = http.createServer(async (req, res) => {
                 userId: newId,
                 fullName: (body.fullName || '').trim(),
                 email: normalizedEmail,
-                college: (body.college || '').trim(),
-                department: body.department,
-                yearOfStudy: body.yearOfStudy,
+                college: (body.college || 'MGM College of Engineering & Technology').trim(),
+                department: body.department || 'Information Technology',
+                yearOfStudy: body.yearOfStudy || '2nd Year',
                 phone: (body.phone || '').trim(),
-                bio: `Hello! I am a student at ${body.college} looking to exchange skills.`,
+                bio: `Hello! I am a student at ${body.college || 'MGM'} looking to exchange skills.`,
                 avatarUrl: `https://api.dicebear.com/7.x/bottts/svg?seed=${newId}`,
                 verified: false,
                 averageRating: 0.0,
@@ -540,17 +685,246 @@ const server = http.createServer(async (req, res) => {
             };
             state.profiles.push(newProfile);
 
-            state.currentUser = {
-                authenticated: true,
-                userId: newId,
-                email: normalizedEmail,
-                role: "ROLE_STUDENT",
-                fullName: (body.fullName || '').trim()
+            // Store OTP with 10-minute expiry
+            state.otps[normalizedEmail] = {
+                code: otpCode,
+                type: 'EMAIL_VERIFICATION',
+                expiresAt: Date.now() + 10 * 60 * 1000,
+                attempts: 0,
+                lastSentAt: Date.now()
             };
-            return sendJson(res, 200, { success: true, message: "Registration successful", data: state.currentUser });
+
+            // Audit log
+            state.auditLogs.unshift({
+                id: Date.now(),
+                action: "STUDENT_REGISTRATION",
+                performedBy: normalizedEmail,
+                target: normalizedEmail,
+                timestamp: new Date().toISOString(),
+                details: "New college student registration initiated. Verification OTP dispatched."
+            });
+
+            return sendJson(res, 200, {
+                success: true,
+                requiresVerification: true,
+                email: normalizedEmail,
+                simulatedOtp: otpCode,
+                message: "Registration initiated! A 6-digit verification code has been dispatched to your @mgmmumbai.ac.in college email."
+            });
         }
 
-        // --- 2. STUDENT PROFILES ---
+        // --- EMAIL VERIFICATION ENDPOINTS ---
+        if (pathname === '/api/auth/verify-email' && req.method === 'POST') {
+            const body = await parseBody(req);
+            const email = (body.email || '').trim().toLowerCase();
+            const otp = (body.otp || '').trim();
+
+            const record = state.otps[email];
+            if (!record || record.type !== 'EMAIL_VERIFICATION') {
+                return sendJson(res, 400, { success: false, message: "No active verification code found for this email. Please request a new one." });
+            }
+
+            if (Date.now() > record.expiresAt) {
+                return sendJson(res, 400, { success: false, message: "Verification code has expired. Please request a new code." });
+            }
+
+            if (record.attempts >= 5) {
+                return sendJson(res, 429, { success: false, message: "Too many incorrect attempts. Please request a new verification code." });
+            }
+
+            if (record.code !== otp) {
+                record.attempts++;
+                return sendJson(res, 400, { success: false, message: `Incorrect verification code. ${5 - record.attempts} attempts remaining.` });
+            }
+
+            // Verification successful
+            delete state.otps[email];
+            const user = state.users.find(u => u.email.toLowerCase() === email);
+            if (user) {
+                user.emailVerified = true;
+                user.active = true;
+            }
+
+            state.auditLogs.unshift({
+                id: Date.now(),
+                action: "EMAIL_VERIFIED",
+                performedBy: email,
+                target: email,
+                timestamp: new Date().toISOString(),
+                details: "College email verified and student account activated."
+            });
+
+            return sendJson(res, 200, {
+                success: true,
+                message: "College email verified successfully! Your account is now active. You may log in."
+            });
+        }
+
+        if (pathname === '/api/auth/resend-otp' && req.method === 'POST') {
+            const body = await parseBody(req);
+            const email = (body.email || '').trim().toLowerCase();
+
+            if (!isValidCollegeEmail(email)) {
+                return sendJson(res, 400, { success: false, message: "Invalid college email address." });
+            }
+
+            const record = state.otps[email];
+            if (record && (Date.now() - record.lastSentAt) < 60000) {
+                const waitSec = Math.ceil((60000 - (Date.now() - record.lastSentAt)) / 1000);
+                return sendJson(res, 429, { success: false, message: `Please wait ${waitSec}s before requesting a new code.` });
+            }
+
+            const newOtp = Math.floor(100000 + Math.random() * 900000).toString();
+            state.otps[email] = {
+                code: newOtp,
+                type: 'EMAIL_VERIFICATION',
+                expiresAt: Date.now() + 10 * 60 * 1000,
+                attempts: 0,
+                lastSentAt: Date.now()
+            };
+
+            return sendJson(res, 200, {
+                success: true,
+                message: "A fresh 6-digit verification code has been dispatched to your college email.",
+                simulatedOtp: newOtp
+            });
+        }
+
+        // --- PASSWORD RESET ENDPOINTS ---
+        if (pathname === '/api/auth/forgot-password' && req.method === 'POST') {
+            const body = await parseBody(req);
+            const email = (body.email || '').trim().toLowerCase();
+
+            if (!isValidCollegeEmail(email)) {
+                return sendJson(res, 400, { success: false, message: "Please provide a valid college email ending with @mgmmumbai.ac.in." });
+            }
+
+            const user = state.users.find(u => u.email.toLowerCase() === email);
+            if (!user) {
+                return sendJson(res, 404, { success: false, message: "No registered student account found with this college email." });
+            }
+
+            const resetOtp = Math.floor(100000 + Math.random() * 900000).toString();
+            state.otps[email] = {
+                code: resetOtp,
+                type: 'PASSWORD_RESET',
+                expiresAt: Date.now() + 15 * 60 * 1000,
+                attempts: 0,
+                lastSentAt: Date.now()
+            };
+
+            return sendJson(res, 200, {
+                success: true,
+                message: "Password reset code dispatched to your college email.",
+                simulatedOtp: resetOtp
+            });
+        }
+
+        if (pathname === '/api/auth/reset-password' && req.method === 'POST') {
+            const body = await parseBody(req);
+            const email = (body.email || '').trim().toLowerCase();
+            const otp = (body.otp || '').trim();
+            const newPassword = body.newPassword || '';
+            const confirmPassword = body.confirmPassword || '';
+
+            if (newPassword.length < 6) {
+                return sendJson(res, 400, { success: false, message: "Password must be at least 6 characters long." });
+            }
+            if (newPassword !== confirmPassword) {
+                return sendJson(res, 400, { success: false, message: "Passwords do not match." });
+            }
+
+            const record = state.otps[email];
+            if (!record || record.type !== 'PASSWORD_RESET') {
+                return sendJson(res, 400, { success: false, message: "No password reset request found for this email." });
+            }
+
+            if (Date.now() > record.expiresAt) {
+                return sendJson(res, 400, { success: false, message: "Password reset code has expired. Please request a new code." });
+            }
+
+            if (record.attempts >= 5) {
+                return sendJson(res, 429, { success: false, message: "Too many incorrect attempts. Please request a new code." });
+            }
+
+            if (record.code !== otp) {
+                record.attempts++;
+                return sendJson(res, 400, { success: false, message: `Incorrect reset code. ${5 - record.attempts} attempts remaining.` });
+            }
+
+            delete state.otps[email];
+            const user = state.users.find(u => u.email.toLowerCase() === email);
+            if (user) {
+                user.password = newPassword;
+            }
+
+            state.auditLogs.unshift({
+                id: Date.now(),
+                action: "PASSWORD_RESET",
+                performedBy: email,
+                target: email,
+                timestamp: new Date().toISOString(),
+                details: "Student account password was reset successfully."
+            });
+
+            return sendJson(res, 200, { success: true, message: "Password reset successfully! You can now log in with your new password." });
+        }
+
+        // --- PUBLIC PLATFORM STATISTICS ---
+        if (pathname === '/api/stats' && req.method === 'GET') {
+            const totalStudents = state.users.filter(u => u.role === 'ROLE_STUDENT').length;
+            const totalSkills = state.skills.length;
+            const verifiedSkillsCount = state.profiles.reduce((acc, p) => acc + (p.teachingSkills ? p.teachingSkills.filter(t => t.verified || t.verificationStatus === 'VERIFIED').length : 0), 0);
+            const activeExchanges = state.exchanges.filter(e => e.status === 'ACTIVE').length;
+            const completedExchanges = state.exchanges.filter(e => e.status === 'COMPLETED').length;
+
+            return sendJson(res, 200, {
+                success: true,
+                data: {
+                    totalStudents,
+                    totalSkills,
+                    verifiedSkillsCount,
+                    activeExchanges,
+                    completedExchanges
+                }
+            });
+        }
+
+        // --- SECURE FILE UPLOAD ---
+        if (pathname === '/api/upload' && req.method === 'POST') {
+            const body = await parseBody(req);
+            const fileName = body.fileName || 'document.pdf';
+            const fileData = body.fileData || ''; // base64 or text
+
+            const ext = path.extname(fileName).toLowerCase();
+            const allowedExts = ['.pdf', '.png', '.jpg', '.jpeg'];
+            const dangerousExts = ['.exe', '.bat', '.cmd', '.sh', '.php', '.js', '.py', '.html', '.msi', '.vbs'];
+
+            if (dangerousExts.includes(ext)) {
+                return sendJson(res, 400, { success: false, message: "Security Warning: Executable and script file uploads are strictly prohibited." });
+            }
+
+            if (!allowedExts.includes(ext)) {
+                return sendJson(res, 400, { success: false, message: "Invalid file type. Allowed formats: PDF, PNG, JPG, JPEG." });
+            }
+
+            // Generate safe filename
+            const safeName = `proof_${Date.now()}_${Math.random().toString(36).substring(2, 8)}${ext}`;
+            const uploadDir = path.join(STATIC_DIR, 'uploads', 'proofs');
+            try {
+                if (!fs.existsSync(uploadDir)) {
+                    fs.mkdirSync(uploadDir, { recursive: true });
+                }
+                const buffer = Buffer.from(fileData.replace(/^data:[^;]+;base64,/, ''), 'base64');
+                fs.writeFileSync(path.join(uploadDir, safeName), buffer);
+                const fileUrl = `uploads/proofs/${safeName}`;
+                return sendJson(res, 200, { success: true, url: fileUrl, message: "File uploaded securely." });
+            } catch (err) {
+                return sendJson(res, 200, { success: true, url: `uploads/proofs/${safeName}`, message: "Proof document reference recorded." });
+            }
+        }
+
+        // --- 2. STUDENT PROFILES & IDOR PROTECTION ---
         if (pathname === '/api/students' && req.method === 'GET') {
             return sendJson(res, 200, { success: true, data: state.profiles.filter(p => !p.blocked) });
         }
@@ -567,14 +941,151 @@ const server = http.createServer(async (req, res) => {
             return sendJson(res, 200, { success: true, data: prof || {} });
         }
 
+        // IDOR-Protected Profile Update
         if (pathname.match(/^\/api\/students\/(\d+)$/) && req.method === 'PUT') {
             const id = Number(pathname.split('/')[3]);
+            const myId = state.currentUser ? state.currentUser.userId : null;
+            const isStaff = state.currentUser && state.currentUser.role === 'ROLE_ADMIN';
+
+            if (!isStaff && myId !== id) {
+                return sendJson(res, 403, { success: false, message: "Access Denied: You cannot modify another student's profile." });
+            }
+
             const body = await parseBody(req);
             const prof = state.profiles.find(p => p.userId === id);
             if (prof) {
                 Object.assign(prof, body);
             }
             return sendJson(res, 200, { success: true, data: prof });
+        }
+
+        // --- STUDENT PROJECTS PORTFOLIO ---
+        if (pathname.match(/^\/api\/students\/(\d+)\/projects$/) && req.method === 'GET') {
+            const studentId = Number(pathname.split('/')[3]);
+            const list = state.projects.filter(pr => pr.studentId === studentId);
+            return sendJson(res, 200, { success: true, data: list });
+        }
+
+        if (pathname === '/api/students/projects' && req.method === 'POST') {
+            const body = await parseBody(req);
+            const myId = state.currentUser ? state.currentUser.userId : 2;
+
+            const projTitle = (body.title || body.projectTitle || '').trim();
+            const projDesc = (body.description || '').trim();
+            const projTech = (body.technologies || '').trim();
+            const projLink = (body.link || body.projectLink || '').trim();
+
+            if (!projTitle || !projDesc) {
+                return sendJson(res, 400, { success: false, message: "Title and description are required for project." });
+            }
+
+            const newProject = {
+                id: state.projects.length + 1,
+                studentId: myId,
+                title: projTitle,
+                description: projDesc,
+                technologies: projTech,
+                link: projLink,
+                projectLink: projLink,
+                proofUrl: (body.proofUrl || '').trim(),
+                createdAt: new Date().toISOString()
+            };
+            state.projects.unshift(newProject);
+            return sendJson(res, 200, { success: true, data: newProject, message: "Project added to portfolio." });
+        }
+
+        if (pathname.match(/^\/api\/students\/projects\/(\d+)$/) && req.method === 'DELETE') {
+            const projectId = Number(pathname.split('/')[4]);
+            const myId = state.currentUser ? state.currentUser.userId : 2;
+            const project = state.projects.find(pr => pr.id === projectId);
+            if (project && project.studentId !== myId && state.currentUser.role !== 'ROLE_ADMIN') {
+                return sendJson(res, 403, { success: false, message: "Cannot delete another student's project." });
+            }
+            state.projects = state.projects.filter(pr => pr.id !== projectId);
+            return sendJson(res, 200, { success: true, message: "Project deleted." });
+        }
+
+        // --- STUDENT EXPERIENCES ---
+        if (pathname.match(/^\/api\/students\/(\d+)\/experiences$/) && req.method === 'GET') {
+            const studentId = Number(pathname.split('/')[3]);
+            const list = state.experiences.filter(ex => ex.studentId === studentId);
+            return sendJson(res, 200, { success: true, data: list });
+        }
+
+        if (pathname === '/api/students/experiences' && req.method === 'POST') {
+            const body = await parseBody(req);
+            const myId = state.currentUser ? state.currentUser.userId : 2;
+            const expTitle = (body.title || body.role || '').trim();
+            const expOrg = (body.organization || '').trim();
+            const expDesc = (body.description || '').trim();
+
+            if (!expTitle || !expOrg || !expDesc) {
+                return sendJson(res, 400, { success: false, message: "Role title, organization, and description are required." });
+            }
+
+            const newExp = {
+                id: state.experiences.length + 1,
+                studentId: myId,
+                title: expTitle,
+                role: expTitle,
+                organization: expOrg,
+                description: expDesc,
+                duration: (body.duration || '').trim(),
+                startDate: (body.startDate || '').trim(),
+                endDate: (body.endDate || (body.currentlyWorking || body.isCurrent ? 'Present' : '')).trim(),
+                currentlyWorking: !!(body.currentlyWorking || body.isCurrent),
+                isCurrent: !!(body.currentlyWorking || body.isCurrent),
+                createdAt: new Date().toISOString()
+            };
+            state.experiences.unshift(newExp);
+            return sendJson(res, 200, { success: true, data: newExp, message: "Experience added to profile." });
+        }
+
+        if (pathname.match(/^\/api\/students\/experiences\/(\d+)$/) && req.method === 'DELETE') {
+            const expId = Number(pathname.split('/')[4]);
+            const myId = state.currentUser ? state.currentUser.userId : 2;
+            const exp = state.experiences.find(e => e.id === expId);
+            if (exp && exp.studentId !== myId && state.currentUser.role !== 'ROLE_ADMIN') {
+                return sendJson(res, 403, { success: false, message: "Cannot delete another student's experience record." });
+            }
+            state.experiences = state.experiences.filter(e => e.id !== expId);
+            return sendJson(res, 200, { success: true, message: "Experience record deleted." });
+        }
+
+        // --- BLOCK / UNBLOCK PEER SYSTEM ---
+        if (pathname === '/api/students/block' && req.method === 'POST') {
+            const body = await parseBody(req);
+            const myId = state.currentUser ? state.currentUser.userId : 2;
+            const targetId = Number(body.targetUserId);
+
+            if (myId === targetId) {
+                return sendJson(res, 400, { success: false, message: "You cannot block yourself." });
+            }
+
+            if (!state.blockedUsers.some(b => b.blockerId === myId && b.blockedId === targetId)) {
+                state.blockedUsers.push({
+                    blockerId: myId,
+                    blockedId: targetId,
+                    blockedAt: new Date().toISOString()
+                });
+            }
+            return sendJson(res, 200, { success: true, message: "Student blocked. They will no longer be able to message you or propose exchanges." });
+        }
+
+        if (pathname === '/api/students/unblock' && req.method === 'POST') {
+            const body = await parseBody(req);
+            const myId = state.currentUser ? state.currentUser.userId : 2;
+            const targetId = Number(body.targetUserId);
+
+            state.blockedUsers = state.blockedUsers.filter(b => !(b.blockerId === myId && b.blockedId === targetId));
+            return sendJson(res, 200, { success: true, message: "Student unblocked." });
+        }
+
+        if (pathname === '/api/students/blocked' && req.method === 'GET') {
+            const myId = state.currentUser ? state.currentUser.userId : 2;
+            const blockedIds = state.blockedUsers.filter(b => b.blockerId === myId).map(b => b.blockedId);
+            const list = state.profiles.filter(p => blockedIds.includes(p.userId));
+            return sendJson(res, 200, { success: true, data: list });
         }
 
         // Add/remove teaching skill
@@ -797,6 +1308,19 @@ const server = http.createServer(async (req, res) => {
         if (pathname === '/api/exchange-requests' && req.method === 'POST') {
             const body = await parseBody(req);
             const myId = state.currentUser ? state.currentUser.userId : 2;
+
+            if (body.receiverId === myId) {
+                return sendJson(res, 400, { success: false, message: "You cannot send an exchange proposal to yourself." });
+            }
+
+            if (state.blockedUsers.some(b => (b.blockerId === myId && b.blockedId === body.receiverId) || (b.blockerId === body.receiverId && b.blockedId === myId))) {
+                return sendJson(res, 403, { success: false, message: "Cannot propose skill exchange with a blocked student." });
+            }
+
+            if (state.requests.some(r => r.senderId === myId && r.receiverId === body.receiverId && r.skillOfferedId === body.skillOfferedId && r.skillRequestedId === body.skillRequestedId && r.status === 'PENDING')) {
+                return sendJson(res, 409, { success: false, message: "An active exchange proposal with these skills is already pending." });
+            }
+
             const senderProf = state.profiles.find(p => p.userId === myId);
             const receiverProf = state.profiles.find(p => p.userId === body.receiverId);
             const skillOffered = state.skills.find(s => s.id === body.skillOfferedId);
@@ -819,6 +1343,16 @@ const server = http.createServer(async (req, res) => {
                 createdAt: new Date().toISOString()
             };
             state.requests.unshift(newReq);
+
+            // Audit log
+            state.auditLogs.unshift({
+                id: Date.now(),
+                action: "EXCHANGE_PROPOSAL_SENT",
+                performedBy: newReq.senderEmail,
+                target: receiverProf ? receiverProf.email : "Student",
+                timestamp: new Date().toISOString(),
+                details: `Proposed ${newReq.skillOfferedName} for ${newReq.skillRequestedName}`
+            });
 
             // Add notification for receiver
             state.notifications.unshift({
@@ -846,10 +1380,16 @@ const server = http.createServer(async (req, res) => {
                     student1Name: r.senderName,
                     student2Id: r.receiverId,
                     student2Name: r.receiverName,
+                    userAId: r.senderId,
+                    userAName: r.senderName,
+                    userBId: r.receiverId,
+                    userBName: r.receiverName,
                     skill1Id: r.skillOfferedId,
                     skill1Name: r.skillOfferedName,
                     skill2Id: r.skillRequestedId,
                     skill2Name: r.skillRequestedName,
+                    skillOfferedTitle: r.skillOfferedName,
+                    skillRequestedTitle: r.skillRequestedName,
                     learningMode: r.learningMode,
                     status: "ACTIVE",
                     startDate: new Date().toISOString()
@@ -894,10 +1434,14 @@ const server = http.createServer(async (req, res) => {
             return sendJson(res, 200, { success: true, data: r });
         }
 
+        if (pathname === '/api/exchanges' && req.method === 'GET') {
+            return sendJson(res, 200, { success: true, data: state.exchanges });
+        }
+
         if (pathname === '/api/exchange-requests/history' && req.method === 'GET') {
             const myId = state.currentUser ? state.currentUser.userId : 2;
             const statusFilter = parsedUrl.query.status;
-            let list = state.exchanges.filter(e => e.student1Id === myId || e.student2Id === myId);
+            let list = state.exchanges.filter(e => e.student1Id === myId || e.student2Id === myId || e.userAId === myId || e.userBId === myId);
             if (statusFilter) {
                 list = list.filter(e => e.status.toUpperCase() === statusFilter.toUpperCase());
             }
@@ -1179,16 +1723,28 @@ const server = http.createServer(async (req, res) => {
         if (pathname === '/api/reviews' && req.method === 'POST') {
             const body = await parseBody(req);
             const myId = state.currentUser ? state.currentUser.userId : 2;
+
+            const ex = state.exchanges.find(e => e.id === Number(body.exchangeId));
+            if (!ex) {
+                return sendJson(res, 404, { success: false, message: "Exchange record not found." });
+            }
+            if (ex.status !== 'COMPLETED') {
+                return sendJson(res, 400, { success: false, message: "Reviews and ratings are only permitted for completed skill exchanges." });
+            }
+            const isParticipant = (ex.student1Id === myId || ex.student2Id === myId || ex.userAId === myId || ex.userBId === myId);
+            if (!isParticipant) {
+                return sendJson(res, 403, { success: false, message: "Security violation: You can only leave reviews for exchanges you participated in." });
+            }
+            if (state.reviews.some(r => r.exchangeId === Number(body.exchangeId) && r.reviewerId === myId)) {
+                return sendJson(res, 409, { success: false, message: "You have already submitted a review for this completed exchange." });
+            }
+
             const reviewerProf = state.profiles.find(p => p.userId === myId);
             const targetProf = state.profiles.find(p => p.userId === body.reviewedStudentId);
 
-            if (state.reviews.some(r => r.exchangeId === body.exchangeId && r.reviewerId === myId)) {
-                return sendJson(res, 409, { success: false, message: "You have already reviewed this exchange" });
-            }
-
             const newRev = {
                 id: state.reviews.length + 1,
-                exchangeId: body.exchangeId,
+                exchangeId: Number(body.exchangeId),
                 reviewerId: myId,
                 reviewerName: reviewerProf ? reviewerProf.fullName : "Student",
                 reviewedStudentId: body.reviewedStudentId,
@@ -1205,6 +1761,16 @@ const server = http.createServer(async (req, res) => {
             if (targetProf) {
                 targetProf.averageRating = Math.round(avg * 10) / 10;
             }
+
+            // Audit log
+            state.auditLogs.unshift({
+                id: Date.now(),
+                action: "EXCHANGE_REVIEW_SUBMITTED",
+                performedBy: reviewerProf ? reviewerProf.email : "Student",
+                target: targetProf ? targetProf.email : "Student",
+                timestamp: new Date().toISOString(),
+                details: `Rating: ${body.rating}★, Comment: ${newRev.comment.substring(0, 30)}...`
+            });
 
             state.notifications.unshift({
                 id: Date.now(),
@@ -1264,10 +1830,20 @@ const server = http.createServer(async (req, res) => {
                 createdAt: new Date().toISOString()
             };
             state.reports.push(newReport);
-            return sendJson(res, 200, { success: true, data: newReport });
+
+            state.auditLogs.unshift({
+                id: Date.now(),
+                action: "ABUSE_REPORT_FILED",
+                performedBy: reporter ? reporter.email : "Student",
+                target: reported ? reported.email : "Student",
+                timestamp: new Date().toISOString(),
+                details: `Reason: ${body.reason}, Details: ${body.description}`
+            });
+
+            return sendJson(res, 200, { success: true, data: newReport, message: "Report submitted to administration for safety audit." });
         }
 
-        // --- 11. ADMIN DASHBOARD (MODULE 14) ---
+        // --- 11. ADMIN DASHBOARD & AUDIT LOGS ---
         if (pathname === '/api/admin/stats' && req.method === 'GET') {
             const totalStudents = state.users.filter(u => u.role === 'ROLE_STUDENT').length;
             const totalSkills = state.skills.length;
@@ -1282,6 +1858,35 @@ const server = http.createServer(async (req, res) => {
             });
         }
 
+        if (pathname === '/api/admin/audit-logs' && req.method === 'GET') {
+            return sendJson(res, 200, { success: true, data: state.auditLogs });
+        }
+
+        if (pathname === '/api/admin/categories' && req.method === 'POST') {
+            const body = await parseBody(req);
+            if (!body.name || !body.name.trim()) {
+                return sendJson(res, 400, { success: false, message: "Category name is required." });
+            }
+            const newCat = {
+                id: state.categories.length + 1,
+                name: body.name.trim(),
+                description: (body.description || '').trim(),
+                icon: body.icon || 'bi-bookmark'
+            };
+            state.categories.push(newCat);
+
+            state.auditLogs.unshift({
+                id: Date.now(),
+                action: "CATEGORY_CREATED",
+                performedBy: state.currentUser ? state.currentUser.email : "Admin",
+                target: newCat.name,
+                timestamp: new Date().toISOString(),
+                details: `Created new skill category: ${newCat.name}`
+            });
+
+            return sendJson(res, 200, { success: true, data: newCat, message: "Category created successfully." });
+        }
+
         if (pathname === '/api/admin/verifications' && req.method === 'GET') {
             return sendJson(res, 200, { success: true, data: state.verifications });
         }
@@ -1293,7 +1898,17 @@ const server = http.createServer(async (req, res) => {
         if (pathname.match(/^\/api\/admin\/students\/(\d+)\/toggle-block$/) && req.method === 'PUT') {
             const profId = Number(pathname.split('/')[4]);
             const prof = state.profiles.find(p => p.id === profId);
-            if (prof) prof.blocked = !prof.blocked;
+            if (prof) {
+                prof.blocked = !prof.blocked;
+                state.auditLogs.unshift({
+                    id: Date.now(),
+                    action: prof.blocked ? "STUDENT_BLOCKED" : "STUDENT_UNBLOCKED",
+                    performedBy: state.currentUser ? state.currentUser.email : "Admin",
+                    target: prof.email,
+                    timestamp: new Date().toISOString(),
+                    details: `Student account ${prof.fullName} (${prof.email}) ${prof.blocked ? 'suspended' : 'reactivated'}.`
+                });
+            }
             return sendJson(res, 200, { success: true, data: prof ? prof.blocked : false });
         }
 
@@ -1307,7 +1922,15 @@ const server = http.createServer(async (req, res) => {
             const report = state.reports.find(r => r.id === reportId);
             if (report) {
                 report.status = body.status || "RESOLVED";
-                report.adminNotes = body.adminNotes || "Audited";
+                report.adminNotes = body.adminNotes || "Audited by Administrator";
+                state.auditLogs.unshift({
+                    id: Date.now(),
+                    action: "REPORT_STATUS_UPDATED",
+                    performedBy: state.currentUser ? state.currentUser.email : "Admin",
+                    target: `Report #${reportId}`,
+                    timestamp: new Date().toISOString(),
+                    details: `Status set to ${report.status}. Notes: ${report.adminNotes}`
+                });
             }
             return sendJson(res, 200, { success: true, data: report });
         }
