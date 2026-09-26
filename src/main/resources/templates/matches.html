@@ -93,38 +93,40 @@
         </div>
 
         <!-- Search and Filters Bar (Module 5) -->
-        <div class="card card-custom p-3 border-0 mb-4">
+        <div class="card card-custom p-3 border-0 mb-4 shadow-sm">
             <div class="row g-2 align-items-center">
-                <div class="col-md-4">
+                <div class="col-lg-3 col-md-6">
                     <div class="input-group">
                         <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
-                        <input type="text" id="searchInput" class="form-control" placeholder="Search by student name or skill..." onkeyup="applyFilters()">
+                        <input type="text" id="searchInput" class="form-control" placeholder="Search student or skill..." onkeyup="applyFilters()">
                     </div>
                 </div>
-                <div class="col-md-2">
-                    <select id="filterDept" class="form-select" onchange="applyFilters()">
-                        <option value="">All Departments</option>
-                        <option value="Information Technology">Information Technology</option>
-                        <option value="Computer Science">Computer Science</option>
-                    </select>
+                <div class="col-lg-3 col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="bi bi-grid text-primary-custom"></i></span>
+                        <select id="filterCategory" class="form-select" onchange="onCategoryFilterChange()">
+                            <option value="">All Categories</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="col-md-2">
-                    <select id="filterYear" class="form-select" onchange="applyFilters()">
-                        <option value="">All Years</option>
-                        <option value="1st Year">1st Year</option>
-                        <option value="2nd Year">2nd Year</option>
-                        <option value="3rd Year">3rd Year</option>
-                        <option value="4th Year">4th Year</option>
-                    </select>
+                <div class="col-lg-3 col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="bi bi-mortarboard text-pink-custom"></i></span>
+                        <select id="filterSkill" class="form-select" onchange="applyFilters()">
+                            <option value="">All Skills</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="col-md-2">
+                <div class="col-lg-1 col-md-3">
                     <div class="form-check form-switch pt-2">
                         <input class="form-check-input" type="checkbox" id="filterVerified" onchange="applyFilters()">
-                        <label class="form-check-label small fw-semibold" for="filterVerified">Verified Only</label>
+                        <label class="form-check-label small fw-semibold" for="filterVerified">Verified</label>
                     </div>
                 </div>
-                <div class="col-md-2 text-md-end">
-                    <button class="btn btn-outline-secondary btn-sm w-100" onclick="resetFilters()">Reset Filters</button>
+                <div class="col-lg-2 col-md-3 text-md-end">
+                    <button id="btnResetFilters" class="btn btn-outline-secondary btn-sm w-100 py-2" onclick="resetFilters()">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i> Clear Filters
+                    </button>
                 </div>
             </div>
         </div>
@@ -214,42 +216,225 @@
     <script src="js/app.js"></script>
     <script>
         let allMatches = [];
+        let allSkillsList = [];
+        let allCategoriesList = [];
         let myTeachingSkills = [];
 
         document.addEventListener("DOMContentLoaded", async () => {
+            await initializeFilters();
             await loadMatchesData();
         });
 
+        async function initializeFilters() {
+            // 1. Fetch available skill categories dynamically
+            const catRes = await API.get('/api/skills/categories');
+            if (catRes && catRes.success && Array.isArray(catRes.data)) {
+                allCategoriesList = catRes.data;
+                const catSelect = document.getElementById('filterCategory');
+                catSelect.innerHTML = '<option value="">All Categories</option>' +
+                    allCategoriesList.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+            }
+
+            // 2. Fetch all available skills dynamically from existing database/API
+            const skillRes = await API.get('/api/skills');
+            if (skillRes && skillRes.success && Array.isArray(skillRes.data)) {
+                allSkillsList = skillRes.data;
+                populateSkillDropdown('');
+            }
+
+            // 3. Read URL query parameters to pre-apply category / skill / search state
+            const params = new URLSearchParams(window.location.search);
+            const catParam = params.get('category');
+            const skillParam = params.get('skill');
+            const qParam = params.get('q') || params.get('search');
+
+            if (catParam) {
+                const catSelect = document.getElementById('filterCategory');
+                for (let i = 0; i < catSelect.options.length; i++) {
+                    if (catSelect.options[i].value.toLowerCase() === catParam.toLowerCase()) {
+                        catSelect.selectedIndex = i;
+                        populateSkillDropdown(catSelect.options[i].value);
+                        break;
+                    }
+                }
+            }
+
+            if (skillParam) {
+                const skillSelect = document.getElementById('filterSkill');
+                for (let i = 0; i < skillSelect.options.length; i++) {
+                    if (skillSelect.options[i].value.toLowerCase() === skillParam.toLowerCase()) {
+                        skillSelect.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+
+            if (qParam) {
+                document.getElementById('searchInput').value = qParam;
+            }
+        }
+
+        function populateSkillDropdown(selectedCategoryName = '') {
+            const skillSelect = document.getElementById('filterSkill');
+            const previousVal = skillSelect ? skillSelect.value : '';
+
+            let filteredSkills = allSkillsList;
+            if (selectedCategoryName) {
+                filteredSkills = allSkillsList.filter(s => {
+                    const cat = s.categoryName || '';
+                    return cat.toLowerCase() === selectedCategoryName.toLowerCase();
+                });
+            }
+
+            skillSelect.innerHTML = '<option value="">All Skills</option>' +
+                filteredSkills.map(s => {
+                    const name = s.name || s.skillName;
+                    return `<option value="${name}">${name}</option>`;
+                }).join('');
+
+            // Restore previous value if still available in current filter list
+            if (previousVal) {
+                for (let i = 0; i < skillSelect.options.length; i++) {
+                    if (skillSelect.options[i].value.toLowerCase() === previousVal.toLowerCase()) {
+                        skillSelect.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+        }
+
+        function onCategoryFilterChange() {
+            const selectedCat = document.getElementById('filterCategory').value;
+            populateSkillDropdown(selectedCat);
+            applyFilters();
+        }
+
         async function loadMatchesData() {
-            // Load user teaching skills to know what user can offer
+            // Load user profile & teaching skills if logged in
             const profRes = await API.get('/api/students/profile/me');
-            if (profRes && profRes.success) {
+            if (profRes && profRes.success && profRes.data) {
                 myTeachingSkills = profRes.data.teachingSkills || [];
             }
 
-            // Load algorithm matches
+            // Load algorithm matches and candidate opportunities
             const res = await API.get('/api/matches');
-            if (res && res.success) {
+            if (res && res.success && Array.isArray(res.data)) {
                 allMatches = res.data;
-                renderMatches(allMatches);
+                applyFilters();
             } else {
                 document.getElementById('matchesGrid').innerHTML = `
                     <div class="col-12 text-center py-5 text-muted">
-                        <i class="bi bi-exclamation-triangle fs-1 d-block mb-2"></i>
-                        <p>No matches available. Make sure you have added skills you want to learn!</p>
-                        <a href="skills.html" class="btn btn-primary-custom btn-sm">Add Learning Skills</a>
+                        <i class="bi bi-exclamation-triangle fs-1 d-block mb-2 text-warning"></i>
+                        <h5>Unable to load student exchanges</h5>
+                        <p class="text-muted small">Please verify the application server is running.</p>
                     </div>
                 `;
             }
         }
 
+        function applyFilters() {
+            const q = (document.getElementById('searchInput').value || '').trim().toLowerCase();
+            const selectedCat = (document.getElementById('filterCategory').value || '').trim().toLowerCase();
+            const selectedSkill = (document.getElementById('filterSkill').value || '').trim().toLowerCase();
+            const verifiedOnly = document.getElementById('filterVerified').checked;
+
+            const filtered = allMatches.filter(m => {
+                // Search query matching (student name, skills, department)
+                const nameMatch = (m.studentName || '').toLowerCase().includes(q);
+                const teachMatch = (m.skillTheyTeachYou || '').toLowerCase().includes(q);
+                const learnMatch = (m.skillYouTeachThem || '').toLowerCase().includes(q);
+                const deptMatch = (m.department || '').toLowerCase().includes(q);
+                const listTeachMatch = (m.teachingSkills || []).some(s => (s.skillName || s.name || '').toLowerCase().includes(q));
+                const listLearnMatch = (m.learningSkills || []).some(s => (s.skillName || s.name || '').toLowerCase().includes(q));
+                const matchesQuery = !q || nameMatch || teachMatch || learnMatch || deptMatch || listTeachMatch || listLearnMatch;
+
+                // Category filter matching
+                let matchesCategory = true;
+                if (selectedCat) {
+                    const primaryCat = (m.categoryName || '').toLowerCase() === selectedCat;
+                    const inCatsList = (m.categories || []).some(c => (c || '').toLowerCase() === selectedCat);
+                    const inTeachCats = (m.teachingSkills || []).some(s => (s.categoryName || '').toLowerCase() === selectedCat);
+                    const inLearnCats = (m.learningSkills || []).some(s => (s.categoryName || '').toLowerCase() === selectedCat);
+                    matchesCategory = primaryCat || inCatsList || inTeachCats || inLearnCats;
+                }
+
+                // Skill filter matching
+                let matchesSkill = true;
+                if (selectedSkill) {
+                    const teachSkill = (m.skillTheyTeachYou || '').toLowerCase() === selectedSkill;
+                    const learnSkill = (m.skillYouTeachThem || '').toLowerCase() === selectedSkill;
+                    const inTeach = (m.teachingSkills || []).some(s => (s.skillName || s.name || '').toLowerCase() === selectedSkill);
+                    const inLearn = (m.learningSkills || []).some(s => (s.skillName || s.name || '').toLowerCase() === selectedSkill);
+                    matchesSkill = teachSkill || learnSkill || inTeach || inLearn;
+                }
+
+                // Verified filter matching
+                const matchesVerified = !verifiedOnly || m.verified;
+
+                return matchesQuery && matchesCategory && matchesSkill && matchesVerified;
+            });
+
+            renderMatches(filtered);
+
+            // Update URL search parameters without page reload
+            const currentUrl = new URL(window.location);
+            const actualCat = document.getElementById('filterCategory').value;
+            const actualSkill = document.getElementById('filterSkill').value;
+            const actualQ = document.getElementById('searchInput').value.trim();
+
+            if (actualCat) currentUrl.searchParams.set('category', actualCat);
+            else currentUrl.searchParams.delete('category');
+
+            if (actualSkill) currentUrl.searchParams.set('skill', actualSkill);
+            else currentUrl.searchParams.delete('skill');
+
+            if (actualQ) currentUrl.searchParams.set('q', actualQ);
+            else currentUrl.searchParams.delete('q');
+
+            window.history.replaceState({}, '', currentUrl.toString());
+        }
+
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('filterCategory').value = '';
+            populateSkillDropdown('');
+            document.getElementById('filterSkill').value = '';
+            document.getElementById('filterVerified').checked = false;
+
+            // Clear URL query parameters
+            window.history.replaceState({}, '', window.location.pathname);
+
+            renderMatches(allMatches);
+        }
+
         function renderMatches(matches) {
             const container = document.getElementById('matchesGrid');
             if (matches.length === 0) {
+                const currentSkill = document.getElementById('filterSkill').value;
+                const currentCat = document.getElementById('filterCategory').value;
+                const currentQ = document.getElementById('searchInput').value.trim();
+
+                let emptyTitle = "No skill exchange opportunities found for this skill.";
+                if (!currentSkill && currentCat) {
+                    emptyTitle = `No skill exchange opportunities found in ${currentCat}.`;
+                } else if (!currentSkill && !currentCat && currentQ) {
+                    emptyTitle = `No students or skills found matching "${currentQ}".`;
+                }
+
                 container.innerHTML = `
-                    <div class="col-12 text-center py-5 text-muted">
-                        <i class="bi bi-search fs-1 d-block mb-2"></i>
-                        <p>No students match your filter criteria.</p>
+                    <div class="col-12 text-center py-5">
+                        <div class="card card-custom p-5 border-0 shadow-sm mx-auto" style="max-width: 580px;">
+                            <div class="mx-auto mb-3 p-3 rounded-circle bg-light text-muted d-flex align-items-center justify-content-center" style="width: 72px; height: 72px;">
+                                <i class="bi bi-search fs-2"></i>
+                            </div>
+                            <h4 class="fw-bold text-dark mb-2">${emptyTitle}</h4>
+                            <p class="text-muted small mb-4">No student exchange matches found with your current filter criteria.</p>
+                            <div>
+                                <button class="btn btn-primary-custom px-4 py-2" onclick="resetFilters()">
+                                    <i class="bi bi-arrow-counterclockwise me-1"></i> View All Skills
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 `;
                 return;
@@ -284,12 +469,12 @@
                             <!-- Skills Exchange Offer Details -->
                             <div class="p-3 rounded-3 bg-light mb-3">
                                 <div class="mb-2">
-                                    <span class="text-muted small d-block">They Can Teach You:</span>
+                                    <span class="text-muted small d-block">They Can Teach:</span>
                                     <strong class="text-primary-custom fs-6"><i class="bi bi-mortarboard me-1"></i>${m.skillTheyTeachYou}</strong>
                                 </div>
                                 ${m.skillYouTeachThem ? `
                                 <div>
-                                    <span class="text-muted small d-block">You Can Teach Them:</span>
+                                    <span class="text-muted small d-block">They Want to Learn:</span>
                                     <strong class="text-pink-custom fs-6"><i class="bi bi-lightbulb me-1"></i>${m.skillYouTeachThem}</strong>
                                     ${m.isMutualMatch ? '<span class="badge badge-custom badge-mutual ms-1">2-Way Mutual Barter</span>' : ''}
                                 </div>
@@ -317,35 +502,12 @@
             `).join('');
         }
 
-        function applyFilters() {
-            const q = document.getElementById('searchInput').value.toLowerCase();
-            const dept = document.getElementById('filterDept').value;
-            const year = document.getElementById('filterYear').value;
-            const verified = document.getElementById('filterVerified').checked;
-
-            const filtered = allMatches.filter(m => {
-                const matchQuery = m.studentName.toLowerCase().includes(q) ||
-                                   m.skillTheyTeachYou.toLowerCase().includes(q) ||
-                                   (m.skillYouTeachThem && m.skillYouTeachThem.toLowerCase().includes(q));
-                const matchDept = !dept || m.department.toLowerCase().includes(dept.toLowerCase());
-                const matchYear = !year || m.yearOfStudy.toLowerCase().includes(year.toLowerCase());
-                const matchVer = !verified || m.verified;
-
-                return matchQuery && matchDept && matchYear && matchVer;
-            });
-
-            renderMatches(filtered);
-        }
-
-        function resetFilters() {
-            document.getElementById('searchInput').value = '';
-            document.getElementById('filterDept').value = '';
-            document.getElementById('filterYear').value = '';
-            document.getElementById('filterVerified').checked = false;
-            renderMatches(allMatches);
-        }
-
         function openRequestModal(receiverId, receiverName, skillRequestedName, skillRequestedId, skillOfferedName, skillOfferedId) {
+            if (!CurrentUser) {
+                window.location.href = "login.html";
+                return;
+            }
+
             document.getElementById('reqReceiverId').value = receiverId;
             document.getElementById('reqReceiverName').innerText = receiverName;
 

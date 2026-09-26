@@ -25,7 +25,12 @@ public class MatchingController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<MatchResultDto>>> getMyMatches() {
-        Long currentUserId = authService.getCurrentUserId();
+        Long currentUserId = null;
+        try {
+            currentUserId = authService.getCurrentUserId();
+        } catch (Exception ignored) {
+            // Unauthenticated guest user exploring matches
+        }
         List<MatchResultDto> matches = matchingService.findMatchesForStudent(currentUserId);
         return ResponseEntity.ok(ApiResponse.ok("Matches calculated successfully", matches));
     }

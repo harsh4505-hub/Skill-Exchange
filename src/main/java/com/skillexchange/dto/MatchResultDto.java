@@ -1,5 +1,7 @@
 package com.skillexchange.dto;
 
+import java.util.List;
+
 public class MatchResultDto {
     private Long studentId;
     private Long userId;
@@ -17,6 +19,11 @@ public class MatchResultDto {
     private String skillYouTeachThem;  // What they want to learn, and you can teach (if mutual)
     private Long skillYouTeachThemId;
     private boolean isMutualMatch;     // Both can exchange skills directly with each other!
+
+    private String categoryName;
+    private List<String> categories;
+    private List<UserSkillDto> teachingSkills;
+    private List<UserSkillDto> learningSkills;
 
     private int matchPercentage;      // Calculated 0-100% using weighted formula
     private String matchReason;        // Explainable breakdown description
@@ -136,6 +143,38 @@ public class MatchResultDto {
         isMutualMatch = mutualMatch;
     }
 
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
+    }
+
+    public List<String> getCategories() {
+        return categories;
+    }
+
+    public void setCategories(List<String> categories) {
+        this.categories = categories;
+    }
+
+    public List<UserSkillDto> getTeachingSkills() {
+        return teachingSkills;
+    }
+
+    public void setTeachingSkills(List<UserSkillDto> teachingSkills) {
+        this.teachingSkills = teachingSkills;
+    }
+
+    public List<UserSkillDto> getLearningSkills() {
+        return learningSkills;
+    }
+
+    public void setLearningSkills(List<UserSkillDto> learningSkills) {
+        this.learningSkills = learningSkills;
+    }
+
     public int getMatchPercentage() {
         return matchPercentage;
     }
@@ -152,3 +191,4 @@ public class MatchResultDto {
         this.matchReason = matchReason;
     }
 }
+

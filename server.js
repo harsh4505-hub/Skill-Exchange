@@ -424,6 +424,10 @@ const server = http.createServer(async (req, res) => {
         }
 
         // --- 2. STUDENT PROFILES ---
+        if (pathname === '/api/students' && req.method === 'GET') {
+            return sendJson(res, 200, { success: true, data: state.profiles.filter(p => !p.blocked) });
+        }
+
         if (pathname === '/api/students/profile/me' && req.method === 'GET') {
             if (!state.currentUser) return sendJson(res, 401, { success: false, message: "Not logged in" });
             const prof = state.profiles.find(p => p.userId === state.currentUser.userId);
@@ -539,10 +543,8 @@ const server = http.createServer(async (req, res) => {
             const myId = state.currentUser ? state.currentUser.userId : 2;
             const myProf = state.profiles.find(p => p.userId === myId);
 
-            if (!myProf) return sendJson(res, 200, { success: true, data: [] });
-
-            const myWantsSkillIds = new Set(myProf.learningSkills.map(l => l.skillId));
-            const myTeachesSkillIds = new Set(myProf.teachingSkills.map(t => t.skillId));
+            const myWantsSkillIds = myProf ? new Set(myProf.learningSkills.map(l => l.skillId)) : new Set();
+            const myTeachesSkillIds = myProf ? new Set(myProf.teachingSkills.map(t => t.skillId)) : new Set();
 
             const matches = [];
 
@@ -554,70 +556,82 @@ const server = http.createServer(async (req, res) => {
                 // What I teach that candidate wants
                 const reverseMatch = cand.learningSkills.find(l => myTeachesSkillIds.has(l.skillId));
 
-                if (directMatch || reverseMatch) {
-                    let score = 0;
-                    const breakdown = [];
+                let score = 0;
+                const breakdown = [];
 
-                    // 1. Direct (40%)
-                    if (directMatch) {
-                        score += 40;
-                        breakdown.push(`Teaches ${directMatch.skillName} (+40%)`);
-                    }
-
-                    // 2. Reverse Mutual (20%)
-                    let isMutual = false;
-                    if (reverseMatch) {
-                        score += 20;
-                        isMutual = true;
-                        breakdown.push(`Wants to learn ${reverseMatch.skillName} (+20% Mutual Barter)`);
-                    }
-
-                    // 3. Rating (15%)
-                    const rating = cand.averageRating > 0 ? cand.averageRating : 3.5;
-                    const ratingScore = (rating / 5.0) * 15;
-                    score += ratingScore;
-                    breakdown.push(`Rating ${rating.toFixed(1)}★ (+${ratingScore.toFixed(1)}%)`);
-
-                    // 4. Verification (15%)
-                    if (cand.verified || (directMatch && directMatch.verified)) {
-                        score += 15;
-                        breakdown.push("Verified Skill Badge (+15%)");
-                    } else {
-                        score += 6;
-                        breakdown.push("Standard Profile (+6%)");
-                    }
-
-                    // 5. Academic synergy (10%)
-                    if (cand.department === myProf.department && cand.college === myProf.college) {
-                        score += 10;
-                        breakdown.push("Same Department & College (+10%)");
-                    } else if (cand.college === myProf.college) {
-                        score += 7;
-                        breakdown.push("Same College (+7%)");
-                    } else {
-                        score += 4;
-                        breakdown.push("Cross-Campus (+4%)");
-                    }
-
-                    matches.push({
-                        studentId: cand.id,
-                        userId: cand.userId,
-                        studentName: cand.fullName,
-                        college: cand.college,
-                        department: cand.department,
-                        yearOfStudy: cand.yearOfStudy,
-                        avatarUrl: cand.avatarUrl,
-                        averageRating: cand.averageRating,
-                        verified: cand.verified,
-                        skillTheyTeachYou: directMatch ? directMatch.skillName : "Explore Skills",
-                        skillTheyTeachYouId: directMatch ? directMatch.skillId : null,
-                        skillYouTeachThem: reverseMatch ? reverseMatch.skillName : (myProf.teachingSkills[0] ? myProf.teachingSkills[0].skillName : ""),
-                        skillYouTeachThemId: reverseMatch ? reverseMatch.skillId : (myProf.teachingSkills[0] ? myProf.teachingSkills[0].skillId : null),
-                        isMutualMatch: isMutual && !!directMatch,
-                        matchPercentage: Math.min(100, Math.round(score)),
-                        matchReason: breakdown.join(" | ")
-                    });
+                // 1. Direct (40%)
+                if (directMatch) {
+                    score += 40;
+                    breakdown.push(`Teaches ${directMatch.skillName} (+40%)`);
+                } else if (!myProf) {
+                    score += 20;
                 }
+
+                // 2. Reverse Mutual (20%)
+                let isMutual = false;
+                if (reverseMatch) {
+                    score += 20;
+                    isMutual = true;
+                    breakdown.push(`Wants to learn ${reverseMatch.skillName} (+20% Mutual Barter)`);
+                }
+
+                // 3. Rating (15%)
+                const rating = cand.averageRating > 0 ? cand.averageRating : 3.5;
+                const ratingScore = (rating / 5.0) * 15;
+                score += ratingScore;
+                breakdown.push(`Rating ${rating.toFixed(1)}★ (+${ratingScore.toFixed(1)}%)`);
+
+                // 4. Verification (15%)
+                if (cand.verified || (directMatch && directMatch.verified)) {
+                    score += 15;
+                    breakdown.push("Verified Skill Badge (+15%)");
+                } else {
+                    score += 6;
+                    breakdown.push("Standard Profile (+6%)");
+                }
+
+                // 5. Academic synergy (10%)
+                if (myProf && cand.department === myProf.department && cand.college === myProf.college) {
+                    score += 10;
+                    breakdown.push("Same Department & College (+10%)");
+                } else if (myProf && cand.college === myProf.college) {
+                    score += 7;
+                    breakdown.push("Same College (+7%)");
+                } else {
+                    score += 4;
+                    breakdown.push("Cross-Campus (+4%)");
+                }
+
+                const primaryTeach = directMatch || cand.teachingSkills[0];
+                const primaryLearn = reverseMatch || cand.learningSkills[0];
+
+                const allCats = new Set();
+                if (primaryTeach && primaryTeach.categoryName) allCats.add(primaryTeach.categoryName);
+                cand.teachingSkills.forEach(t => { if (t.categoryName) allCats.add(t.categoryName); });
+                cand.learningSkills.forEach(l => { if (l.categoryName) allCats.add(l.categoryName); });
+
+                matches.push({
+                    studentId: cand.id,
+                    userId: cand.userId,
+                    studentName: cand.fullName,
+                    college: cand.college,
+                    department: cand.department,
+                    yearOfStudy: cand.yearOfStudy,
+                    avatarUrl: cand.avatarUrl,
+                    averageRating: cand.averageRating,
+                    verified: cand.verified,
+                    categoryName: primaryTeach ? primaryTeach.categoryName : "General",
+                    categories: Array.from(allCats),
+                    skillTheyTeachYou: primaryTeach ? primaryTeach.skillName : "Explore Skills",
+                    skillTheyTeachYouId: primaryTeach ? primaryTeach.skillId : null,
+                    skillYouTeachThem: reverseMatch ? reverseMatch.skillName : "",
+                    skillYouTeachThemId: reverseMatch ? reverseMatch.skillId : null,
+                    teachingSkills: cand.teachingSkills || [],
+                    learningSkills: cand.learningSkills || [],
+                    isMutualMatch: isMutual && !!directMatch,
+                    matchPercentage: Math.min(100, Math.round(score)),
+                    matchReason: breakdown.join(" | ")
+                });
             }
 
             matches.sort((a, b) => b.matchPercentage - a.matchPercentage);

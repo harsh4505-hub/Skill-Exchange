@@ -159,43 +159,61 @@
     <!-- Popular Skill Categories -->
     <section class="py-5" style="background-color: var(--lavender-subtle);">
         <div class="container py-4">
-            <div class="d-flex justify-content-between align-items-end mb-4">
+            <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-2">
                 <div>
                     <h6 class="text-primary-custom text-uppercase fw-bold">Explore Domains</h6>
                     <h2 class="fw-bold mb-0">Trending Exchange Categories</h2>
                 </div>
-                <a href="skills.html" class="btn btn-outline-custom">View All Skills <i class="bi bi-arrow-right"></i></a>
+                <a href="matches.html" class="btn btn-outline-custom">View All Exchanges <i class="bi bi-arrow-right"></i></a>
             </div>
 
-            <div class="row g-3" id="categoriesGrid">
-                <!-- Dynamically loaded categories -->
-                <div class="col-md-3 col-sm-6">
-                    <div class="card card-custom p-3 text-center">
-                        <i class="bi bi-code-slash fs-1 text-primary-custom mb-2"></i>
-                        <h5 class="fw-semibold mb-1">Programming</h5>
-                        <small class="text-muted">Java, Python, C++, DSA</small>
-                    </div>
+            <div class="row g-4" id="categoriesGrid">
+                <!-- Category Button 1: Programming -->
+                <div class="col-md-4 col-sm-12">
+                    <a href="matches.html?category=Programming" id="btnCategoryProgramming" class="card card-custom p-4 text-center text-decoration-none h-100 category-card-link border-0 shadow-sm" role="button">
+                        <div class="mb-3">
+                            <span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-light p-3" style="width: 72px; height: 72px;">
+                                <i class="bi bi-code-slash fs-1 text-primary-custom"></i>
+                            </span>
+                        </div>
+                        <h4 class="fw-bold text-dark mb-1">Programming</h4>
+                        <p class="text-muted small mb-3">Java, Python, C++, DSA, Spring Boot</p>
+                        <span class="btn btn-sm btn-outline-custom w-100 mt-auto">
+                            Explore Programming <i class="bi bi-arrow-right ms-1"></i>
+                        </span>
+                    </a>
                 </div>
-                <div class="col-md-3 col-sm-6">
-                    <div class="card card-custom p-3 text-center">
-                        <i class="bi bi-palette fs-1 text-pink-custom mb-2"></i>
-                        <h5 class="fw-semibold mb-1">Design & UI/UX</h5>
-                        <small class="text-muted">Photoshop, Figma, Illustrator</small>
-                    </div>
+
+                <!-- Category Button 2: Design -->
+                <div class="col-md-4 col-sm-12">
+                    <a href="matches.html?category=Design" id="btnCategoryDesign" class="card card-custom p-4 text-center text-decoration-none h-100 category-card-link border-0 shadow-sm" role="button">
+                        <div class="mb-3">
+                            <span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-light p-3" style="width: 72px; height: 72px;">
+                                <i class="bi bi-palette fs-1 text-pink-custom"></i>
+                            </span>
+                        </div>
+                        <h4 class="fw-bold text-dark mb-1">Design</h4>
+                        <p class="text-muted small mb-3">Photoshop, Figma, UI/UX, Graphic Design</p>
+                        <span class="btn btn-sm btn-outline-custom w-100 mt-auto">
+                            Explore Design <i class="bi bi-arrow-right ms-1"></i>
+                        </span>
+                    </a>
                 </div>
-                <div class="col-md-3 col-sm-6">
-                    <div class="card card-custom p-3 text-center">
-                        <i class="bi bi-camera-video fs-1 text-primary-custom mb-2"></i>
-                        <h5 class="fw-semibold mb-1">Media Production</h5>
-                        <small class="text-muted">Video Editing, Photography</small>
-                    </div>
-                </div>
-                <div class="col-md-3 col-sm-6">
-                    <div class="card card-custom p-3 text-center">
-                        <i class="bi bi-chat-dots fs-1 text-success mb-2"></i>
-                        <h5 class="fw-semibold mb-1">Communication</h5>
-                        <small class="text-muted">Public Speaking, Placements</small>
-                    </div>
+
+                <!-- Category Button 3: Communication -->
+                <div class="col-md-4 col-sm-12">
+                    <a href="matches.html?category=Communication" id="btnCategoryCommunication" class="card card-custom p-4 text-center text-decoration-none h-100 category-card-link border-0 shadow-sm" role="button">
+                        <div class="mb-3">
+                            <span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-light p-3" style="width: 72px; height: 72px;">
+                                <i class="bi bi-chat-dots fs-1 text-success"></i>
+                            </span>
+                        </div>
+                        <h4 class="fw-bold text-dark mb-1">Communication</h4>
+                        <p class="text-muted small mb-3">Public Speaking, Placement Prep, Debate</p>
+                        <span class="btn btn-sm btn-outline-custom w-100 mt-auto">
+                            Explore Communication <i class="bi bi-arrow-right ms-1"></i>
+                        </span>
+                    </a>
                 </div>
             </div>
         </div>

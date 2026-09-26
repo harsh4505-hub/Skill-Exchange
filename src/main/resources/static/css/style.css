@@ -397,3 +397,24 @@ footer {
     color: var(--muted-text);
     font-size: 0.9rem;
 }
+
+/* Trending Category Cards */
+.category-card-link {
+    cursor: pointer;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    text-decoration: none !important;
+}
+
+.category-card-link:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-md) !important;
+    border-color: var(--primary) !important;
+}
+
+.category-card-link:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
