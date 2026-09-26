@@ -8,6 +8,7 @@ public class UserSkillDto {
     private String categoryName;
     private String levelOrUrgency; // proficiencyLevel for teaching, urgencyLevel for learning
     private boolean verified;
+    private String verificationStatus; // NOT_VERIFIED, PENDING, VERIFIED, REJECTED, NEEDS_RESUBMISSION
     private String proofDocumentUrl;
     private String notes;
 
@@ -23,6 +24,21 @@ public class UserSkillDto {
         this.categoryName = categoryName;
         this.levelOrUrgency = levelOrUrgency;
         this.verified = verified;
+        this.verificationStatus = verified ? "VERIFIED" : "NOT_VERIFIED";
+        this.proofDocumentUrl = proofDocumentUrl;
+        this.notes = notes;
+    }
+
+    public UserSkillDto(Long id, Long skillId, String skillName, Long categoryId, String categoryName,
+                        String levelOrUrgency, boolean verified, String verificationStatus, String proofDocumentUrl, String notes) {
+        this.id = id;
+        this.skillId = skillId;
+        this.skillName = skillName;
+        this.categoryId = categoryId;
+        this.categoryName = categoryName;
+        this.levelOrUrgency = levelOrUrgency;
+        this.verified = verified;
+        this.verificationStatus = verificationStatus != null ? verificationStatus : (verified ? "VERIFIED" : "NOT_VERIFIED");
         this.proofDocumentUrl = proofDocumentUrl;
         this.notes = notes;
     }
@@ -81,6 +97,14 @@ public class UserSkillDto {
 
     public void setVerified(boolean verified) {
         this.verified = verified;
+    }
+
+    public String getVerificationStatus() {
+        return verificationStatus;
+    }
+
+    public void setVerificationStatus(String verificationStatus) {
+        this.verificationStatus = verificationStatus;
     }
 
     public String getProofDocumentUrl() {

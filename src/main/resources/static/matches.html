@@ -460,9 +460,9 @@
                             </div>
 
                             <!-- Verification Badge -->
-                            ${m.verified ? `
+                            ${(m.skillTheyTeachYouVerified || m.verified) ? `
                             <div class="mb-2">
-                                <span class="badge badge-custom badge-verified"><i class="bi bi-patch-check-fill me-1"></i> Verified Skill Badge</span>
+                                <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1"><i class="bi bi-patch-check-fill me-1"></i>✓ Verified Skill</span>
                             </div>
                             ` : ''}
 
@@ -470,7 +470,10 @@
                             <div class="p-3 rounded-3 mb-3" style="background-color: var(--light-bg); border: 1px solid var(--border-color);">
                                 <div class="mb-2">
                                     <span class="text-muted small d-block">They Can Teach:</span>
-                                    <strong class="text-primary-custom fs-6"><i class="bi bi-mortarboard me-1"></i>${m.skillTheyTeachYou}</strong>
+                                    <div class="d-flex align-items-center gap-1 flex-wrap">
+                                        <strong class="text-primary-custom fs-6"><i class="bi bi-mortarboard me-1"></i>${m.skillTheyTeachYou}</strong>
+                                        ${m.skillTheyTeachYouVerified ? '<span class="badge bg-success-subtle text-success border border-success-subtle ms-1" style="font-size:0.72rem;"><i class="bi bi-patch-check-fill me-1"></i>✓ Verified</span>' : ''}
+                                    </div>
                                 </div>
                                 ${m.skillYouTeachThem ? `
                                 <div>

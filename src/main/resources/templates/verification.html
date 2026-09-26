@@ -57,22 +57,29 @@
 
         <!-- Verification Records Table -->
         <div class="card card-custom p-4">
-            <h5 class="fw-bold mb-3"><i class="bi bi-file-earmark-check text-success me-2"></i>My Verification Submissions</h5>
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                <div>
+                    <h5 class="fw-bold mb-1"><i class="bi bi-shield-check text-success me-2"></i>My Skill Verification Submissions</h5>
+                    <p class="text-muted small mb-0">Track verification statuses, review submitted evidence, and view administrative audit feedback.</p>
+                </div>
+            </div>
 
             <div class="table-responsive">
                 <table class="table table-hover align-middle">
                     <thead class="table-light">
                         <tr>
                             <th>Skill</th>
-                            <th>Proof Document Name</th>
-                            <th>Path / Link</th>
+                            <th>Certificate (Optional)</th>
+                            <th>Projects (Compulsory)</th>
+                            <th>Experience (Compulsory)</th>
                             <th>Status</th>
                             <th>Admin Feedback</th>
                             <th>Submitted Date</th>
+                            <th class="text-end">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="verificationTableBody">
-                        <tr><td colspan="6" class="text-center py-4 text-muted">Loading verifications...</td></tr>
+                        <tr><td colspan="8" class="text-center py-4 text-muted">Loading verifications...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -81,36 +88,121 @@
 
     <!-- Submit Verification Modal -->
     <div class="modal fade" id="submitProofModal" tabindex="-1">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title fw-bold"><i class="bi bi-award me-2 text-success"></i>Submit Skill Proof for Audit</h5>
+                <div class="modal-header border-bottom">
+                    <div>
+                        <h5 class="modal-title fw-bold mb-0"><i class="bi bi-shield-check me-2 text-primary"></i>Submit Skill Verification Proof</h5>
+                        <p class="text-muted small mb-0 mt-1">Provide proof of project work and experience to earn the <strong>✓ Verified Skill</strong> credential.</p>
+                    </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Select Skill to Verify *</label>
+                <div class="modal-body p-4">
+                    <div id="vPageAlert" class="alert alert-danger d-none small mb-3"></div>
+
+                    <div class="alert alert-info py-2 px-3 mb-4 d-flex align-items-center gap-2 small">
+                        <i class="bi bi-info-circle-fill text-info fs-5"></i>
+                        <div>
+                            <strong>Verification Rule:</strong> Project and experience proof are <strong>compulsory</strong> to verify this skill. Certificate is <strong>optional</strong>.
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Select Skill to Verify <span class="text-danger">*</span></label>
                         <select id="proofSkillSelect" class="form-select" required></select>
-                        <small class="text-muted">Must be a skill in your 'Skills I Can Teach' list.</small>
+                        <small class="text-muted">Must be an active skill from your 'Skills I Can Teach' list.</small>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Document / Proof Title *</label>
-                        <input type="text" id="proofDocName" class="form-control" placeholder="e.g. HackerRank 5-Star Python / Adobe Certified Associate" required>
+                    <!-- Section A: Certificate (Optional) -->
+                    <div class="card p-3 mb-4 border rounded-3 bg-white">
+                        <h6 class="fw-bold mb-1 text-dark">
+                            <i class="bi bi-award-fill text-warning me-2"></i>A. Certificate
+                            <span class="badge bg-secondary-subtle text-secondary ms-2 fw-semibold">Certificate (Optional)</span>
+                        </h6>
+                        <p class="text-muted small mb-3">Optional certificate upload. Formats: PDF, JPG, PNG or valid credential link.</p>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold text-muted">Certificate Title</label>
+                                <input type="text" id="proofCertTitle" class="form-control form-control-sm" placeholder="e.g. HackerRank 5-Star / Oracle Certified">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold text-muted">Document / Proof URL</label>
+                                <input type="text" id="proofCertUrl" class="form-control form-control-sm" placeholder="uploads/certificates/cert.pdf or URL">
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Document URL / File Reference</label>
-                        <input type="text" id="proofDocPath" class="form-control" placeholder="e.g. uploads/certificates/java_cert.pdf or github.com/user/project">
+                    <!-- Section B: Projects (Compulsory) -->
+                    <div class="card p-3 mb-4 border border-primary-subtle bg-light-subtle rounded-3">
+                        <h6 class="fw-bold mb-1 text-primary-custom">
+                            <i class="bi bi-code-slash me-2"></i>B. Projects
+                            <span class="badge bg-primary text-white ms-2">Projects (Required)</span>
+                        </h6>
+                        <p class="text-muted small mb-3">Provide at least one project demonstrating this skill.</p>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-dark">Project Title <span class="text-danger">*</span></label>
+                                <input type="text" id="proofProjTitle" class="form-control form-control-sm" placeholder="e.g. Student Skill Exchange Portal" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-dark">Technologies / Tools Used <span class="text-danger">*</span></label>
+                                <input type="text" id="proofProjTech" class="form-control form-control-sm" placeholder="e.g. Java, Spring Boot, MySQL" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small fw-bold text-dark">Project Description <span class="text-danger">*</span></label>
+                                <textarea id="proofProjDesc" class="form-control form-control-sm" rows="3" placeholder="Outline what you built, architecture, and concepts applied..." required></textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold text-muted">GitHub / Live Project Link</label>
+                                <input type="url" id="proofProjLink" class="form-control form-control-sm" placeholder="https://github.com/user/project">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold text-muted">Project Proof / Screenshot Path</label>
+                                <input type="text" id="proofProjProof" class="form-control form-control-sm" placeholder="uploads/proofs/screenshot.png">
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Description of Achievement</label>
-                        <textarea id="proofDesc" class="form-control" rows="3" placeholder="Provide context regarding the issuing body, score, or project functionality..."></textarea>
+                    <!-- Section C: Experience (Compulsory) -->
+                    <div class="card p-3 mb-3 border border-info-subtle bg-light-subtle rounded-3">
+                        <h6 class="fw-bold mb-1 text-info-emphasis">
+                            <i class="bi bi-briefcase-fill me-2"></i>C. Experience
+                            <span class="badge bg-info text-dark ms-2">Experience (Required)</span>
+                        </h6>
+                        <p class="text-muted small mb-3">Provide relevant experience demonstrating application of this skill.</p>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-dark">Experience Title / Role <span class="text-danger">*</span></label>
+                                <input type="text" id="proofExpTitle" class="form-control form-control-sm" placeholder="e.g. Teaching Assistant / Club Lead" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-dark">Organization / College Activity Name <span class="text-danger">*</span></label>
+                                <input type="text" id="proofExpOrg" class="form-control form-control-sm" placeholder="e.g. MGM Techfest / IT Department" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small fw-bold text-dark">Description of Work & Responsibilities <span class="text-danger">*</span></label>
+                                <textarea id="proofExpDesc" class="form-control form-control-sm" rows="3" placeholder="Detail your role, responsibilities, and technical work done..." required></textarea>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold text-muted">Duration</label>
+                                <input type="text" id="proofExpDuration" class="form-control form-control-sm" placeholder="e.g. 6 Months">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold text-dark">Start Date <span class="text-danger">*</span></label>
+                                <input type="date" id="proofExpStart" class="form-control form-control-sm" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold text-dark">End Date or Currently working <span class="text-danger">*</span></label>
+                                <input type="text" id="proofExpEnd" class="form-control form-control-sm" placeholder="YYYY-MM-DD or Currently working" required>
+                            </div>
+                        </div>
                     </div>
 
-                    <button class="btn btn-success w-100" onclick="submitVerificationProof()">
-                        <i class="bi bi-send-check me-1"></i> Submit to Admin for Verification
+                </div>
+                <div class="modal-footer border-top bg-light">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-primary-custom px-4" onclick="submitVerificationProof()">
+                        <i class="bi bi-send-check me-1"></i> Submit for Verification
                     </button>
                 </div>
             </div>
@@ -132,7 +224,7 @@
                 const teach = profRes.data.teachingSkills || [];
                 const select = document.getElementById('proofSkillSelect');
                 if (teach.length > 0) {
-                    select.innerHTML = teach.map(ts => `<option value="${ts.skillId}">${ts.skillName}</option>`).join('');
+                    select.innerHTML = teach.map(ts => `<option value="${ts.skillId}">${ts.skillName} (${ts.levelOrUrgency})</option>`).join('');
                 } else {
                     select.innerHTML = `<option disabled selected>No teaching skills added yet!</option>`;
                 }
@@ -142,26 +234,33 @@
             const res = await API.get('/api/verifications');
             const tbody = document.getElementById('verificationTableBody');
             if (res && res.success && res.data.length > 0) {
-                tbody.innerHTML = res.data.map(v => `
-                    <tr>
-                        <td><strong class="text-primary-custom">${v.skillName}</strong></td>
-                        <td>${v.documentName}</td>
-                        <td class="small font-monospace text-muted">${v.documentPath || 'None'}</td>
-                        <td><span class="badge ${getStatusBadge(v.status)} px-3 py-1">${v.status}</span></td>
-                        <td class="small text-muted">${v.adminComment || 'Awaiting administrator review'}</td>
-                        <td class="small text-muted">${new Date(v.submissionDate).toLocaleDateString()}</td>
-                    </tr>
-                `).join('');
-            } else {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">No verification requests submitted yet. Click 'Submit Skill Proof' to verify your skills!</td></tr>`;
-            }
-        }
+                tbody.innerHTML = res.data.map(v => {
+                    const status = v.status || 'PENDING';
+                    let statusBadge = '';
+                    if (status === 'VERIFIED') statusBadge = '<span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1"><i class="bi bi-patch-check-fill me-1"></i>✓ Verified Skill</span>';
+                    else if (status === 'PENDING') statusBadge = '<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1"><i class="bi bi-hourglass-split me-1"></i>⏳ Verification Pending</span>';
+                    else if (status === 'NEEDS_RESUBMISSION') statusBadge = '<span class="badge bg-warning-subtle text-danger border border-warning-subtle px-2 py-1"><i class="bi bi-exclamation-triangle-fill me-1"></i>⚠ Needs Resubmission</span>';
+                    else if (status === 'REJECTED') statusBadge = '<span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1"><i class="bi bi-x-circle-fill me-1"></i>❌ Rejected</span>';
 
-        function getStatusBadge(status) {
-            switch (status) {
-                case 'VERIFIED': return 'bg-success text-white';
-                case 'REJECTED': return 'bg-danger text-white';
-                default: return 'bg-warning text-dark';
+                    return `
+                        <tr>
+                            <td><strong class="text-primary-custom fs-6">${v.skillName}</strong></td>
+                            <td>${v.certificateName ? `<div class="fw-semibold small">${v.certificateName}</div>` : '<span class="text-muted small fst-italic">None (Optional)</span>'}</td>
+                            <td><div class="fw-semibold small">${v.projectTitle || 'N/A'}</div><small class="text-muted">${v.projectTechnologies || ''}</small></td>
+                            <td><div class="fw-semibold small">${v.experienceTitle || 'N/A'}</div><small class="text-muted">${v.experienceOrganization || ''}</small></td>
+                            <td>${statusBadge}</td>
+                            <td class="small text-muted">${v.adminComment || 'Awaiting administrator review'}</td>
+                            <td class="small text-muted">${v.submissionDate ? new Date(v.submissionDate).toLocaleDateString() : 'N/A'}</td>
+                            <td class="text-end">
+                                <a href="skills.html" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-box-arrow-up-right me-1"></i> My Skills
+                                </a>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            } else {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-muted">No verification requests submitted yet. Click 'Submit Skill Proof' to verify your skills!</td></tr>`;
             }
         }
 
@@ -171,28 +270,63 @@
 
         async function submitVerificationProof() {
             const skillId = document.getElementById('proofSkillSelect').value;
-            const documentName = document.getElementById('proofDocName').value.trim();
-            const documentPath = document.getElementById('proofDocPath').value.trim();
-            const description = document.getElementById('proofDesc').value.trim();
+            const certTitle = document.getElementById('proofCertTitle').value.trim();
+            const certUrl = document.getElementById('proofCertUrl').value.trim();
 
-            if (!skillId || !documentName) {
-                alert("Please select a skill and provide a document title");
+            const projTitle = document.getElementById('proofProjTitle').value.trim();
+            const projTech = document.getElementById('proofProjTech').value.trim();
+            const projDesc = document.getElementById('proofProjDesc').value.trim();
+            const projLink = document.getElementById('proofProjLink').value.trim();
+            const projProof = document.getElementById('proofProjProof').value.trim();
+
+            const expTitle = document.getElementById('proofExpTitle').value.trim();
+            const expOrg = document.getElementById('proofExpOrg').value.trim();
+            const expDesc = document.getElementById('proofExpDesc').value.trim();
+            const expDuration = document.getElementById('proofExpDuration').value.trim();
+            const expStart = document.getElementById('proofExpStart').value.trim();
+            const expEnd = document.getElementById('proofExpEnd').value.trim();
+
+            const alertDiv = document.getElementById('vPageAlert');
+
+            // --- STRICT VERIFICATION VALIDATION ---
+            const hasProject = projTitle.length > 0 && projTech.length > 0 && projDesc.length > 0;
+            const hasExperience = expTitle.length > 0 && expOrg.length > 0 && expDesc.length > 0 && expStart.length > 0 && expEnd.length > 0;
+
+            if (!hasProject || !hasExperience) {
+                alertDiv.className = 'alert alert-danger small mb-3';
+                alertDiv.innerHTML = `<strong>Validation Failed:</strong> Project and experience proof are required to verify this skill. Certificate is optional.`;
+                alertDiv.classList.remove('d-none');
                 return;
             }
 
-            const res = await API.post('/api/verifications', {
-                skillId: Number(skillId),
-                documentName,
-                documentPath: documentPath || "uploads/proofs/" + documentName.toLowerCase().replace(/[^a-z0-9]/g, '_') + ".pdf",
-                description
-            });
+            alertDiv.classList.add('d-none');
 
+            const payload = {
+                skillId: Number(skillId),
+                certificateName: certTitle,
+                certificateUrl: certUrl,
+                projectTitle: projTitle,
+                projectTechnologies: projTech,
+                projectDescription: projDesc,
+                projectLink: projLink,
+                projectProofUrl: projProof,
+                experienceTitle: expTitle,
+                experienceOrganization: expOrg,
+                experienceDescription: expDesc,
+                experienceDuration: expDuration,
+                experienceStartDate: expStart,
+                experienceEndDate: expEnd
+            };
+
+            const res = await API.post('/api/verifications', payload);
             if (res && res.success) {
                 bootstrap.Modal.getInstance(document.getElementById('submitProofModal')).hide();
                 showAlert("Skill verification submitted for administrator audit!", "success");
                 loadVerifications();
             } else {
-                alert(res.message || "Failed to submit verification");
+                alertDiv.className = 'alert alert-danger small mb-3';
+                alertDiv.innerText = res.message || "Project and experience proof are required to verify this skill. Certificate is optional.";
+                alertDiv.classList.remove('d-none');
             }
         }
     </script>

@@ -15,13 +15,43 @@ public class SkillVerificationDto {
     private Long skillId;
     private String skillName;
 
-    @NotBlank(message = "Document name is required")
-    private String documentName;
+    // --- Section A: Certificate (Optional) ---
+    private String certificateName;
+    private String certificateUrl;
 
-    private String documentPath;
-    private String description;
+    // --- Section B: Projects (Compulsory) ---
+    @NotBlank(message = "Project title is required")
+    private String projectTitle;
 
-    private String status; // PENDING, VERIFIED, REJECTED
+    @NotBlank(message = "Project description is required")
+    private String projectDescription;
+
+    @NotBlank(message = "Technologies/tools used are required")
+    private String projectTechnologies;
+
+    private String projectLink;
+    private String projectProofUrl;
+
+    // --- Section C: Experience (Compulsory) ---
+    @NotBlank(message = "Experience role/title is required")
+    private String experienceTitle;
+
+    @NotBlank(message = "Organization name is required")
+    private String experienceOrganization;
+
+    @NotBlank(message = "Experience description is required")
+    private String experienceDescription;
+
+    private String experienceDuration;
+
+    @NotBlank(message = "Experience start date is required")
+    private String experienceStartDate;
+
+    @NotBlank(message = "Experience end date is required")
+    private String experienceEndDate;
+
+    // --- Audit & Status ---
+    private String status; // PENDING, VERIFIED, REJECTED, NEEDS_RESUBMISSION
     private String adminComment;
     private LocalDateTime submissionDate;
     private LocalDateTime reviewedDate;
@@ -77,28 +107,108 @@ public class SkillVerificationDto {
         this.skillName = skillName;
     }
 
-    public String getDocumentName() {
-        return documentName;
+    public String getCertificateName() {
+        return certificateName;
     }
 
-    public void setDocumentName(String documentName) {
-        this.documentName = documentName;
+    public void setCertificateName(String certificateName) {
+        this.certificateName = certificateName;
     }
 
-    public String getDocumentPath() {
-        return documentPath;
+    public String getCertificateUrl() {
+        return certificateUrl;
     }
 
-    public void setDocumentPath(String documentPath) {
-        this.documentPath = documentPath;
+    public void setCertificateUrl(String certificateUrl) {
+        this.certificateUrl = certificateUrl;
     }
 
-    public String getDescription() {
-        return description;
+    public String getProjectTitle() {
+        return projectTitle;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setProjectTitle(String projectTitle) {
+        this.projectTitle = projectTitle;
+    }
+
+    public String getProjectDescription() {
+        return projectDescription;
+    }
+
+    public void setProjectDescription(String projectDescription) {
+        this.projectDescription = projectDescription;
+    }
+
+    public String getProjectTechnologies() {
+        return projectTechnologies;
+    }
+
+    public void setProjectTechnologies(String projectTechnologies) {
+        this.projectTechnologies = projectTechnologies;
+    }
+
+    public String getProjectLink() {
+        return projectLink;
+    }
+
+    public void setProjectLink(String projectLink) {
+        this.projectLink = projectLink;
+    }
+
+    public String getProjectProofUrl() {
+        return projectProofUrl;
+    }
+
+    public void setProjectProofUrl(String projectProofUrl) {
+        this.projectProofUrl = projectProofUrl;
+    }
+
+    public String getExperienceTitle() {
+        return experienceTitle;
+    }
+
+    public void setExperienceTitle(String experienceTitle) {
+        this.experienceTitle = experienceTitle;
+    }
+
+    public String getExperienceOrganization() {
+        return experienceOrganization;
+    }
+
+    public void setExperienceOrganization(String experienceOrganization) {
+        this.experienceOrganization = experienceOrganization;
+    }
+
+    public String getExperienceDescription() {
+        return experienceDescription;
+    }
+
+    public void setExperienceDescription(String experienceDescription) {
+        this.experienceDescription = experienceDescription;
+    }
+
+    public String getExperienceDuration() {
+        return experienceDuration;
+    }
+
+    public void setExperienceDuration(String experienceDuration) {
+        this.experienceDuration = experienceDuration;
+    }
+
+    public String getExperienceStartDate() {
+        return experienceStartDate;
+    }
+
+    public void setExperienceStartDate(String experienceStartDate) {
+        this.experienceStartDate = experienceStartDate;
+    }
+
+    public String getExperienceEndDate() {
+        return experienceEndDate;
+    }
+
+    public void setExperienceEndDate(String experienceEndDate) {
+        this.experienceEndDate = experienceEndDate;
     }
 
     public String getStatus() {

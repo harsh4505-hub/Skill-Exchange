@@ -238,7 +238,7 @@
                                 <div>
                                     <div class="d-flex align-items-center gap-2">
                                         <h6 class="mb-0 fw-semibold">${m.studentName}</h6>
-                                        ${m.verified ? '<span class="badge badge-custom badge-verified" style="font-size:0.65rem;"><i class="bi bi-patch-check-fill"></i> Verified</span>' : ''}
+                                        ${(m.skillTheyTeachYouVerified || m.verified) ? '<span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size:0.65rem;"><i class="bi bi-patch-check-fill"></i> ✓ Verified Skill</span>' : ''}
                                     </div>
                                     <small class="text-muted">${m.department} &bull; Rating: <strong class="text-dark">${(m.averageRating || 0).toFixed(1)}★</strong></small>
                                 </div>
@@ -249,7 +249,7 @@
                             </div>
                         </div>
                         <div class="mt-2 pt-2 border-top d-flex gap-2 flex-wrap small">
-                            <span class="badge bg-light text-dark border">Offers: <strong>${m.skillTheyTeachYou}</strong></span>
+                            <span class="badge bg-light text-dark border">Offers: <strong>${m.skillTheyTeachYou}</strong> ${m.skillTheyTeachYouVerified ? '<span class="badge bg-success-subtle text-success border border-success-subtle ms-1" style="font-size:0.65rem;"><i class="bi bi-patch-check-fill me-1"></i>✓ Verified</span>' : ''}</span>
                             ${m.isMutualMatch ? `<span class="badge badge-custom badge-mutual">Wants: <strong>${m.skillYouTeachThem}</strong> (Mutual Trade)</span>` : ''}
                         </div>
                     </div>
@@ -274,7 +274,7 @@
                         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                             <div>
                                 <h6 class="mb-1 fw-bold text-dark">${r.senderName} proposes an exchange</h6>
-                                <p class="mb-1 small text-muted">Offers: <span class="badge badge-custom badge-chat">${r.skillOfferedName}</span> for your <span class="badge badge-custom badge-mutual">${r.skillRequestedName}</span></p>
+                                <p class="mb-1 small text-muted">Offers: <span class="badge badge-custom badge-chat">${r.skillOfferedName}</span> ${r.skillOfferedVerified ? '<span class="badge bg-success-subtle text-success border border-success-subtle ms-1" style="font-size:0.65rem;"><i class="bi bi-patch-check-fill me-1"></i>✓ Verified</span>' : ''} for your <span class="badge badge-custom badge-mutual">${r.skillRequestedName}</span></p>
                                 <span class="badge badge-custom badge-${r.learningMode.toLowerCase()}">${r.learningMode}</span>
                             </div>
                             <div class="d-flex gap-2">

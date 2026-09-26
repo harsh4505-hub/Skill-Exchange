@@ -54,6 +54,13 @@ public class VerificationController {
         return ResponseEntity.ok(ApiResponse.ok("Verification approved! Verified badge awarded.", approved));
     }
 
+    @GetMapping("/skill/{skillId}")
+    public ResponseEntity<ApiResponse<SkillVerificationDto>> getVerificationBySkill(@PathVariable Long skillId) {
+        Long currentUserId = authService.getCurrentUserId();
+        SkillVerificationDto dto = verificationService.getVerificationByStudentAndSkill(currentUserId, skillId);
+        return ResponseEntity.ok(ApiResponse.ok("Verification details", dto));
+    }
+
     @PutMapping("/{id}/reject")
     public ResponseEntity<ApiResponse<SkillVerificationDto>> rejectVerification(
             @PathVariable Long id,
@@ -61,5 +68,14 @@ public class VerificationController {
         String comment = body != null ? body.get("adminComment") : null;
         SkillVerificationDto rejected = verificationService.rejectVerification(id, comment);
         return ResponseEntity.ok(ApiResponse.ok("Verification rejected.", rejected));
+    }
+
+    @PutMapping("/{id}/request-resubmission")
+    public ResponseEntity<ApiResponse<SkillVerificationDto>> requestResubmission(
+            @PathVariable Long id,
+            @RequestBody(required = false) Map<String, String> body) {
+        String comment = body != null ? body.get("adminComment") : null;
+        SkillVerificationDto dto = verificationService.requestResubmission(id, comment);
+        return ResponseEntity.ok(ApiResponse.ok("Resubmission requested.", dto));
     }
 }

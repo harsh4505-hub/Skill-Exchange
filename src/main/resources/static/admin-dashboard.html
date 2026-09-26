@@ -103,24 +103,29 @@
             <!-- Skill Verification Queue Tab -->
             <div class="tab-pane fade show active" id="verificationsTab">
                 <div class="card card-custom p-4">
-                    <h5 class="fw-bold mb-3"><i class="bi bi-award text-success me-2"></i>Skill Verification Review Queue</h5>
-                    <p class="text-muted small mb-3">Review certificates and project proof submitted by students. Approving grants the student a <strong>✓ VERIFIED SKILL</strong> badge.</p>
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <div>
+                            <h5 class="fw-bold mb-1"><i class="bi bi-shield-check text-success me-2"></i>Skill Verification Review Queue</h5>
+                            <p class="text-muted small mb-0">Audit compulsory project and experience proofs (plus optional certificates) submitted by MGM students. Approving awards the official <strong>✓ Verified Skill</strong> credential.</p>
+                        </div>
+                    </div>
 
                     <div class="table-responsive">
                         <table class="table table-hover align-middle">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Student</th>
+                                    <th>Student & Email</th>
                                     <th>Skill</th>
-                                    <th>Document Title</th>
-                                    <th>Proof Path / Link</th>
-                                    <th>Description</th>
+                                    <th>Certificate (Optional)</th>
+                                    <th>Projects (Compulsory)</th>
+                                    <th>Experience (Compulsory)</th>
+                                    <th>Submission Date</th>
                                     <th>Status</th>
-                                    <th class="text-end">Action</th>
+                                    <th class="text-end">Admin Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="adminVerificationsTbody">
-                                <tr><td colspan="7" class="text-center py-4 text-muted">Loading verifications...</td></tr>
+                                <tr><td colspan="8" class="text-center py-4 text-muted">Loading verifications...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -181,10 +186,35 @@
         </div>
     </div>
 
+    <!-- Modal: Inspect Full Skill Verification Proof -->
+    <div class="modal fade" id="adminInspectModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header border-bottom">
+                    <div>
+                        <h5 class="modal-title fw-bold mb-0">
+                            <i class="bi bi-shield-check text-success me-2"></i>Audit Verification Proof: <span id="admInspectSkillName" class="text-primary-custom"></span>
+                        </h5>
+                        <p class="text-muted small mb-0 mt-1">Review student identity, compulsory project & experience details, and optional certificate.</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4" id="admInspectBody">
+                    <!-- Populated dynamically -->
+                </div>
+                <div class="modal-footer border-top bg-light d-flex justify-content-between" id="admInspectFooter">
+                    <!-- Action buttons -->
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/app.js"></script>
     <script>
+        let allAdminVerifications = [];
+
         document.addEventListener("DOMContentLoaded", async () => {
             await loadAdminDashboard();
         });
@@ -216,24 +246,204 @@
             const tbody = document.getElementById('adminVerificationsTbody');
             const res = await API.get('/api/admin/verifications');
             if (res && res.success && res.data.length > 0) {
-                tbody.innerHTML = res.data.map(v => `
-                    <tr>
-                        <td><strong>${v.studentName}</strong><br><small class="text-muted">${v.studentEmail}</small></td>
-                        <td><span class="badge bg-primary text-white">${v.skillName}</span></td>
-                        <td>${v.documentName}</td>
-                        <td class="small font-monospace text-muted">${v.documentPath}</td>
-                        <td class="small text-muted">${v.description || 'None'}</td>
-                        <td><span class="badge ${v.status === 'VERIFIED' ? 'bg-success' : (v.status === 'REJECTED' ? 'bg-danger' : 'bg-warning text-dark')}">${v.status}</span></td>
-                        <td class="text-end">
-                            ${v.status === 'PENDING' ? `
-                                <button class="btn btn-sm btn-success me-1" onclick="approveProof(${v.id})"><i class="bi bi-check-lg"></i> Approve</button>
-                                <button class="btn btn-sm btn-outline-danger" onclick="rejectProof(${v.id})"><i class="bi bi-x-lg"></i> Reject</button>
-                            ` : `<small class="text-muted">${v.adminComment || 'Audited'}</small>`}
-                        </td>
-                    </tr>
-                `).join('');
+                allAdminVerifications = res.data;
+                tbody.innerHTML = res.data.map(v => {
+                    const status = v.status || 'PENDING';
+                    let statusBadge = '';
+                    if (status === 'VERIFIED') statusBadge = '<span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1"><i class="bi bi-patch-check-fill me-1"></i>VERIFIED</span>';
+                    else if (status === 'PENDING') statusBadge = '<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1"><i class="bi bi-hourglass-split me-1"></i>PENDING</span>';
+                    else if (status === 'NEEDS_RESUBMISSION') statusBadge = '<span class="badge bg-warning-subtle text-danger border border-warning-subtle px-2 py-1"><i class="bi bi-exclamation-triangle-fill me-1"></i>NEEDS RESUBMISSION</span>';
+                    else if (status === 'REJECTED') statusBadge = '<span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1"><i class="bi bi-x-circle-fill me-1"></i>REJECTED</span>';
+
+                    const certSummary = v.certificateName 
+                        ? `<div class="fw-semibold text-dark small">${v.certificateName}</div>${v.certificateUrl ? `<small class="text-muted"><a href="${v.certificateUrl}" target="_blank" class="text-decoration-none font-monospace"><i class="bi bi-file-earmark-pdf me-1"></i>View Doc</a></small>` : ''}`
+                        : `<span class="text-muted small fst-italic">None (Optional)</span>`;
+
+                    const projSummary = `
+                        <div class="fw-semibold text-dark small">${v.projectTitle || 'N/A'}</div>
+                        <small class="text-muted d-block">${v.projectTechnologies || ''}</small>
+                        ${v.projectLink ? `<a href="${v.projectLink}" target="_blank" class="small text-decoration-none"><i class="bi bi-github me-1"></i>Repo / Link</a>` : ''}
+                    `;
+
+                    const expSummary = `
+                        <div class="fw-semibold text-dark small">${v.experienceTitle || 'N/A'}</div>
+                        <small class="text-muted d-block">${v.experienceOrganization || ''} &bull; ${v.experienceDuration || 'Active'}</small>
+                    `;
+
+                    return `
+                        <tr>
+                            <td>
+                                <strong class="text-dark">${v.studentName}</strong>
+                                <br><small class="text-primary font-monospace">${v.studentEmail}</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-primary text-white fs-6">${v.skillName}</span>
+                            </td>
+                            <td>${certSummary}</td>
+                            <td>${projSummary}</td>
+                            <td>${expSummary}</td>
+                            <td><small class="text-muted">${v.submissionDate ? new Date(v.submissionDate).toLocaleDateString() : 'N/A'}</small></td>
+                            <td>${statusBadge}</td>
+                            <td class="text-end">
+                                <div class="d-flex flex-column gap-1 align-items-end">
+                                    <button class="btn btn-sm btn-outline-primary" style="font-size: 0.78rem;" onclick="inspectProof(${v.id})">
+                                        <i class="bi bi-search me-1"></i> Inspect Proof
+                                    </button>
+                                    <div class="d-flex gap-1 mt-1">
+                                        <button class="btn btn-sm btn-success" style="font-size: 0.78rem;" title="Approve Verification" onclick="approveProof(${v.id})">
+                                            <i class="bi bi-check-lg"></i> Approve
+                                        </button>
+                                        <button class="btn btn-sm btn-warning text-dark fw-medium" style="font-size: 0.78rem;" title="Request Resubmission" onclick="requestResubmission(${v.id})">
+                                            <i class="bi bi-arrow-repeat"></i> Resubmit
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" style="font-size: 0.78rem;" title="Reject Verification" onclick="rejectProof(${v.id})">
+                                            <i class="bi bi-x-lg"></i> Reject
+                                        </button>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
             } else {
-                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">No skill proof submissions in queue.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-muted">No skill proof submissions in queue.</td></tr>`;
+            }
+        }
+
+        function inspectProof(id) {
+            const v = allAdminVerifications.find(item => item.id === id);
+            if (!v) return;
+
+            document.getElementById('admInspectSkillName').innerText = v.skillName;
+            const body = document.getElementById('admInspectBody');
+            const footer = document.getElementById('admInspectFooter');
+
+            const status = v.status || 'PENDING';
+            let badge = '';
+            if (status === 'VERIFIED') badge = '<span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1 fs-6"><i class="bi bi-patch-check-fill me-1"></i>VERIFIED</span>';
+            else if (status === 'PENDING') badge = '<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3 py-1 fs-6"><i class="bi bi-hourglass-split me-1"></i>PENDING</span>';
+            else if (status === 'NEEDS_RESUBMISSION') badge = '<span class="badge bg-warning-subtle text-danger border border-warning-subtle px-3 py-1 fs-6"><i class="bi bi-exclamation-triangle-fill me-1"></i>NEEDS RESUBMISSION</span>';
+            else if (status === 'REJECTED') badge = '<span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-1 fs-6"><i class="bi bi-x-circle-fill me-1"></i>REJECTED</span>';
+
+            body.innerHTML = `
+                <div class="card p-3 mb-3 bg-light border-0">
+                    <div class="row g-2 align-items-center">
+                        <div class="col-md-6">
+                            <span class="text-muted small d-block">Student Applicant:</span>
+                            <strong class="fs-6 text-dark">${v.studentName}</strong>
+                            <div class="small text-primary font-monospace">${v.studentEmail}</div>
+                        </div>
+                        <div class="col-md-3">
+                            <span class="text-muted small d-block">Skill Target:</span>
+                            <span class="badge bg-primary text-white fs-6">${v.skillName}</span>
+                        </div>
+                        <div class="col-md-3 text-md-end">
+                            <span class="text-muted small d-block">Current Status:</span>
+                            <div>${badge}</div>
+                        </div>
+                    </div>
+                </div>
+
+                ${v.adminComment ? `
+                    <div class="alert alert-info py-2 px-3 small mb-3">
+                        <strong><i class="bi bi-chat-quote-fill me-1"></i>Recorded Audit Feedback:</strong> ${v.adminComment}
+                    </div>
+                ` : ''}
+
+                <!-- Certificate (Optional) -->
+                <div class="card p-3 mb-3 border rounded-3 bg-white">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-award-fill text-warning me-2"></i>A. Certificate (Optional)</h6>
+                        <span class="badge bg-secondary-subtle text-secondary">Optional</span>
+                    </div>
+                    ${v.certificateName ? `
+                        <p class="mb-1 fw-semibold text-dark">${v.certificateName}</p>
+                        ${v.certificateUrl ? `<p class="small text-muted mb-0"><i class="bi bi-link-45deg me-1"></i>File / URL: <a href="${v.certificateUrl}" target="_blank" class="font-monospace text-decoration-none">${v.certificateUrl}</a></p>` : ''}
+                    ` : `<p class="text-muted small mb-0 fst-italic">No optional certificate attached by student.</p>`}
+                </div>
+
+                <!-- Projects (Compulsory) -->
+                <div class="card p-3 mb-3 border border-primary-subtle bg-light-subtle rounded-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="fw-bold mb-0 text-primary-custom"><i class="bi bi-code-slash me-2"></i>B. Projects (Compulsory)</h6>
+                        <span class="badge bg-primary text-white">Required</span>
+                    </div>
+                    <h6 class="fw-bold text-dark mb-1">${v.projectTitle || 'N/A'}</h6>
+                    <p class="small text-muted mb-2"><i class="bi bi-tools me-1"></i>Tech: <strong>${v.projectTechnologies || 'N/A'}</strong></p>
+                    <p class="small text-dark mb-2" style="white-space: pre-wrap;">${v.projectDescription || 'N/A'}</p>
+                    <div class="d-flex gap-3 flex-wrap small">
+                        ${v.projectLink ? `<a href="${v.projectLink}" target="_blank" class="btn btn-sm btn-outline-primary"><i class="bi bi-github me-1"></i>Open Project / Repo</a>` : ''}
+                        ${v.projectProofUrl ? `<span class="text-muted"><i class="bi bi-image me-1"></i>Proof: <a href="${v.projectProofUrl}" target="_blank" class="font-monospace text-decoration-none">${v.projectProofUrl}</a></span>` : ''}
+                    </div>
+                </div>
+
+                <!-- Experience (Compulsory) -->
+                <div class="card p-3 mb-3 border border-info-subtle bg-light-subtle rounded-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="fw-bold mb-0 text-info-emphasis"><i class="bi bi-briefcase-fill me-2"></i>C. Experience (Compulsory)</h6>
+                        <span class="badge bg-info text-dark">Required</span>
+                    </div>
+                    <h6 class="fw-bold text-dark mb-1">${v.experienceTitle || 'N/A'} &bull; <span class="text-muted">${v.experienceOrganization || 'N/A'}</span></h6>
+                    <p class="small text-muted mb-2">
+                        <i class="bi bi-calendar-event me-1"></i>Duration: <strong>${v.experienceDuration || 'N/A'}</strong> (${v.experienceStartDate || 'N/A'} to ${v.experienceEndDate || 'N/A'})
+                    </p>
+                    <p class="small text-dark mb-0" style="white-space: pre-wrap;">${v.experienceDescription || 'N/A'}</p>
+                </div>
+            `;
+
+            footer.innerHTML = `
+                <div class="small text-muted">Submitted: <strong>${v.submissionDate ? new Date(v.submissionDate).toLocaleDateString() : 'N/A'}</strong></div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-success px-3" onclick="closeInspectAndCall(${v.id}, 'approve')">
+                        <i class="bi bi-check-lg me-1"></i> Approve
+                    </button>
+                    <button class="btn btn-sm btn-warning text-dark fw-medium px-3" onclick="closeInspectAndCall(${v.id}, 'resubmit')">
+                        <i class="bi bi-arrow-repeat me-1"></i> Request Resubmission
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger px-3" onclick="closeInspectAndCall(${v.id}, 'reject')">
+                        <i class="bi bi-x-lg me-1"></i> Reject
+                    </button>
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            `;
+
+            new bootstrap.Modal(document.getElementById('adminInspectModal')).show();
+        }
+
+        function closeInspectAndCall(id, action) {
+            bootstrap.Modal.getInstance(document.getElementById('adminInspectModal')).hide();
+            if (action === 'approve') approveProof(id);
+            else if (action === 'resubmit') requestResubmission(id);
+            else if (action === 'reject') rejectProof(id);
+        }
+
+        async function approveProof(id) {
+            const comment = prompt("Enter admin approval note (optional):", "Approved: Project and experience requirements verified.");
+            if (comment === null) return;
+            const res = await API.put(`/api/verifications/${id}/approve`, { adminComment: comment });
+            if (res && res.success) {
+                showAlert("Skill verification approved! Verified Skill badge awarded.", "success");
+                loadAdminDashboard();
+            }
+        }
+
+        async function requestResubmission(id) {
+            const comment = prompt("Enter resubmission instructions for the student (what needs updating):", "Please provide a valid GitHub repository link and more detailed description of project responsibilities.");
+            if (comment === null) return;
+            const res = await API.put(`/api/verifications/${id}/request-resubmission`, { adminComment: comment });
+            if (res && res.success) {
+                showAlert("Skill verification marked as 'Needs Resubmission' with audit feedback.", "warning");
+                loadAdminDashboard();
+            }
+        }
+
+        async function rejectProof(id) {
+            const comment = prompt("Enter rejection reason for student feedback:", "Project and experience proof does not sufficiently demonstrate requisite technical depth.");
+            if (comment === null) return;
+            const res = await API.put(`/api/verifications/${id}/reject`, { adminComment: comment });
+            if (res && res.success) {
+                showAlert("Skill verification rejected with feedback note.", "info");
+                loadAdminDashboard();
             }
         }
 
@@ -244,7 +454,7 @@
                 tbody.innerHTML = res.data.map(s => `
                     <tr>
                         <td><strong>${s.fullName}</strong></td>
-                        <td class="small text-muted">${s.email}</td>
+                        <td class="small text-muted font-monospace">${s.email}</td>
                         <td>${s.department}<br><small class="text-muted">${s.college}</small></td>
                         <td>${s.yearOfStudy}</td>
                         <td><span class="text-warning fw-semibold">★ ${(s.averageRating || 0).toFixed(1)}</span></td>
@@ -285,25 +495,6 @@
                 `).join('');
             } else {
                 tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">No community reports logged.</td></tr>`;
-            }
-        }
-
-        async function approveProof(id) {
-            const comment = prompt("Enter admin approval note (optional):", "Approved after validating certificate credentials.");
-            const res = await API.put(`/api/verifications/${id}/approve`, { adminComment: comment });
-            if (res && res.success) {
-                showAlert("Skill verification approved! Verified badge awarded to student.", "success");
-                loadAdminDashboard();
-            }
-        }
-
-        async function rejectProof(id) {
-            const comment = prompt("Enter rejection reason for student feedback:", "Document does not clearly demonstrate proficiency.");
-            if (comment === null) return;
-            const res = await API.put(`/api/verifications/${id}/reject`, { adminComment: comment });
-            if (res && res.success) {
-                showAlert("Skill verification rejected with feedback note.", "info");
-                loadAdminDashboard();
             }
         }
 

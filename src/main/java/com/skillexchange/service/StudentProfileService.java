@@ -102,6 +102,7 @@ public class StudentProfileService {
                 skill.getCategory().getName(),
                 saved.getProficiencyLevel(),
                 saved.isVerified(),
+                saved.getVerificationStatus(),
                 saved.getProofDocumentUrl(),
                 saved.getVerificationNotes()
         );
@@ -197,6 +198,7 @@ public class StudentProfileService {
                 ts.getSkill().getCategory().getName(),
                 ts.getProficiencyLevel(),
                 ts.isVerified(),
+                ts.getVerificationStatus(),
                 ts.getProofDocumentUrl(),
                 ts.getVerificationNotes()
         )).collect(Collectors.toList()));

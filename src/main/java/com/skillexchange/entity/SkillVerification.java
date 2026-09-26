@@ -4,8 +4,8 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 /**
- * SkillVerification Entity for tracking certificate/proof submissions
- * and administrative verification status.
+ * SkillVerification Entity for tracking skill-specific proof submissions
+ * (Certificate optional, Projects & Experience compulsory) and administrative audit decisions.
  */
 @Entity
 @Table(name = "skill_verifications")
@@ -23,17 +23,51 @@ public class SkillVerification {
     @JoinColumn(name = "skill_id", nullable = false)
     private Skill skill;
 
-    @Column(name = "document_name", nullable = false, length = 150)
-    private String documentName;
+    // --- Section A: Certificate (Optional) ---
+    @Column(name = "certificate_name", length = 150)
+    private String certificateName;
 
-    @Column(name = "document_path", nullable = false, length = 500)
-    private String documentPath;
+    @Column(name = "certificate_url", length = 500)
+    private String certificateUrl;
 
-    @Column(columnDefinition = "TEXT")
-    private String description;
+    // --- Section B: Projects (Compulsory) ---
+    @Column(name = "project_title", nullable = false, length = 200)
+    private String projectTitle;
 
+    @Column(name = "project_description", columnDefinition = "TEXT", nullable = false)
+    private String projectDescription;
+
+    @Column(name = "project_technologies", length = 255, nullable = false)
+    private String projectTechnologies;
+
+    @Column(name = "project_link", length = 500)
+    private String projectLink;
+
+    @Column(name = "project_proof_url", length = 500)
+    private String projectProofUrl;
+
+    // --- Section C: Experience (Compulsory) ---
+    @Column(name = "experience_title", nullable = false, length = 150)
+    private String experienceTitle;
+
+    @Column(name = "experience_organization", nullable = false, length = 150)
+    private String experienceOrganization;
+
+    @Column(name = "experience_description", columnDefinition = "TEXT", nullable = false)
+    private String experienceDescription;
+
+    @Column(name = "experience_duration", length = 50)
+    private String experienceDuration;
+
+    @Column(name = "experience_start_date", nullable = false, length = 50)
+    private String experienceStartDate;
+
+    @Column(name = "experience_end_date", nullable = false, length = 50)
+    private String experienceEndDate;
+
+    // --- Audit & Status ---
     @Column(nullable = false, length = 30)
-    private String status = "PENDING"; // PENDING, VERIFIED, REJECTED
+    private String status = "PENDING"; // PENDING, VERIFIED, REJECTED, NEEDS_RESUBMISSION
 
     @Column(name = "admin_comment", columnDefinition = "TEXT")
     private String adminComment;
@@ -45,16 +79,6 @@ public class SkillVerification {
     private LocalDateTime reviewedDate;
 
     public SkillVerification() {
-    }
-
-    public SkillVerification(User student, Skill skill, String documentName, String documentPath, String description) {
-        this.student = student;
-        this.skill = skill;
-        this.documentName = documentName;
-        this.documentPath = documentPath;
-        this.description = description;
-        this.status = "PENDING";
-        this.submissionDate = LocalDateTime.now();
     }
 
     public Long getId() {
@@ -81,28 +105,108 @@ public class SkillVerification {
         this.skill = skill;
     }
 
-    public String getDocumentName() {
-        return documentName;
+    public String getCertificateName() {
+        return certificateName;
     }
 
-    public void setDocumentName(String documentName) {
-        this.documentName = documentName;
+    public void setCertificateName(String certificateName) {
+        this.certificateName = certificateName;
     }
 
-    public String getDocumentPath() {
-        return documentPath;
+    public String getCertificateUrl() {
+        return certificateUrl;
     }
 
-    public void setDocumentPath(String documentPath) {
-        this.documentPath = documentPath;
+    public void setCertificateUrl(String certificateUrl) {
+        this.certificateUrl = certificateUrl;
     }
 
-    public String getDescription() {
-        return description;
+    public String getProjectTitle() {
+        return projectTitle;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setProjectTitle(String projectTitle) {
+        this.projectTitle = projectTitle;
+    }
+
+    public String getProjectDescription() {
+        return projectDescription;
+    }
+
+    public void setProjectDescription(String projectDescription) {
+        this.projectDescription = projectDescription;
+    }
+
+    public String getProjectTechnologies() {
+        return projectTechnologies;
+    }
+
+    public void setProjectTechnologies(String projectTechnologies) {
+        this.projectTechnologies = projectTechnologies;
+    }
+
+    public String getProjectLink() {
+        return projectLink;
+    }
+
+    public void setProjectLink(String projectLink) {
+        this.projectLink = projectLink;
+    }
+
+    public String getProjectProofUrl() {
+        return projectProofUrl;
+    }
+
+    public void setProjectProofUrl(String projectProofUrl) {
+        this.projectProofUrl = projectProofUrl;
+    }
+
+    public String getExperienceTitle() {
+        return experienceTitle;
+    }
+
+    public void setExperienceTitle(String experienceTitle) {
+        this.experienceTitle = experienceTitle;
+    }
+
+    public String getExperienceOrganization() {
+        return experienceOrganization;
+    }
+
+    public void setExperienceOrganization(String experienceOrganization) {
+        this.experienceOrganization = experienceOrganization;
+    }
+
+    public String getExperienceDescription() {
+        return experienceDescription;
+    }
+
+    public void setExperienceDescription(String experienceDescription) {
+        this.experienceDescription = experienceDescription;
+    }
+
+    public String getExperienceDuration() {
+        return experienceDuration;
+    }
+
+    public void setExperienceDuration(String experienceDuration) {
+        this.experienceDuration = experienceDuration;
+    }
+
+    public String getExperienceStartDate() {
+        return experienceStartDate;
+    }
+
+    public void setExperienceStartDate(String experienceStartDate) {
+        this.experienceStartDate = experienceStartDate;
+    }
+
+    public String getExperienceEndDate() {
+        return experienceEndDate;
+    }
+
+    public void setExperienceEndDate(String experienceEndDate) {
+        this.experienceEndDate = experienceEndDate;
     }
 
     public String getStatus() {

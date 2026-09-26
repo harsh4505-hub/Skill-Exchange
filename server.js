@@ -75,8 +75,8 @@ const state = {
             completedExchangesCount: 2,
             blocked: false,
             teachingSkills: [
-                { id: 1, skillId: 1, skillName: "Java", categoryId: 1, categoryName: "Programming", levelOrUrgency: "Advanced", verified: true, proofDocumentUrl: "uploads/certificates/harsh_java.pdf" },
-                { id: 2, skillId: 3, skillName: "HTML/CSS/JS", categoryId: 2, categoryName: "Web Development", levelOrUrgency: "Intermediate", verified: false }
+                { id: 1, skillId: 1, skillName: "Java", categoryId: 1, categoryName: "Programming", levelOrUrgency: "Advanced", verified: true, verificationStatus: "VERIFIED", proofDocumentUrl: "uploads/certificates/harsh_java.pdf" },
+                { id: 2, skillId: 3, skillName: "HTML/CSS/JS", categoryId: 2, categoryName: "Web Development", levelOrUrgency: "Intermediate", verified: false, verificationStatus: "NOT_VERIFIED" }
             ],
             learningSkills: [
                 { id: 1, skillId: 4, skillName: "Photoshop", categoryId: 3, categoryName: "Design", levelOrUrgency: "High" },
@@ -99,8 +99,8 @@ const state = {
             completedExchangesCount: 3,
             blocked: false,
             teachingSkills: [
-                { id: 3, skillId: 4, skillName: "Photoshop", categoryId: 3, categoryName: "Design", levelOrUrgency: "Expert", verified: true, proofDocumentUrl: "uploads/certificates/sejal_photoshop.pdf" },
-                { id: 4, skillId: 5, skillName: "Graphic Design", categoryId: 3, categoryName: "Design", levelOrUrgency: "Advanced", verified: false }
+                { id: 3, skillId: 4, skillName: "Photoshop", categoryId: 3, categoryName: "Design", levelOrUrgency: "Expert", verified: true, verificationStatus: "VERIFIED", proofDocumentUrl: "uploads/certificates/sejal_photoshop.pdf" },
+                { id: 4, skillId: 5, skillName: "Graphic Design", categoryId: 3, categoryName: "Design", levelOrUrgency: "Advanced", verified: false, verificationStatus: "NEEDS_RESUBMISSION" }
             ],
             learningSkills: [
                 { id: 3, skillId: 1, skillName: "Java", categoryId: 1, categoryName: "Programming", levelOrUrgency: "High" },
@@ -123,8 +123,8 @@ const state = {
             completedExchangesCount: 1,
             blocked: false,
             teachingSkills: [
-                { id: 5, skillId: 2, skillName: "Python", categoryId: 1, categoryName: "Programming", levelOrUrgency: "Advanced", verified: false },
-                { id: 6, skillId: 8, skillName: "Excel & Data Analysis", categoryId: 6, categoryName: "Academic & Productivity", levelOrUrgency: "Intermediate", verified: false }
+                { id: 5, skillId: 2, skillName: "Python", categoryId: 1, categoryName: "Programming", levelOrUrgency: "Advanced", verified: false, verificationStatus: "PENDING" },
+                { id: 6, skillId: 8, skillName: "Excel & Data Analysis", categoryId: 6, categoryName: "Academic & Productivity", levelOrUrgency: "Intermediate", verified: false, verificationStatus: "NOT_VERIFIED" }
             ],
             learningSkills: [
                 { id: 5, skillId: 7, skillName: "Public Speaking", categoryId: 5, categoryName: "Communication", levelOrUrgency: "High" }
@@ -146,7 +146,7 @@ const state = {
             completedExchangesCount: 4,
             blocked: false,
             teachingSkills: [
-                { id: 7, skillId: 7, skillName: "Public Speaking", categoryId: 5, categoryName: "Communication", levelOrUrgency: "Expert", verified: true, proofDocumentUrl: "uploads/certificates/debate.pdf" }
+                { id: 7, skillId: 7, skillName: "Public Speaking", categoryId: 5, categoryName: "Communication", levelOrUrgency: "Expert", verified: true, verificationStatus: "VERIFIED", proofDocumentUrl: "uploads/certificates/debate.pdf" }
             ],
             learningSkills: [
                 { id: 6, skillId: 2, skillName: "Python", categoryId: 1, categoryName: "Programming", levelOrUrgency: "High" },
@@ -254,11 +254,98 @@ const state = {
             studentEmail: "raza@mgmmumbai.ac.in",
             skillId: 2,
             skillName: "Python",
-            documentName: "HackerRank Python 5-Star Gold Badge",
-            documentPath: "uploads/verifications/raza_python.pdf",
-            description: "Completed 50+ problem solving challenges and achieved 5 stars on HackerRank.",
+            certificateName: "HackerRank Python 5-Star Gold Badge",
+            certificateUrl: "uploads/verifications/raza_python.pdf",
+            projectTitle: "Automated Data Scraping & Analysis Pipeline",
+            projectDescription: "Built a Python-based asynchronous web scraper and pandas analysis pipeline processing 10,000+ records daily with data cleaning and CSV export.",
+            projectTechnologies: "Python 3.11, BeautifulSoup4, Pandas, SQLite, Requests",
+            projectLink: "https://github.com/raza-khan/python-data-pipeline",
+            projectProofUrl: "uploads/proofs/raza_pipeline_screenshot.png",
+            experienceTitle: "Lead Python Developer & Workshop Trainer",
+            experienceOrganization: "MGM Coding Club & Techfest Committee",
+            experienceDescription: "Conducted hands-on Python workshops for 80+ engineering students, built the campus competition scoring system, and reviewed peer code.",
+            experienceDuration: "8 months",
+            experienceStartDate: "2025-08-01",
+            experienceEndDate: "Present",
             status: "PENDING",
-            submissionDate: new Date(Date.now() - 1 * 86400000).toISOString()
+            adminComment: "",
+            submissionDate: new Date(Date.now() - 1 * 86400000).toISOString(),
+            reviewedDate: null
+        },
+        {
+            id: 2,
+            studentId: 2,
+            studentName: "Harsh Vardhan",
+            studentEmail: "harsh@mgmmumbai.ac.in",
+            skillId: 1,
+            skillName: "Java",
+            certificateName: "Oracle Certified Associate Java SE 11",
+            certificateUrl: "uploads/certificates/harsh_java.pdf",
+            projectTitle: "Enterprise Spring Boot Microservices Platform",
+            projectDescription: "Architected RESTful microservices with Spring Data JPA, JWT authentication, and MySQL backend with 95%+ unit test coverage.",
+            projectTechnologies: "Java 17, Spring Boot, Hibernate, MySQL, Maven, Docker",
+            projectLink: "https://github.com/harsh4505/enterprise-java-suite",
+            projectProofUrl: "uploads/proofs/harsh_spring_demo.png",
+            experienceTitle: "Backend Engineering Teaching Assistant",
+            experienceOrganization: "MGM Department of Information Technology",
+            experienceDescription: "Assisted professors in evaluating Java OOP laboratory assignments and conducted weekly tutorial sessions for 60+ sophomores.",
+            experienceDuration: "1 year",
+            experienceStartDate: "2025-07-01",
+            experienceEndDate: "Present",
+            status: "VERIFIED",
+            adminComment: "Outstanding project portfolio and validated departmental teaching experience.",
+            submissionDate: new Date(Date.now() - 3 * 86400000).toISOString(),
+            reviewedDate: new Date(Date.now() - 2 * 86400000).toISOString()
+        },
+        {
+            id: 3,
+            studentId: 3,
+            studentName: "Sejal Sharma",
+            studentEmail: "sejal@mgmmumbai.ac.in",
+            skillId: 4,
+            skillName: "Photoshop",
+            certificateName: "Adobe Certified Professional in Visual Design",
+            certificateUrl: "uploads/certificates/sejal_photoshop.pdf",
+            projectTitle: "Brand Identity & Vector Retouching System",
+            projectDescription: "Created high-resolution commercial posters, photo composite imagery, and multi-layered branding assets for college cultural fests.",
+            projectTechnologies: "Adobe Photoshop 2024, Lightroom, Camera RAW",
+            projectLink: "https://behance.net/sejal_photoshop_portfolio",
+            projectProofUrl: "uploads/proofs/sejal_brand_suite.png",
+            experienceTitle: "Head Graphic Designer",
+            experienceOrganization: "MGM College Annual Magazine Editorial Board",
+            experienceDescription: "Designed front-cover layouts, retouched photography, and coordinated with printers for 1,500+ physical magazine copies.",
+            experienceDuration: "1.5 years",
+            experienceStartDate: "2024-09-01",
+            experienceEndDate: "Present",
+            status: "VERIFIED",
+            adminComment: "High caliber creative portfolio with confirmed publication track record.",
+            submissionDate: new Date(Date.now() - 4 * 86400000).toISOString(),
+            reviewedDate: new Date(Date.now() - 3 * 86400000).toISOString()
+        },
+        {
+            id: 4,
+            studentId: 3,
+            studentName: "Sejal Sharma",
+            studentEmail: "sejal@mgmmumbai.ac.in",
+            skillId: 5,
+            skillName: "Graphic Design",
+            certificateName: "",
+            certificateUrl: "",
+            projectTitle: "College Fest Flyer Mockups",
+            projectDescription: "Drafted social media flyers for college sports day.",
+            projectTechnologies: "Canva, Figma",
+            projectLink: "https://figma.com/@sejal_drafts",
+            projectProofUrl: "",
+            experienceTitle: "Design Committee Volunteer",
+            experienceOrganization: "Sports Committee",
+            experienceDescription: "Helped create social banners.",
+            experienceDuration: "2 months",
+            experienceStartDate: "2025-10-01",
+            experienceEndDate: "2025-11-30",
+            status: "NEEDS_RESUBMISSION",
+            adminComment: "Please provide a complete Figma design system link with component variants and detailed design role responsibilities.",
+            submissionDate: new Date(Date.now() - 2 * 86400000).toISOString(),
+            reviewedDate: new Date(Date.now() - 1 * 86400000).toISOString()
         }
     ],
 
@@ -505,7 +592,8 @@ const server = http.createServer(async (req, res) => {
                         categoryId: skill.categoryId,
                         categoryName: skill.categoryName,
                         levelOrUrgency: level,
-                        verified: false
+                        verified: false,
+                        verificationStatus: 'NOT_VERIFIED'
                     });
                 }
             }
@@ -664,6 +752,7 @@ const server = http.createServer(async (req, res) => {
                     categories: Array.from(allCats),
                     skillTheyTeachYou: primaryTeach ? primaryTeach.skillName : "Explore Skills",
                     skillTheyTeachYouId: primaryTeach ? primaryTeach.skillId : null,
+                    skillTheyTeachYouVerified: primaryTeach ? (primaryTeach.verified || primaryTeach.verificationStatus === 'VERIFIED') : false,
                     skillYouTeachThem: reverseMatch ? reverseMatch.skillName : "",
                     skillYouTeachThemId: reverseMatch ? reverseMatch.skillId : null,
                     teachingSkills: cand.teachingSkills || [],
@@ -681,13 +770,27 @@ const server = http.createServer(async (req, res) => {
         // --- 5. EXCHANGE REQUESTS & HISTORY ---
         if (pathname === '/api/exchange-requests' && req.method === 'GET') {
             const myId = state.currentUser ? state.currentUser.userId : 2;
-            const reqs = state.requests.filter(r => r.senderId === myId || r.receiverId === myId);
+            const reqs = state.requests.filter(r => r.senderId === myId || r.receiverId === myId).map(r => {
+                const senderProf = state.profiles.find(p => p.userId === r.senderId);
+                const ts = senderProf ? senderProf.teachingSkills.find(t => t.skillId === r.skillOfferedId) : null;
+                return {
+                    ...r,
+                    skillOfferedVerified: ts ? (ts.verified || ts.verificationStatus === 'VERIFIED') : false
+                };
+            });
             return sendJson(res, 200, { success: true, data: reqs });
         }
 
         if (pathname === '/api/exchange-requests/pending' && req.method === 'GET') {
             const myId = state.currentUser ? state.currentUser.userId : 2;
-            const reqs = state.requests.filter(r => r.receiverId === myId && r.status === 'PENDING');
+            const reqs = state.requests.filter(r => r.receiverId === myId && r.status === 'PENDING').map(r => {
+                const senderProf = state.profiles.find(p => p.userId === r.senderId);
+                const ts = senderProf ? senderProf.teachingSkills.find(t => t.skillId === r.skillOfferedId) : null;
+                return {
+                    ...r,
+                    skillOfferedVerified: ts ? (ts.verified || ts.verificationStatus === 'VERIFIED') : false
+                };
+            });
             return sendJson(res, 200, { success: true, data: reqs });
         }
 
@@ -873,81 +976,197 @@ const server = http.createServer(async (req, res) => {
             return sendJson(res, 200, { success: true, data: count });
         }
 
-        // --- 7. SKILL VERIFICATION (MODULE 9) ---
+        // --- 7. SKILL VERIFICATION (SKILL-SPECIFIC PROOF AUDITING) ---
         if (pathname === '/api/verifications' && req.method === 'GET') {
             const myId = state.currentUser ? state.currentUser.userId : 2;
             const data = state.verifications.filter(v => v.studentId === myId);
             return sendJson(res, 200, { success: true, data });
         }
 
+        if (pathname.match(/^\/api\/verifications\/skill\/(\d+)$/) && req.method === 'GET') {
+            const skillId = Number(pathname.split('/')[4]);
+            const myId = state.currentUser ? state.currentUser.userId : 2;
+            const ver = state.verifications.find(v => v.studentId === myId && v.skillId === skillId);
+            return sendJson(res, 200, { success: true, data: ver || null });
+        }
+
         if (pathname === '/api/verifications' && req.method === 'POST') {
             const body = await parseBody(req);
             const myId = state.currentUser ? state.currentUser.userId : 2;
             const myProf = state.profiles.find(p => p.userId === myId);
-            const skill = state.skills.find(s => s.id === body.skillId);
+            const skillId = Number(body.skillId);
+            const skill = state.skills.find(s => s.id === skillId);
 
-            const newVer = {
-                id: state.verifications.length + 1,
-                studentId: myId,
-                studentName: myProf ? myProf.fullName : "Student",
-                studentEmail: myProf ? myProf.email : "",
-                skillId: body.skillId,
-                skillName: skill ? skill.name : "",
-                documentName: body.documentName,
-                documentPath: body.documentPath || "uploads/proof.pdf",
-                description: body.description || "",
-                status: "PENDING",
-                submissionDate: new Date().toISOString()
-            };
-            state.verifications.unshift(newVer);
-            return sendJson(res, 200, { success: true, data: newVer });
+            if (!skill) {
+                return sendJson(res, 400, { success: false, message: "A valid teaching skill must be selected for verification." });
+            }
+
+            // --- STRICT VERIFICATION VALIDATION ---
+            // Projects: Compulsory (Title, Description, Technologies)
+            const hasProject = body.projectTitle && body.projectTitle.trim().length > 0 &&
+                               body.projectDescription && body.projectDescription.trim().length > 0 &&
+                               body.projectTechnologies && body.projectTechnologies.trim().length > 0;
+
+            // Experience: Compulsory (Title/Role, Organization, Description, Start Date, End Date/Ongoing)
+            const hasExperience = body.experienceTitle && body.experienceTitle.trim().length > 0 &&
+                                  body.experienceOrganization && body.experienceOrganization.trim().length > 0 &&
+                                  body.experienceDescription && body.experienceDescription.trim().length > 0 &&
+                                  body.experienceStartDate && body.experienceStartDate.trim().length > 0 &&
+                                  body.experienceEndDate && body.experienceEndDate.trim().length > 0;
+
+            if (!hasProject || !hasExperience) {
+                return sendJson(res, 400, {
+                    success: false,
+                    message: "Project and experience proof are required to verify this skill. Certificate is optional."
+                });
+            }
+
+            // Find existing verification for this student & skill or create new
+            let ver = state.verifications.find(v => v.studentId === myId && v.skillId === skillId);
+            if (!ver) {
+                ver = {
+                    id: state.verifications.length + 1,
+                    studentId: myId,
+                    studentName: myProf ? myProf.fullName : "Student",
+                    studentEmail: myProf ? myProf.email : "",
+                    skillId: skillId,
+                    skillName: skill.name
+                };
+                state.verifications.unshift(ver);
+            }
+
+            // Update verification fields
+            ver.certificateName = (body.certificateName || '').trim();
+            ver.certificateUrl = (body.certificateUrl || '').trim();
+            ver.projectTitle = body.projectTitle.trim();
+            ver.projectDescription = body.projectDescription.trim();
+            ver.projectTechnologies = body.projectTechnologies.trim();
+            ver.projectLink = (body.projectLink || '').trim();
+            ver.projectProofUrl = (body.projectProofUrl || '').trim();
+            ver.experienceTitle = body.experienceTitle.trim();
+            ver.experienceOrganization = body.experienceOrganization.trim();
+            ver.experienceDescription = body.experienceDescription.trim();
+            ver.experienceDuration = (body.experienceDuration || '').trim();
+            ver.experienceStartDate = body.experienceStartDate.trim();
+            ver.experienceEndDate = body.experienceEndDate.trim();
+            ver.status = "PENDING";
+            ver.adminComment = "";
+            ver.submissionDate = new Date().toISOString();
+            ver.reviewedDate = null;
+
+            // Update student's specific teaching skill verificationStatus to PENDING (verified false until admin approval)
+            if (myProf) {
+                const ts = myProf.teachingSkills.find(t => t.skillId === skillId);
+                if (ts) {
+                    ts.verified = false;
+                    ts.verificationStatus = 'PENDING';
+                }
+            }
+
+            return sendJson(res, 200, {
+                success: true,
+                message: "Verification proof submitted successfully! Verification is now pending administrator audit.",
+                data: ver
+            });
         }
 
         if (pathname.match(/^\/api\/verifications\/(\d+)\/approve$/) && req.method === 'PUT') {
             const id = Number(pathname.split('/')[3]);
             const body = await parseBody(req);
             const ver = state.verifications.find(v => v.id === id);
-            if (ver) {
-                ver.status = 'VERIFIED';
-                ver.adminComment = body.adminComment || "Verified by Administrator.";
-                const prof = state.profiles.find(p => p.userId === ver.studentId);
-                if (prof) {
-                    prof.verified = true;
-                    const ts = prof.teachingSkills.find(t => t.skillId === ver.skillId);
-                    if (ts) ts.verified = true;
-                }
+            if (!ver) return sendJson(res, 404, { success: false, message: "Verification record not found" });
 
-                state.notifications.unshift({
-                    id: Date.now(),
-                    recipientId: ver.studentId,
-                    title: "Skill Verification Approved! ✓",
-                    message: `Congratulations! Your proof for ${ver.skillName} was approved. You now hold a Verified Skill badge!`,
-                    type: "VERIFICATION_APPROVED",
-                    isRead: false,
-                    createdAt: new Date().toISOString()
-                });
+            ver.status = 'VERIFIED';
+            ver.reviewedDate = new Date().toISOString();
+            ver.adminComment = body.adminComment || "Verified by Administrator: Project and experience criteria met.";
+
+            const prof = state.profiles.find(p => p.userId === ver.studentId);
+            if (prof) {
+                const ts = prof.teachingSkills.find(t => t.skillId === ver.skillId);
+                if (ts) {
+                    ts.verified = true;
+                    ts.verificationStatus = 'VERIFIED';
+                }
+                prof.verified = prof.teachingSkills.some(t => t.verified);
             }
-            return sendJson(res, 200, { success: true, data: ver });
+
+            state.notifications.unshift({
+                id: Date.now(),
+                recipientId: ver.studentId,
+                title: "Skill Verification Approved! ✓",
+                message: `Congratulations! Your verification proof for ${ver.skillName} was approved. You now hold the ✓ Verified Skill badge for this skill!`,
+                type: "VERIFICATION_APPROVED",
+                isRead: false,
+                createdAt: new Date().toISOString()
+            });
+
+            return sendJson(res, 200, { success: true, message: `Skill ${ver.skillName} approved!`, data: ver });
         }
 
         if (pathname.match(/^\/api\/verifications\/(\d+)\/reject$/) && req.method === 'PUT') {
             const id = Number(pathname.split('/')[3]);
             const body = await parseBody(req);
             const ver = state.verifications.find(v => v.id === id);
-            if (ver) {
-                ver.status = 'REJECTED';
-                ver.adminComment = body.adminComment || "Insufficient proof provided.";
-                state.notifications.unshift({
-                    id: Date.now(),
-                    recipientId: ver.studentId,
-                    title: "Skill Verification Decision",
-                    message: `Your proof for ${ver.skillName} was rejected: ${ver.adminComment}`,
-                    type: "VERIFICATION_REJECTED",
-                    isRead: false,
-                    createdAt: new Date().toISOString()
-                });
+            if (!ver) return sendJson(res, 404, { success: false, message: "Verification record not found" });
+
+            ver.status = 'REJECTED';
+            ver.reviewedDate = new Date().toISOString();
+            ver.adminComment = body.adminComment || "Proof does not sufficiently demonstrate hands-on experience.";
+
+            const prof = state.profiles.find(p => p.userId === ver.studentId);
+            if (prof) {
+                const ts = prof.teachingSkills.find(t => t.skillId === ver.skillId);
+                if (ts) {
+                    ts.verified = false;
+                    ts.verificationStatus = 'REJECTED';
+                }
+                prof.verified = prof.teachingSkills.some(t => t.verified);
             }
-            return sendJson(res, 200, { success: true, data: ver });
+
+            state.notifications.unshift({
+                id: Date.now(),
+                recipientId: ver.studentId,
+                title: "Skill Verification Rejected",
+                message: `Your verification submission for ${ver.skillName} was rejected: ${ver.adminComment}`,
+                type: "VERIFICATION_REJECTED",
+                isRead: false,
+                createdAt: new Date().toISOString()
+            });
+
+            return sendJson(res, 200, { success: true, message: `Skill ${ver.skillName} verification rejected.`, data: ver });
+        }
+
+        if (pathname.match(/^\/api\/verifications\/(\d+)\/request-resubmission$/) && req.method === 'PUT') {
+            const id = Number(pathname.split('/')[3]);
+            const body = await parseBody(req);
+            const ver = state.verifications.find(v => v.id === id);
+            if (!ver) return sendJson(res, 404, { success: false, message: "Verification record not found" });
+
+            ver.status = 'NEEDS_RESUBMISSION';
+            ver.reviewedDate = new Date().toISOString();
+            ver.adminComment = body.adminComment || "Please provide more details on your project repository and work responsibilities.";
+
+            const prof = state.profiles.find(p => p.userId === ver.studentId);
+            if (prof) {
+                const ts = prof.teachingSkills.find(t => t.skillId === ver.skillId);
+                if (ts) {
+                    ts.verified = false;
+                    ts.verificationStatus = 'NEEDS_RESUBMISSION';
+                }
+                prof.verified = prof.teachingSkills.some(t => t.verified);
+            }
+
+            state.notifications.unshift({
+                id: Date.now(),
+                recipientId: ver.studentId,
+                title: "Skill Verification Needs Resubmission ⚠",
+                message: `The administrator requested updates on your ${ver.skillName} proof: "${ver.adminComment}". Please update and resubmit.`,
+                type: "VERIFICATION_RESUBMISSION",
+                isRead: false,
+                createdAt: new Date().toISOString()
+            });
+
+            return sendJson(res, 200, { success: true, message: `Resubmission requested for ${ver.skillName}.`, data: ver });
         }
 
         // --- 8. REVIEWS & RATINGS (MODULE 10) ---

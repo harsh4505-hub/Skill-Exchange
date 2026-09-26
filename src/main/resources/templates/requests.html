@@ -132,6 +132,7 @@
                         <div class="col-sm-5">
                             <span class="text-muted d-block">They Offer:</span>
                             <strong class="text-primary-custom">${r.skillOfferedName}</strong>
+                            ${r.skillOfferedVerified ? '<span class="badge bg-success-subtle text-success border border-success-subtle ms-1" style="font-size:0.7rem;"><i class="bi bi-patch-check-fill me-1"></i>✓ Verified Skill</span>' : ''}
                         </div>
                         <div class="col-sm-2 text-center text-muted fw-bold">FOR</div>
                         <div class="col-sm-5 text-sm-end">
@@ -197,6 +198,7 @@
                         <div class="col-sm-5">
                             <span class="text-muted d-block">You Offered:</span>
                             <strong class="text-primary-custom">${r.skillOfferedName}</strong>
+                            ${r.skillOfferedVerified ? '<span class="badge bg-success-subtle text-success border border-success-subtle ms-1" style="font-size:0.7rem;"><i class="bi bi-patch-check-fill me-1"></i>✓ Verified Skill</span>' : ''}
                         </div>
                         <div class="col-sm-2 text-center text-muted fw-bold">FOR</div>
                         <div class="col-sm-5 text-sm-end">

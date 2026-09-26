@@ -28,6 +28,9 @@ public class UserTeachingSkill {
     @Column(name = "is_verified", nullable = false)
     private boolean isVerified = false;
 
+    @Column(name = "verification_status", length = 30)
+    private String verificationStatus = "NOT_VERIFIED"; // NOT_VERIFIED, PENDING, VERIFIED, REJECTED, NEEDS_RESUBMISSION
+
     @Column(name = "proof_document_url", length = 500)
     private String proofDocumentUrl;
 
@@ -98,5 +101,13 @@ public class UserTeachingSkill {
 
     public void setVerificationNotes(String verificationNotes) {
         this.verificationNotes = verificationNotes;
+    }
+
+    public String getVerificationStatus() {
+        return verificationStatus;
+    }
+
+    public void setVerificationStatus(String verificationStatus) {
+        this.verificationStatus = verificationStatus;
     }
 }

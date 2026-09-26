@@ -12,4 +12,5 @@ public interface SkillVerificationRepository extends JpaRepository<SkillVerifica
     List<SkillVerification> findByStatusOrderBySubmissionDateDesc(String status);
     long countByStatus(String status);
     boolean existsByStudentIdAndSkillIdAndStatus(Long studentId, Long skillId, String status);
+    java.util.Optional<SkillVerification> findByStudentIdAndSkillId(Long studentId, Long skillId);
 }
