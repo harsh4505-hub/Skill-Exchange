@@ -67,17 +67,17 @@
         <div class="tab-content">
             <!-- Exchanges Grid (Active or Completed) -->
             <div class="tab-pane fade show active" id="activeTab">
-                <div class="card card-custom p-4 border-0">
+                <div class="card card-custom p-4">
                     <h5 class="fw-bold mb-3" id="exchangeSectionTitle">Active Skill Exchanges</h5>
                     <div id="exchangesList" class="d-flex flex-column gap-3">
-                        <div class="text-center py-4 text-muted">Loading exchanges...</div>
+                        <div class="text-center py-4 text-muted small">Loading exchanges...</div>
                     </div>
                 </div>
             </div>
 
             <!-- All Proposals Tab (Pending / Rejected) -->
             <div class="tab-pane fade" id="allRequestsTab">
-                <div class="card card-custom p-4 border-0">
+                <div class="card card-custom p-4">
                     <h5 class="fw-bold mb-3">All Proposals History</h5>
                     <div class="table-responsive">
                         <table class="table table-hover align-middle">
@@ -170,23 +170,23 @@
                     const peerSkill = isStudent1 ? e.skill2Name : e.skill1Name;
 
                     return `
-                        <div class="card p-4 border rounded-3 bg-white shadow-sm">
+                        <div class="card card-custom p-4 mb-2">
                             <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
                                 <div>
                                     <h5 class="fw-bold mb-1"><i class="bi bi-arrow-left-right text-primary-custom me-2"></i>Exchange with ${peerName}</h5>
                                     <small class="text-muted">Started on ${new Date(e.startDate).toLocaleDateString()} &bull; Mode: <strong>${e.learningMode}</strong></small>
                                 </div>
-                                <span class="badge ${status === 'ACTIVE' ? 'bg-success' : 'bg-info text-dark'} px-3 py-2">${e.status}</span>
+                                <span class="badge ${status === 'ACTIVE' ? 'bg-primary' : 'bg-success'} px-3 py-1">${e.status}</span>
                             </div>
 
-                            <div class="row g-2 p-3 rounded bg-light mb-3">
+                            <div class="row g-2 p-3 rounded mb-3" style="background-color: var(--light-bg); border: 1px solid var(--border-color);">
                                 <div class="col-sm-6">
                                     <span class="text-muted small d-block">You Taught:</span>
                                     <strong class="text-primary-custom">${mySkill}</strong>
                                 </div>
                                 <div class="col-sm-6">
                                     <span class="text-muted small d-block">You Learned:</span>
-                                    <strong class="text-danger">${peerSkill}</strong>
+                                    <strong class="text-pink-custom">${peerSkill}</strong>
                                 </div>
                             </div>
 
@@ -197,9 +197,9 @@
 
                                 ${status === 'COMPLETED' ? `
                                     ${e.reviewedByCurrentStudent ? `
-                                        <span class="badge badge-custom badge-verified py-2 px-3"><i class="bi bi-check2-circle"></i> ✓ Reviewed</span>
+                                        <span class="badge badge-custom badge-verified py-2 px-3"><i class="bi bi-check2-circle me-1"></i> Reviewed</span>
                                     ` : `
-                                        <button class="btn btn-sm btn-warning fw-bold" onclick="openReviewModal(${e.id}, ${peerId}, '${peerName}')">
+                                        <button class="btn btn-sm btn-warning fw-bold text-dark" onclick="openReviewModal(${e.id}, ${peerId}, '${peerName}')">
                                             <i class="bi bi-star-fill me-1"></i> Leave Review
                                         </button>
                                     `}

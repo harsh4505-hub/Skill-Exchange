@@ -67,20 +67,20 @@
         <div class="tab-content">
             <!-- Incoming Requests Tab -->
             <div class="tab-pane fade show active" id="incomingTab">
-                <div class="card card-custom p-4 border-0">
+                <div class="card card-custom p-4">
                     <h5 class="fw-bold mb-3">Incoming Proposals</h5>
                     <div id="incomingContainer" class="d-flex flex-column gap-3">
-                        <div class="text-center py-4 text-muted">Loading requests...</div>
+                        <div class="text-center py-4 text-muted small">Loading requests...</div>
                     </div>
                 </div>
             </div>
 
             <!-- Outgoing Proposals Tab -->
             <div class="tab-pane fade" id="outgoingTab">
-                <div class="card card-custom p-4 border-0">
+                <div class="card card-custom p-4">
                     <h5 class="fw-bold mb-3">Proposals You Sent</h5>
                     <div id="outgoingContainer" class="d-flex flex-column gap-3">
-                        <div class="text-center py-4 text-muted">Loading sent requests...</div>
+                        <div class="text-center py-4 text-muted small">Loading sent requests...</div>
                     </div>
                 </div>
             </div>
@@ -118,17 +118,17 @@
             }
 
             container.innerHTML = requests.map(r => `
-                <div class="card p-3 border rounded-3 bg-white shadow-sm">
+                <div class="card card-custom p-3">
                     <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
                         <div>
                             <h6 class="mb-1 fw-bold text-dark"><i class="bi bi-person me-1 text-primary-custom"></i>${r.senderName} (${r.senderEmail})</h6>
                             <p class="mb-1 small text-muted">Proposed on ${new Date(r.createdAt).toLocaleDateString()}</p>
                         </div>
-                        <span class="badge ${getStatusBadge(r.status)} px-3 py-2">${r.status}</span>
+                        <span class="badge ${getStatusBadge(r.status)} px-3 py-1">${r.status}</span>
                     </div>
 
                     <!-- Skills & Learning Mode -->
-                    <div class="row g-2 p-2 rounded bg-light mb-2 small">
+                    <div class="row g-2 p-2 rounded mb-2 small" style="background-color: var(--light-bg); border: 1px solid var(--border-color);">
                         <div class="col-sm-5">
                             <span class="text-muted d-block">They Offer:</span>
                             <strong class="text-primary-custom">${r.skillOfferedName}</strong>
@@ -136,7 +136,7 @@
                         <div class="col-sm-2 text-center text-muted fw-bold">FOR</div>
                         <div class="col-sm-5 text-sm-end">
                             <span class="text-muted d-block">They Want from You:</span>
-                            <strong class="text-danger">${r.skillRequestedName}</strong>
+                            <strong class="text-pink-custom">${r.skillRequestedName}</strong>
                         </div>
                     </div>
 
@@ -184,16 +184,16 @@
             }
 
             container.innerHTML = requests.map(r => `
-                <div class="card p-3 border rounded-3 bg-white shadow-sm">
+                <div class="card card-custom p-3">
                     <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
                         <div>
                             <h6 class="mb-1 fw-bold text-dark">To: ${r.receiverName}</h6>
                             <p class="mb-1 small text-muted">Sent on ${new Date(r.createdAt).toLocaleDateString()}</p>
                         </div>
-                        <span class="badge ${getStatusBadge(r.status)} px-3 py-2">${r.status}</span>
+                        <span class="badge ${getStatusBadge(r.status)} px-3 py-1">${r.status}</span>
                     </div>
 
-                    <div class="row g-2 p-2 rounded bg-light mb-2 small">
+                    <div class="row g-2 p-2 rounded mb-2 small" style="background-color: var(--light-bg); border: 1px solid var(--border-color);">
                         <div class="col-sm-5">
                             <span class="text-muted d-block">You Offered:</span>
                             <strong class="text-primary-custom">${r.skillOfferedName}</strong>
@@ -201,7 +201,7 @@
                         <div class="col-sm-2 text-center text-muted fw-bold">FOR</div>
                         <div class="col-sm-5 text-sm-end">
                             <span class="text-muted d-block">You Requested:</span>
-                            <strong class="text-danger">${r.skillRequestedName}</strong>
+                            <strong class="text-pink-custom">${r.skillRequestedName}</strong>
                         </div>
                     </div>
 
@@ -229,10 +229,10 @@
         function getStatusBadge(status) {
             switch (status) {
                 case 'PENDING': return 'bg-warning text-dark';
-                case 'ACCEPTED': return 'bg-success text-white';
-                case 'REJECTED': return 'bg-danger text-white';
-                case 'COMPLETED': return 'bg-info text-dark';
-                default: return 'bg-secondary text-white';
+                case 'ACCEPTED': return 'bg-primary';
+                case 'REJECTED': return 'bg-danger';
+                case 'COMPLETED': return 'bg-success';
+                default: return 'bg-secondary';
             }
         }
 

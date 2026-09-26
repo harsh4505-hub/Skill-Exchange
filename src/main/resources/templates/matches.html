@@ -41,7 +41,7 @@
         <div id="alertContainer"></div>
 
         <!-- Heading & Explainable Formula Info Banner -->
-        <div class="card card-custom p-4 mb-4 border-0" style="background: linear-gradient(135deg, #f6f5ff 0%, #fff0f5 100%);">
+        <div class="card card-custom p-4 mb-4" style="background: linear-gradient(135deg, #f8faff 0%, #ffffff 100%);">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <div>
                     <h3 class="fw-bold mb-1"><i class="bi bi-stars text-pink-custom me-2"></i>Algorithmic Skill Matching</h3>
@@ -54,36 +54,36 @@
 
             <!-- Explainable Matching Algorithm Accordion/Collapse -->
             <div class="collapse mt-3" id="formulaCollapse">
-                <div class="card p-3 border-0 bg-white rounded-3 shadow-sm small">
+                <div class="card card-custom p-3 bg-white small">
                     <h6 class="fw-bold text-primary-custom mb-2">5-Factor Explainable Matching Formula (Max 100%):</h6>
                     <div class="row g-2">
                         <div class="col-md-4">
-                            <div class="p-2 border rounded bg-light">
-                                <strong>1. Direct Compatibility (40%)</strong>
+                            <div class="p-2 border rounded" style="background-color: var(--light-bg); border-color: var(--border-color) !important;">
+                                <strong class="text-dark">1. Direct Compatibility (40%)</strong>
                                 <p class="mb-0 text-muted small">Candidate teaches a skill you want to learn.</p>
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="p-2 border rounded bg-light">
-                                <strong>2. Reverse Mutual Trade (20%)</strong>
+                            <div class="p-2 border rounded" style="background-color: var(--light-bg); border-color: var(--border-color) !important;">
+                                <strong class="text-dark">2. Reverse Mutual Trade (20%)</strong>
                                 <p class="mb-0 text-muted small">You teach a skill the candidate wants (win-win barter).</p>
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="p-2 border rounded bg-light">
-                                <strong>3. Peer Rating (15%)</strong>
+                            <div class="p-2 border rounded" style="background-color: var(--light-bg); border-color: var(--border-color) !important;">
+                                <strong class="text-dark">3. Peer Rating (15%)</strong>
                                 <p class="mb-0 text-muted small">Based on candidate's historical star ratings (out of 5★).</p>
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="p-2 border rounded bg-light">
-                                <strong>4. Admin Verification (15%)</strong>
+                            <div class="p-2 border rounded" style="background-color: var(--light-bg); border-color: var(--border-color) !important;">
+                                <strong class="text-dark">4. Admin Verification (15%)</strong>
                                 <p class="mb-0 text-muted small">Candidate earned a Verified Skill badge via certificate audit.</p>
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="p-2 border rounded bg-light">
-                                <strong>5. Academic Synergy (10%)</strong>
+                            <div class="p-2 border rounded" style="background-color: var(--light-bg); border-color: var(--border-color) !important;">
+                                <strong class="text-dark">5. Academic Synergy (10%)</strong>
                                 <p class="mb-0 text-muted small">Shared department or college campus proximity.</p>
                             </div>
                         </div>
@@ -93,17 +93,17 @@
         </div>
 
         <!-- Search and Filters Bar (Module 5) -->
-        <div class="card card-custom p-3 border-0 mb-4 shadow-sm">
+        <div class="card card-custom p-3 mb-4">
             <div class="row g-2 align-items-center">
                 <div class="col-lg-3 col-md-6">
                     <div class="input-group">
-                        <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
                         <input type="text" id="searchInput" class="form-control" placeholder="Search student or skill..." onkeyup="applyFilters()">
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6">
                     <div class="input-group">
-                        <span class="input-group-text bg-light"><i class="bi bi-grid text-primary-custom"></i></span>
+                        <span class="input-group-text"><i class="bi bi-grid text-primary-custom"></i></span>
                         <select id="filterCategory" class="form-select" onchange="onCategoryFilterChange()">
                             <option value="">All Categories</option>
                         </select>
@@ -111,7 +111,7 @@
                 </div>
                 <div class="col-lg-3 col-md-6">
                     <div class="input-group">
-                        <span class="input-group-text bg-light"><i class="bi bi-mortarboard text-pink-custom"></i></span>
+                        <span class="input-group-text"><i class="bi bi-mortarboard text-pink-custom"></i></span>
                         <select id="filterSkill" class="form-select" onchange="applyFilters()">
                             <option value="">All Skills</option>
                         </select>
@@ -442,7 +442,7 @@
 
             container.innerHTML = matches.map(m => `
                 <div class="col-md-6 col-lg-4">
-                    <div class="card card-custom p-4 h-100 border-0 shadow-sm d-flex flex-column justify-content-between">
+                    <div class="card card-custom p-4 h-100 d-flex flex-column justify-content-between">
                         <div>
                             <!-- Header with avatar, badge, and match percentage -->
                             <div class="d-flex justify-content-between align-items-start mb-3">
@@ -462,12 +462,12 @@
                             <!-- Verification Badge -->
                             ${m.verified ? `
                             <div class="mb-2">
-                                <span class="badge badge-custom badge-verified"><i class="bi bi-patch-check-fill"></i> ✓ Verified Skill Badge</span>
+                                <span class="badge badge-custom badge-verified"><i class="bi bi-patch-check-fill me-1"></i> Verified Skill Badge</span>
                             </div>
                             ` : ''}
 
                             <!-- Skills Exchange Offer Details -->
-                            <div class="p-3 rounded-3 bg-light mb-3">
+                            <div class="p-3 rounded-3 mb-3" style="background-color: var(--light-bg); border: 1px solid var(--border-color);">
                                 <div class="mb-2">
                                     <span class="text-muted small d-block">They Can Teach:</span>
                                     <strong class="text-primary-custom fs-6"><i class="bi bi-mortarboard me-1"></i>${m.skillTheyTeachYou}</strong>
@@ -484,12 +484,12 @@
                             <!-- Algorithm Explainable Breakdown -->
                             <div class="mb-3">
                                 <small class="text-muted fw-semibold d-block mb-1">Match Reason Breakdown:</small>
-                                <p class="small text-muted mb-0" style="font-size:0.75rem; line-height:1.4;">${m.matchReason}</p>
+                                <p class="small text-muted mb-0" style="font-size:0.8rem; line-height:1.45;">${m.matchReason}</p>
                             </div>
                         </div>
 
                         <!-- Card Action Buttons -->
-                        <div class="d-flex gap-2 pt-2 border-top">
+                        <div class="d-flex gap-2 pt-3 border-top">
                             <button class="btn btn-primary-custom flex-grow-1" onclick="openRequestModal(${m.userId}, '${m.studentName}', '${m.skillTheyTeachYou}', ${m.skillTheyTeachYouId || 'null'}, '${m.skillYouTeachThem || ''}', ${m.skillYouTeachThemId || 'null'})">
                                 <i class="bi bi-send me-1"></i> Propose Exchange
                             </button>
