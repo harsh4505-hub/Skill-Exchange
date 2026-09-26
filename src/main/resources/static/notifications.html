@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications & Alerts | Student Skill Exchange Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-light">
+
+    <!-- Navigation Header -->
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="bi bi-arrow-left-right text-gradient fs-3"></i>
+                <span class="text-gradient">SkillExchange</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navMenu">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4 gap-1">
+                    <li class="nav-item"><a class="nav-link" href="dashboard.html">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="matches.html">Find Matches</a></li>
+                    <li class="nav-item"><a class="nav-link" href="skills.html">My Skills</a></li>
+                    <li class="nav-item"><a class="nav-link" href="requests.html">Exchange Proposals</a></li>
+                    <li class="nav-item"><a class="nav-link" href="chat.html">Chat</a></li>
+                    <li class="nav-item"><a class="nav-link" href="verification.html">Verification</a></li>
+                    <li class="nav-item"><a class="nav-link" href="exchange-history.html">History</a></li>
+                </ul>
+                <div id="navbarUserControls"></div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container py-4">
+        <div id="alertContainer"></div>
+
+        <div class="card card-custom p-4 border-0 mb-4">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <h3 class="fw-bold mb-1"><i class="bi bi-bell-fill text-primary-custom me-2"></i>Notifications</h3>
+                    <p class="text-muted small mb-0">Stay updated on exchange requests, accepted trades, messages, and admin verification decisions</p>
+                </div>
+                <button class="btn btn-outline-custom btn-sm" onclick="markAllRead()">
+                    <i class="bi bi-check-all me-1"></i> Mark All as Read
+                </button>
+            </div>
+        </div>
+
+        <div class="card card-custom p-4 border-0">
+            <div id="notificationsList" class="d-flex flex-column gap-2">
+                <div class="text-center py-4 text-muted">Loading alerts...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            await loadNotifications();
+        });
+
+        async function loadNotifications() {
+            const container = document.getElementById('notificationsList');
+            const res = await API.get('/api/notifications');
+            if (res && res.success && res.data.length > 0) {
+                container.innerHTML = res.data.map(n => `
+                    <div class="p-3 border rounded-3 d-flex justify-content-between align-items-center ${n.read ? 'bg-light text-muted' : 'bg-white shadow-sm'}">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="p-2 rounded-circle ${getNotificationBg(n.type)} fs-4">
+                                <i class="bi ${getNotificationIcon(n.type)}"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1 ${n.read ? 'text-secondary' : 'fw-bold text-dark'}">${n.title}</h6>
+                                <p class="mb-1 small">${n.message}</p>
+                                <small class="text-muted" style="font-size:0.75rem;">${new Date(n.createdAt).toLocaleString()}</small>
+                            </div>
+                        </div>
+                        <div>
+                            ${!n.read ? `
+                                <button class="btn btn-sm btn-light border text-primary-custom" onclick="markRead(${n.id})">
+                                    <i class="bi bi-check2"></i> Mark Read
+                                </button>
+                            ` : '<span class="small text-muted"><i class="bi bi-check2-all text-success"></i> Read</span>'}
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = `<div class="text-center py-4 text-muted">You have no notifications at this time.</div>`;
+            }
+        }
+
+        function getNotificationIcon(type) {
+            switch (type) {
+                case 'EXCHANGE_REQUEST': return 'bi-arrow-left-right text-primary-custom';
+                case 'REQUEST_ACCEPTED': return 'bi-check-circle text-success';
+                case 'REQUEST_REJECTED': return 'bi-x-circle text-danger';
+                case 'NEW_MESSAGE': return 'bi-chat-dots text-primary-custom';
+                case 'VERIFICATION_APPROVED': return 'bi-patch-check-fill text-success';
+                case 'VERIFICATION_REJECTED': return 'bi-shield-x text-danger';
+                case 'EXCHANGE_COMPLETED': return 'bi-trophy text-warning';
+                case 'NEW_REVIEW': return 'bi-star-fill text-warning';
+                default: return 'bi-bell text-secondary';
+            }
+        }
+
+        function getNotificationBg(type) {
+            if (type.includes('APPROVED') || type.includes('ACCEPTED')) return 'bg-success-subtle';
+            if (type.includes('REJECTED')) return 'bg-danger-subtle';
+            if (type.includes('REVIEW') || type.includes('COMPLETED')) return 'bg-warning-subtle';
+            return 'bg-primary-subtle';
+        }
+
+        async function markRead(id) {
+            await API.put(`/api/notifications/${id}/read`);
+            loadNotifications();
+        }
+
+        async function markAllRead() {
+            await API.put('/api/notifications/read-all');
+            loadNotifications();
+        }
+    </script>
+</body>
+</html>

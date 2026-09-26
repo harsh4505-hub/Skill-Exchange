@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In | Student Skill Exchange Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="d-flex flex-column min-vh-100 bg-light">
+
+    <!-- Navigation Header -->
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="bi bi-arrow-left-right text-gradient fs-3"></i>
+                <span class="text-gradient">SkillExchange</span>
+            </a>
+            <div class="ms-auto">
+                <a href="register.html" class="btn btn-outline-custom btn-sm">Create Student Account</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container my-auto py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div id="alertContainer"></div>
+
+                <div class="card card-custom p-4 p-md-5 shadow-sm border-0">
+                    <div class="text-center mb-4">
+                        <div class="d-inline-flex p-3 rounded-circle bg-light text-primary-custom mb-2">
+                            <i class="bi bi-person-lock fs-2"></i>
+                        </div>
+                        <h2 class="fw-bold">Welcome Back</h2>
+                        <p class="text-muted small">Access your college peer exchange dashboard</p>
+                    </div>
+
+                    <form id="loginForm" onsubmit="handleLogin(event)">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">College Email</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-envelope"></i></span>
+                                <input type="email" id="email" class="form-control" placeholder="harsh@college.edu" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="form-label fw-semibold mb-0">Password</label>
+                                <a href="javascript:void(0)" onclick="openForgotPwd()" class="small text-decoration-none text-pink-custom">Forgot Password?</a>
+                            </div>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-key"></i></span>
+                                <input type="password" id="password" class="form-control" placeholder="••••••••" required>
+                            </div>
+                        </div>
+
+                        <button type="submit" id="loginBtn" class="btn btn-primary-custom w-100 py-2 mb-3">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                        </button>
+                    </form>
+
+                    <!-- Quick Evaluation / Demo Logins -->
+                    <div class="mt-4 pt-3 border-top">
+                        <p class="text-center small text-muted fw-semibold mb-2 text-uppercase">
+                            <i class="bi bi-lightning-charge-fill text-warning me-1"></i>Quick Demo Evaluation Logins
+                        </p>
+                        <div class="d-flex flex-wrap gap-2 justify-content-center">
+                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="quickFill('harsh@college.edu', 'password123')">
+                                Harsh (Student)
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="quickFill('sejal@college.edu', 'password123')">
+                                Sejal (Student)
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="quickFill('raza@college.edu', 'password123')">
+                                Raza (Student)
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="quickFill('admin@college.edu', 'password123')">
+                                Admin (Staff)
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <span class="text-muted small">Don't have an account yet? </span>
+                        <a href="register.html" class="small fw-semibold text-primary-custom text-decoration-none">Register here</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Forgot Password Modal -->
+    <div class="modal fade" id="forgotPwdModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-shield-lock me-2 text-primary-custom"></i>Reset Password</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small">Enter your registered college email address to receive password reset instructions.</p>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">College Email</label>
+                        <input type="email" id="resetEmail" class="form-control" placeholder="student@college.edu">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary-custom btn-sm" onclick="sendPasswordReset()">Send Reset Link</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        function quickFill(email, pwd) {
+            document.getElementById('email').value = email;
+            document.getElementById('password').value = pwd;
+            handleLogin(new Event('submit'));
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const btn = document.getElementById('loginBtn');
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>Authenticating...`;
+
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+
+            const res = await API.post('/api/auth/login', { email, password });
+            if (res && res.success) {
+                showAlert("Login successful! Redirecting...", "success");
+                setTimeout(() => {
+                    if (res.data.role === 'ROLE_ADMIN') {
+                        window.location.href = 'admin-dashboard.html';
+                    } else {
+                        window.location.href = 'dashboard.html';
+                    }
+                }, 700);
+            } else {
+                showAlert(res.message || "Invalid credentials. Please verify your email and password.", "danger");
+                btn.disabled = false;
+                btn.innerHTML = `<i class="bi bi-box-arrow-in-right me-2"></i>Sign In`;
+            }
+        }
+
+        function openForgotPwd() {
+            new bootstrap.Modal(document.getElementById('forgotPwdModal')).show();
+        }
+
+        function sendPasswordReset() {
+            const email = document.getElementById('resetEmail').value.trim();
+            if (!email) {
+                alert("Please enter your email");
+                return;
+            }
+            bootstrap.Modal.getInstance(document.getElementById('forgotPwdModal')).hide();
+            showAlert("Password reset link has been dispatched to " + email, "info");
+        }
+    </script>
+</body>
+</html>

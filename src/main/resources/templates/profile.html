@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Profile | Student Skill Exchange Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-light">
+
+    <!-- Navigation Header -->
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="bi bi-arrow-left-right text-gradient fs-3"></i>
+                <span class="text-gradient">SkillExchange</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navMenu">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4 gap-1">
+                    <li class="nav-item"><a class="nav-link" href="dashboard.html">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="matches.html">Find Matches</a></li>
+                    <li class="nav-item"><a class="nav-link" href="skills.html">My Skills</a></li>
+                    <li class="nav-item"><a class="nav-link" href="requests.html">Exchange Proposals</a></li>
+                    <li class="nav-item"><a class="nav-link" href="chat.html">Chat</a></li>
+                    <li class="nav-item"><a class="nav-link" href="verification.html">Verification</a></li>
+                    <li class="nav-item"><a class="nav-link" href="exchange-history.html">History</a></li>
+                </ul>
+                <div id="navbarUserControls"></div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container py-4">
+        <div id="alertContainer"></div>
+
+        <div class="row g-4">
+            <!-- Left Profile Card -->
+            <div class="col-lg-4">
+                <div class="card card-custom p-4 text-center border-0 mb-4">
+                    <div class="position-relative d-inline-block mx-auto mb-3">
+                        <img id="profAvatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=Harsh" class="avatar-img-lg" alt="Profile Avatar">
+                    </div>
+                    <h4 class="fw-bold mb-1" id="profName">Student Name</h4>
+                    <p class="text-muted small mb-2" id="profCollege">College of Engineering</p>
+
+                    <!-- Verification Badge -->
+                    <div id="profVerifiedContainer" class="mb-3 d-none">
+                        <span class="badge badge-custom badge-verified px-3 py-2 fs-6">
+                            <i class="bi bi-patch-check-fill me-1"></i> ✓ VERIFIED SKILL BADGE
+                        </span>
+                    </div>
+
+                    <div class="d-flex justify-content-center gap-3 py-2 border-top border-bottom my-3">
+                        <div>
+                            <span class="text-muted small d-block">Rating</span>
+                            <span class="fw-bold text-warning fs-5" id="profRating">★ 0.0</span>
+                        </div>
+                        <div class="border-end"></div>
+                        <div>
+                            <span class="text-muted small d-block">Exchanges</span>
+                            <span class="fw-bold fs-5 text-primary-custom" id="profExchanges">0</span>
+                        </div>
+                    </div>
+
+                    <div class="text-start mb-3">
+                        <label class="fw-semibold small text-muted text-uppercase mb-1">About Me</label>
+                        <p class="small text-dark mb-0" id="profBio">Student bio will appear here.</p>
+                    </div>
+
+                    <div class="text-start mb-3">
+                        <label class="fw-semibold small text-muted text-uppercase mb-1">Academic Details</label>
+                        <p class="small mb-1"><i class="bi bi-mortarboard me-2 text-primary-custom"></i><span id="profDept">Dept</span></p>
+                        <p class="small mb-1"><i class="bi bi-calendar-event me-2 text-primary-custom"></i><span id="profYear">Year</span></p>
+                        <p class="small mb-0"><i class="bi bi-envelope me-2 text-primary-custom"></i><span id="profEmail">Email</span></p>
+                    </div>
+
+                    <button class="btn btn-outline-custom w-100" onclick="openEditProfileModal()">
+                        <i class="bi bi-pencil-square me-1"></i> Edit Profile
+                    </button>
+                </div>
+
+                <!-- Skill Verification Promotion -->
+                <div class="card card-custom p-4 border-0 text-center" style="background: linear-gradient(135deg, #e6faf4 0%, #f6f5ff 100%);">
+                    <i class="bi bi-award-fill text-success fs-1 mb-2"></i>
+                    <h6 class="fw-bold mb-1">Get Skill Verified</h6>
+                    <p class="small text-muted mb-3">Upload your certificates or project repos to earn the Verified Skill Badge and boost your match ranking by 15%.</p>
+                    <a href="verification.html" class="btn btn-sm btn-success">Submit Proof Documents</a>
+                </div>
+            </div>
+
+            <!-- Right Column: Skills & Reviews -->
+            <div class="col-lg-8">
+                <!-- Skills I Can Teach -->
+                <div class="card card-custom p-4 border-0 mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h5 class="fw-bold mb-0"><i class="bi bi-mortarboard-fill text-primary-custom me-2"></i>Skills I Can Teach</h5>
+                            <small class="text-muted">Skills you can share with peers in return for knowledge</small>
+                        </div>
+                        <a href="skills.html" class="btn btn-sm btn-outline-custom">+ Manage</a>
+                    </div>
+                    <div id="teachingSkillsContainer" class="d-flex flex-wrap gap-2">
+                        <div class="text-muted small">Loading teaching skills...</div>
+                    </div>
+                </div>
+
+                <!-- Skills I Want to Learn -->
+                <div class="card card-custom p-4 border-0 mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h5 class="fw-bold mb-0"><i class="bi bi-lightbulb-fill text-pink-custom me-2"></i>Skills I Want to Learn</h5>
+                            <small class="text-muted">Your current learning wishlist</small>
+                        </div>
+                        <a href="skills.html" class="btn btn-sm btn-outline-custom">+ Manage</a>
+                    </div>
+                    <div id="learningSkillsContainer" class="d-flex flex-wrap gap-2">
+                        <div class="text-muted small">Loading learning wishlist...</div>
+                    </div>
+                </div>
+
+                <!-- Peer Reviews & Feedback -->
+                <div class="card card-custom p-4 border-0">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0"><i class="bi bi-star-fill text-warning me-2"></i>Peer Reviews & Ratings</h5>
+                        <span class="badge bg-light text-dark border" id="reviewCountBadge">0 Reviews</span>
+                    </div>
+                    <div id="reviewsContainer" class="d-flex flex-column gap-3">
+                        <div class="text-center py-4 text-muted small">Loading reviews...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div class="modal fade" id="editProfileModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-pencil-square me-2 text-primary-custom"></i>Edit Profile Information</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editProfileForm" onsubmit="saveProfile(event)">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Full Name</label>
+                            <input type="text" id="editFullName" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Bio / Introduction</label>
+                            <textarea id="editBio" class="form-control" rows="3" placeholder="Tell other students about yourself and your passions..."></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">College / University</label>
+                            <input type="text" id="editCollege" class="form-control" required>
+                        </div>
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Department</label>
+                                <input type="text" id="editDept" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Year of Study</label>
+                                <select id="editYear" class="form-select" required>
+                                    <option value="1st Year">1st Year</option>
+                                    <option value="2nd Year">2nd Year</option>
+                                    <option value="3rd Year">3rd Year</option>
+                                    <option value="4th Year">4th Year</option>
+                                    <option value="Postgraduate">Postgraduate</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Phone Number</label>
+                            <input type="tel" id="editPhone" class="form-control">
+                        </div>
+                        <button type="submit" class="btn btn-primary-custom w-100">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        let myProfile = null;
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            await loadProfileData();
+        });
+
+        async function loadProfileData() {
+            const res = await API.get('/api/students/profile/me');
+            if (res && res.success) {
+                myProfile = res.data;
+                renderProfile(myProfile);
+                loadStudentReviews(myProfile.userId);
+            }
+        }
+
+        function renderProfile(p) {
+            document.getElementById('profName').innerText = p.fullName;
+            document.getElementById('profCollege').innerText = p.college;
+            document.getElementById('profDept').innerText = p.department;
+            document.getElementById('profYear').innerText = p.yearOfStudy;
+            document.getElementById('profEmail').innerText = p.email;
+            document.getElementById('profBio').innerText = p.bio || "No biography provided.";
+            document.getElementById('profAvatar').src = p.avatarUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=${p.userId}`;
+
+            document.getElementById('profRating').innerText = `★ ${(p.averageRating || 0).toFixed(1)}`;
+            document.getElementById('profExchanges').innerText = p.completedExchangesCount || 0;
+
+            if (p.verified) {
+                document.getElementById('profVerifiedContainer').classList.remove('d-none');
+            }
+
+            // Render Teaching Skills
+            const teachContainer = document.getElementById('teachingSkillsContainer');
+            if (p.teachingSkills && p.teachingSkills.length > 0) {
+                teachContainer.innerHTML = p.teachingSkills.map(ts => `
+                    <div class="card p-2 px-3 border rounded-3 bg-white d-flex flex-row align-items-center gap-2 shadow-sm">
+                        <i class="bi bi-check-circle-fill text-primary-custom"></i>
+                        <div>
+                            <strong class="d-block">${ts.skillName}</strong>
+                            <small class="text-muted">${ts.levelOrUrgency} &bull; ${ts.categoryName}</small>
+                        </div>
+                        ${ts.verified ? '<span class="badge badge-custom badge-verified ms-2"><i class="bi bi-patch-check-fill"></i> Verified</span>' : ''}
+                    </div>
+                `).join('');
+            } else {
+                teachContainer.innerHTML = `<span class="text-muted small">No skills added to teach yet. Click '+ Manage' to add skills!</span>`;
+            }
+
+            // Render Learning Skills
+            const learnContainer = document.getElementById('learningSkillsContainer');
+            if (p.learningSkills && p.learningSkills.length > 0) {
+                learnContainer.innerHTML = p.learningSkills.map(ls => `
+                    <div class="card p-2 px-3 border rounded-3 bg-white d-flex flex-row align-items-center gap-2 shadow-sm">
+                        <i class="bi bi-bookmark-star-fill text-pink-custom"></i>
+                        <div>
+                            <strong class="d-block">${ls.skillName}</strong>
+                            <small class="text-muted">${ls.levelOrUrgency} Priority &bull; ${ls.categoryName}</small>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                learnContainer.innerHTML = `<span class="text-muted small">No learning wishlist added. Add skills you want to learn to get matched!</span>`;
+            }
+        }
+
+        async function loadStudentReviews(studentId) {
+            const container = document.getElementById('reviewsContainer');
+            const res = await API.get(`/api/reviews/${studentId}`);
+            if (res && res.success && res.data.length > 0) {
+                document.getElementById('reviewCountBadge').innerText = `${res.data.length} Reviews`;
+                container.innerHTML = res.data.map(r => `
+                    <div class="p-3 border rounded-3 bg-white">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-semibold">${r.reviewerName}</span>
+                            <span class="text-warning small">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)} (${r.rating}/5)</span>
+                        </div>
+                        <p class="mb-1 text-dark small">"${r.comment || 'Smooth and productive skill exchange!'}"</p>
+                        <small class="text-muted" style="font-size:0.7rem;">${new Date(r.createdAt).toLocaleDateString()}</small>
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = `<div class="text-center py-4 text-muted small">No reviews received yet. Reviews appear after completed exchanges.</div>`;
+            }
+        }
+
+        function openEditProfileModal() {
+            if (!myProfile) return;
+            document.getElementById('editFullName').value = myProfile.fullName;
+            document.getElementById('editBio').value = myProfile.bio || '';
+            document.getElementById('editCollege').value = myProfile.college;
+            document.getElementById('editDept').value = myProfile.department;
+            document.getElementById('editYear').value = myProfile.yearOfStudy;
+            document.getElementById('editPhone').value = myProfile.phone || '';
+            new bootstrap.Modal(document.getElementById('editProfileModal')).show();
+        }
+
+        async function saveProfile(e) {
+            e.preventDefault();
+            const payload = {
+                fullName: document.getElementById('editFullName').value.trim(),
+                bio: document.getElementById('editBio').value.trim(),
+                college: document.getElementById('editCollege').value.trim(),
+                department: document.getElementById('editDept').value.trim(),
+                yearOfStudy: document.getElementById('editYear').value,
+                phone: document.getElementById('editPhone').value.trim()
+            };
+
+            const res = await API.put(`/api/students/${myProfile.userId}`, payload);
+            if (res && res.success) {
+                bootstrap.Modal.getInstance(document.getElementById('editProfileModal')).hide();
+                showAlert("Profile updated successfully!", "success");
+                myProfile = res.data;
+                renderProfile(myProfile);
+            } else {
+                alert(res.message || "Failed to update profile");
+            }
+        }
+    </script>
+</body>
+</html>

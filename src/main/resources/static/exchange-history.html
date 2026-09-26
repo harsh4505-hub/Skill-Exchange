@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exchange History & Reviews | Student Skill Exchange Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-light">
+
+    <!-- Navigation Header -->
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="bi bi-arrow-left-right text-gradient fs-3"></i>
+                <span class="text-gradient">SkillExchange</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navMenu">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4 gap-1">
+                    <li class="nav-item"><a class="nav-link" href="dashboard.html">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="matches.html">Find Matches</a></li>
+                    <li class="nav-item"><a class="nav-link" href="skills.html">My Skills</a></li>
+                    <li class="nav-item"><a class="nav-link" href="requests.html">Exchange Proposals</a></li>
+                    <li class="nav-item"><a class="nav-link" href="chat.html">Chat</a></li>
+                    <li class="nav-item"><a class="nav-link" href="verification.html">Verification</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="exchange-history.html">History</a></li>
+                </ul>
+                <div id="navbarUserControls"></div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container py-4">
+        <div id="alertContainer"></div>
+
+        <div class="mb-4">
+            <h3 class="fw-bold mb-1">Exchange History & Records</h3>
+            <p class="text-muted small mb-0">Track active sessions, completed peer learning exchanges, and provide mutual reviews</p>
+        </div>
+
+        <!-- History Filter Tabs -->
+        <ul class="nav nav-pills mb-4 gap-2">
+            <li class="nav-item">
+                <button class="nav-link active rounded-pill px-4" data-bs-toggle="pill" data-bs-target="#activeTab" onclick="filterHistory('ACTIVE')">
+                    <i class="bi bi-play-circle me-1"></i> Active Exchanges
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link rounded-pill px-4" data-bs-toggle="pill" data-bs-target="#completedTab" onclick="filterHistory('COMPLETED')">
+                    <i class="bi bi-check-circle me-1"></i> Completed Exchanges
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link rounded-pill px-4" data-bs-toggle="pill" data-bs-target="#allRequestsTab" onclick="loadAllRequestsHistory()">
+                    <i class="bi bi-clock-history me-1"></i> All Proposals (Pending / Rejected)
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+            <!-- Exchanges Grid (Active or Completed) -->
+            <div class="tab-pane fade show active" id="activeTab">
+                <div class="card card-custom p-4 border-0">
+                    <h5 class="fw-bold mb-3" id="exchangeSectionTitle">Active Skill Exchanges</h5>
+                    <div id="exchangesList" class="d-flex flex-column gap-3">
+                        <div class="text-center py-4 text-muted">Loading exchanges...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- All Proposals Tab (Pending / Rejected) -->
+            <div class="tab-pane fade" id="allRequestsTab">
+                <div class="card card-custom p-4 border-0">
+                    <h5 class="fw-bold mb-3">All Proposals History</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Direction</th>
+                                    <th>Participant</th>
+                                    <th>Offered Skill</th>
+                                    <th>Requested Skill</th>
+                                    <th>Mode</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="allRequestsTbody">
+                                <tr><td colspan="7" class="text-center py-4 text-muted">Loading requests...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rating & Review Modal -->
+    <div class="modal fade" id="reviewModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-star-fill text-warning me-2"></i>Rate & Review Peer Student</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="revExchangeId">
+                    <input type="hidden" id="revStudentId">
+
+                    <div class="text-center mb-4">
+                        <h6 class="fw-semibold mb-2">How was your learning experience with <span id="revStudentName" class="text-primary-custom">Student</span>?</h6>
+                        <!-- 5 Star Selection -->
+                        <div class="d-flex justify-content-center gap-2 fs-2 text-warning" id="starPicker">
+                            <i class="bi bi-star-fill cursor-pointer" onclick="setStars(1)"></i>
+                            <i class="bi bi-star-fill cursor-pointer" onclick="setStars(2)"></i>
+                            <i class="bi bi-star-fill cursor-pointer" onclick="setStars(3)"></i>
+                            <i class="bi bi-star-fill cursor-pointer" onclick="setStars(4)"></i>
+                            <i class="bi bi-star-fill cursor-pointer" onclick="setStars(5)"></i>
+                        </div>
+                        <span class="small text-muted" id="starLabel">5 Stars (Excellent)</span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Review Feedback / Comments</label>
+                        <textarea id="revComment" class="form-control" rows="3" placeholder="Explain what you learned, punctuality, clarity of explanation..."></textarea>
+                    </div>
+
+                    <button class="btn btn-warning w-100 fw-bold" onclick="submitReview()">
+                        <i class="bi bi-check-circle me-1"></i> Submit Review
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        let currentStatusFilter = 'ACTIVE';
+        let currentRating = 5;
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            await filterHistory('ACTIVE');
+        });
+
+        async function filterHistory(status) {
+            currentStatusFilter = status;
+            document.getElementById('exchangeSectionTitle').innerText = status === 'ACTIVE' ? 'Active Skill Exchanges' : 'Completed Skill Exchanges';
+
+            const container = document.getElementById('exchangesList');
+            container.innerHTML = `<div class="text-center py-4 text-muted">Loading...</div>`;
+
+            const res = await API.get(`/api/exchange-requests/history?status=${status}`);
+            if (res && res.success && res.data.length > 0) {
+                const myId = CurrentUser ? CurrentUser.userId : null;
+
+                container.innerHTML = res.data.map(e => {
+                    const isStudent1 = e.student1Id === myId;
+                    const peerName = isStudent1 ? e.student2Name : e.student1Name;
+                    const peerId = isStudent1 ? e.student2Id : e.student1Id;
+                    const mySkill = isStudent1 ? e.skill1Name : e.skill2Name;
+                    const peerSkill = isStudent1 ? e.skill2Name : e.skill1Name;
+
+                    return `
+                        <div class="card p-4 border rounded-3 bg-white shadow-sm">
+                            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+                                <div>
+                                    <h5 class="fw-bold mb-1"><i class="bi bi-arrow-left-right text-primary-custom me-2"></i>Exchange with ${peerName}</h5>
+                                    <small class="text-muted">Started on ${new Date(e.startDate).toLocaleDateString()} &bull; Mode: <strong>${e.learningMode}</strong></small>
+                                </div>
+                                <span class="badge ${status === 'ACTIVE' ? 'bg-success' : 'bg-info text-dark'} px-3 py-2">${e.status}</span>
+                            </div>
+
+                            <div class="row g-2 p-3 rounded bg-light mb-3">
+                                <div class="col-sm-6">
+                                    <span class="text-muted small d-block">You Taught:</span>
+                                    <strong class="text-primary-custom">${mySkill}</strong>
+                                </div>
+                                <div class="col-sm-6">
+                                    <span class="text-muted small d-block">You Learned:</span>
+                                    <strong class="text-danger">${peerSkill}</strong>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                <a href="chat.html?partnerId=${peerId}" class="btn btn-sm btn-outline-custom">
+                                    <i class="bi bi-chat-dots me-1"></i> Open Chat
+                                </a>
+
+                                ${status === 'COMPLETED' ? `
+                                    ${e.reviewedByCurrentStudent ? `
+                                        <span class="badge badge-custom badge-verified py-2 px-3"><i class="bi bi-check2-circle"></i> ✓ Reviewed</span>
+                                    ` : `
+                                        <button class="btn btn-sm btn-warning fw-bold" onclick="openReviewModal(${e.id}, ${peerId}, '${peerName}')">
+                                            <i class="bi bi-star-fill me-1"></i> Leave Review
+                                        </button>
+                                    `}
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                container.innerHTML = `<div class="text-center py-4 text-muted small">No ${status.toLowerCase()} skill exchanges found.</div>`;
+            }
+        }
+
+        async function loadAllRequestsHistory() {
+            const tbody = document.getElementById('allRequestsTbody');
+            const res = await API.get('/api/exchange-requests');
+            if (res && res.success && res.data.length > 0) {
+                const myId = CurrentUser ? CurrentUser.userId : null;
+                tbody.innerHTML = res.data.map(r => {
+                    const isOutgoing = r.senderId === myId;
+                    return `
+                        <tr>
+                            <td><span class="badge ${isOutgoing ? 'bg-secondary' : 'bg-primary'}">${isOutgoing ? 'Sent' : 'Received'}</span></td>
+                            <td>${isOutgoing ? r.receiverName : r.senderName}</td>
+                            <td>${r.skillOfferedName}</td>
+                            <td>${r.skillRequestedName}</td>
+                            <td><span class="badge badge-custom badge-${r.learningMode.toLowerCase()}">${r.learningMode}</span></td>
+                            <td><span class="badge bg-light text-dark border">${r.status}</span></td>
+                            <td class="small text-muted">${new Date(r.createdAt).toLocaleDateString()}</td>
+                        </tr>
+                    `;
+                }).join('');
+            } else {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">No proposal records found.</td></tr>`;
+            }
+        }
+
+        function setStars(count) {
+            currentRating = count;
+            const stars = document.getElementById('starPicker').children;
+            for (let i = 0; i < 5; i++) {
+                if (i < count) {
+                    stars[i].className = 'bi bi-star-fill cursor-pointer';
+                } else {
+                    stars[i].className = 'bi bi-star cursor-pointer text-muted';
+                }
+            }
+            const labels = ["1 Star (Poor)", "2 Stars (Fair)", "3 Stars (Good)", "4 Stars (Very Good)", "5 Stars (Excellent)"];
+            document.getElementById('starLabel').innerText = labels[count - 1];
+        }
+
+        function openReviewModal(exchangeId, studentId, studentName) {
+            document.getElementById('revExchangeId').value = exchangeId;
+            document.getElementById('revStudentId').value = studentId;
+            document.getElementById('revStudentName').innerText = studentName;
+            setStars(5);
+            new bootstrap.Modal(document.getElementById('reviewModal')).show();
+        }
+
+        async function submitReview() {
+            const exchangeId = document.getElementById('revExchangeId').value;
+            const reviewedStudentId = document.getElementById('revStudentId').value;
+            const comment = document.getElementById('revComment').value.trim();
+
+            const res = await API.post('/api/reviews', {
+                exchangeId: Number(exchangeId),
+                reviewedStudentId: Number(reviewedStudentId),
+                rating: currentRating,
+                comment: comment || "Great skill exchange!"
+            });
+
+            if (res && res.success) {
+                bootstrap.Modal.getInstance(document.getElementById('reviewModal')).hide();
+                showAlert("Review submitted successfully! Thank you for encouraging peer learning.", "success");
+                filterHistory('COMPLETED');
+            } else {
+                alert(res.message || "Failed to submit review");
+            }
+        }
+    </script>
+</body>
+</html>

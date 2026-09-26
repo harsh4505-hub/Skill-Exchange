@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Skill Matches | Student Skill Exchange Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-light">
+
+    <!-- Navigation Header -->
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="bi bi-arrow-left-right text-gradient fs-3"></i>
+                <span class="text-gradient">SkillExchange</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navMenu">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4 gap-1">
+                    <li class="nav-item"><a class="nav-link" href="dashboard.html">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="matches.html">Find Matches</a></li>
+                    <li class="nav-item"><a class="nav-link" href="skills.html">My Skills</a></li>
+                    <li class="nav-item"><a class="nav-link" href="requests.html">Exchange Proposals</a></li>
+                    <li class="nav-item"><a class="nav-link" href="chat.html">Chat</a></li>
+                    <li class="nav-item"><a class="nav-link" href="verification.html">Verification</a></li>
+                    <li class="nav-item"><a class="nav-link" href="exchange-history.html">History</a></li>
+                </ul>
+                <div id="navbarUserControls"></div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container py-4">
+        <div id="alertContainer"></div>
+
+        <!-- Heading & Explainable Formula Info Banner -->
+        <div class="card card-custom p-4 mb-4 border-0" style="background: linear-gradient(135deg, #f6f5ff 0%, #fff0f5 100%);">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <h3 class="fw-bold mb-1"><i class="bi bi-stars text-pink-custom me-2"></i>Algorithmic Skill Matching</h3>
+                    <p class="text-muted small mb-0">Our explainable algorithm calculates mutual compatibility between what you wish to learn and what campus peers can teach.</p>
+                </div>
+                <button class="btn btn-sm btn-outline-custom" type="button" data-bs-toggle="collapse" data-bs-target="#formulaCollapse">
+                    <i class="bi bi-calculator me-1"></i> How Match Score is Calculated
+                </button>
+            </div>
+
+            <!-- Explainable Matching Algorithm Accordion/Collapse -->
+            <div class="collapse mt-3" id="formulaCollapse">
+                <div class="card p-3 border-0 bg-white rounded-3 shadow-sm small">
+                    <h6 class="fw-bold text-primary-custom mb-2">5-Factor Explainable Matching Formula (Max 100%):</h6>
+                    <div class="row g-2">
+                        <div class="col-md-4">
+                            <div class="p-2 border rounded bg-light">
+                                <strong>1. Direct Compatibility (40%)</strong>
+                                <p class="mb-0 text-muted small">Candidate teaches a skill you want to learn.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-2 border rounded bg-light">
+                                <strong>2. Reverse Mutual Trade (20%)</strong>
+                                <p class="mb-0 text-muted small">You teach a skill the candidate wants (win-win barter).</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-2 border rounded bg-light">
+                                <strong>3. Peer Rating (15%)</strong>
+                                <p class="mb-0 text-muted small">Based on candidate's historical star ratings (out of 5★).</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-2 border rounded bg-light">
+                                <strong>4. Admin Verification (15%)</strong>
+                                <p class="mb-0 text-muted small">Candidate earned a Verified Skill badge via certificate audit.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-2 border rounded bg-light">
+                                <strong>5. Academic Synergy (10%)</strong>
+                                <p class="mb-0 text-muted small">Shared department or college campus proximity.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search and Filters Bar (Module 5) -->
+        <div class="card card-custom p-3 border-0 mb-4">
+            <div class="row g-2 align-items-center">
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                        <input type="text" id="searchInput" class="form-control" placeholder="Search by student name or skill..." onkeyup="applyFilters()">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <select id="filterDept" class="form-select" onchange="applyFilters()">
+                        <option value="">All Departments</option>
+                        <option value="Information Technology">Information Technology</option>
+                        <option value="Computer Science">Computer Science</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select id="filterYear" class="form-select" onchange="applyFilters()">
+                        <option value="">All Years</option>
+                        <option value="1st Year">1st Year</option>
+                        <option value="2nd Year">2nd Year</option>
+                        <option value="3rd Year">3rd Year</option>
+                        <option value="4th Year">4th Year</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-check form-switch pt-2">
+                        <input class="form-check-input" type="checkbox" id="filterVerified" onchange="applyFilters()">
+                        <label class="form-check-label small fw-semibold" for="filterVerified">Verified Only</label>
+                    </div>
+                </div>
+                <div class="col-md-2 text-md-end">
+                    <button class="btn btn-outline-secondary btn-sm w-100" onclick="resetFilters()">Reset Filters</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Matching Student Results Grid -->
+        <div id="matchesGrid" class="row g-3">
+            <div class="col-12 text-center py-5 text-muted">
+                <div class="spinner-border spinner-border-sm me-2"></div> Computing student compatibility recommendations...
+            </div>
+        </div>
+    </div>
+
+    <!-- Send Exchange Request Modal -->
+    <div class="modal fade" id="requestModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-arrow-left-right me-2 text-primary-custom"></i>Propose Skill Exchange</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="reqReceiverId">
+                    <p class="small text-muted mb-3">Send a structured exchange proposal to <strong id="reqReceiverName">Student</strong>.</p>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Skill You Want to Learn from Them *</label>
+                        <select id="reqSkillRequested" class="form-select" required></select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Skill You Offer to Teach Them in Return *</label>
+                        <select id="reqSkillOffered" class="form-select" required></select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Preferred Learning Mode *</label>
+                        <select id="reqLearningMode" class="form-select">
+                            <option value="ONLINE">Online Meeting (Google Meet / Zoom)</option>
+                            <option value="OFFLINE">Offline Meeting (College Campus / Library)</option>
+                            <option value="CHAT">In-built Chat & Notes Exchange</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Introductory Message</label>
+                        <textarea id="reqMessage" class="form-control" rows="3" placeholder="Hi! I'd love to exchange skills. I am free on weekday evenings..."></textarea>
+                    </div>
+
+                    <button class="btn btn-primary-custom w-100" onclick="submitExchangeRequest()">Send Exchange Proposal</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Student Modal -->
+    <div class="modal fade" id="reportModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold text-danger"><i class="bi bi-flag me-2"></i>Report Student Profile</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="reportTargetId">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Reason for Report</label>
+                        <select id="reportReason" class="form-select">
+                            <option value="FAKE_SKILL">Fake Skill or False Claims</option>
+                            <option value="INAPPROPRIATE_BEHAVIOR">Inappropriate Behavior</option>
+                            <option value="SPAM">Spam or Irrelevant Messages</option>
+                            <option value="MISLEADING_PROFILE">Misleading Profile</option>
+                            <option value="OTHER">Other Reason</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Explanation / Details</label>
+                        <textarea id="reportDesc" class="form-control" rows="3" placeholder="Provide context for admin review..."></textarea>
+                    </div>
+                    <button class="btn btn-danger w-100" onclick="submitReport()">Submit Report to Admin</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        let allMatches = [];
+        let myTeachingSkills = [];
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            await loadMatchesData();
+        });
+
+        async function loadMatchesData() {
+            // Load user teaching skills to know what user can offer
+            const profRes = await API.get('/api/students/profile/me');
+            if (profRes && profRes.success) {
+                myTeachingSkills = profRes.data.teachingSkills || [];
+            }
+
+            // Load algorithm matches
+            const res = await API.get('/api/matches');
+            if (res && res.success) {
+                allMatches = res.data;
+                renderMatches(allMatches);
+            } else {
+                document.getElementById('matchesGrid').innerHTML = `
+                    <div class="col-12 text-center py-5 text-muted">
+                        <i class="bi bi-exclamation-triangle fs-1 d-block mb-2"></i>
+                        <p>No matches available. Make sure you have added skills you want to learn!</p>
+                        <a href="skills.html" class="btn btn-primary-custom btn-sm">Add Learning Skills</a>
+                    </div>
+                `;
+            }
+        }
+
+        function renderMatches(matches) {
+            const container = document.getElementById('matchesGrid');
+            if (matches.length === 0) {
+                container.innerHTML = `
+                    <div class="col-12 text-center py-5 text-muted">
+                        <i class="bi bi-search fs-1 d-block mb-2"></i>
+                        <p>No students match your filter criteria.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = matches.map(m => `
+                <div class="col-md-6 col-lg-4">
+                    <div class="card card-custom p-4 h-100 border-0 shadow-sm d-flex flex-column justify-content-between">
+                        <div>
+                            <!-- Header with avatar, badge, and match percentage -->
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div class="d-flex align-items-center gap-3">
+                                    <img src="${m.avatarUrl || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + m.userId}" class="avatar-img" alt="${m.studentName}">
+                                    <div>
+                                        <h5 class="fw-bold mb-0">${m.studentName}</h5>
+                                        <small class="text-muted d-block">${m.department} &bull; ${m.yearOfStudy}</small>
+                                        <div class="small text-warning mt-1">
+                                            ★ ${(m.averageRating || 0).toFixed(1)} / 5.0
+                                        </div>
+                                    </div>
+                                </div>
+                                <span class="match-score-badge">${m.matchPercentage}%</span>
+                            </div>
+
+                            <!-- Verification Badge -->
+                            ${m.verified ? `
+                            <div class="mb-2">
+                                <span class="badge badge-custom badge-verified"><i class="bi bi-patch-check-fill"></i> ✓ Verified Skill Badge</span>
+                            </div>
+                            ` : ''}
+
+                            <!-- Skills Exchange Offer Details -->
+                            <div class="p-3 rounded-3 bg-light mb-3">
+                                <div class="mb-2">
+                                    <span class="text-muted small d-block">They Can Teach You:</span>
+                                    <strong class="text-primary-custom fs-6"><i class="bi bi-mortarboard me-1"></i>${m.skillTheyTeachYou}</strong>
+                                </div>
+                                ${m.skillYouTeachThem ? `
+                                <div>
+                                    <span class="text-muted small d-block">You Can Teach Them:</span>
+                                    <strong class="text-pink-custom fs-6"><i class="bi bi-lightbulb me-1"></i>${m.skillYouTeachThem}</strong>
+                                    ${m.isMutualMatch ? '<span class="badge badge-custom badge-mutual ms-1">2-Way Mutual Barter</span>' : ''}
+                                </div>
+                                ` : ''}
+                            </div>
+
+                            <!-- Algorithm Explainable Breakdown -->
+                            <div class="mb-3">
+                                <small class="text-muted fw-semibold d-block mb-1">Match Reason Breakdown:</small>
+                                <p class="small text-muted mb-0" style="font-size:0.75rem; line-height:1.4;">${m.matchReason}</p>
+                            </div>
+                        </div>
+
+                        <!-- Card Action Buttons -->
+                        <div class="d-flex gap-2 pt-2 border-top">
+                            <button class="btn btn-primary-custom flex-grow-1" onclick="openRequestModal(${m.userId}, '${m.studentName}', '${m.skillTheyTeachYou}', ${m.skillTheyTeachYouId || 'null'}, '${m.skillYouTeachThem || ''}', ${m.skillYouTeachThemId || 'null'})">
+                                <i class="bi bi-send me-1"></i> Propose Exchange
+                            </button>
+                            <button class="btn btn-outline-danger btn-sm" title="Report Student" onclick="openReportModal(${m.userId})">
+                                <i class="bi bi-flag"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function applyFilters() {
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            const dept = document.getElementById('filterDept').value;
+            const year = document.getElementById('filterYear').value;
+            const verified = document.getElementById('filterVerified').checked;
+
+            const filtered = allMatches.filter(m => {
+                const matchQuery = m.studentName.toLowerCase().includes(q) ||
+                                   m.skillTheyTeachYou.toLowerCase().includes(q) ||
+                                   (m.skillYouTeachThem && m.skillYouTeachThem.toLowerCase().includes(q));
+                const matchDept = !dept || m.department.toLowerCase().includes(dept.toLowerCase());
+                const matchYear = !year || m.yearOfStudy.toLowerCase().includes(year.toLowerCase());
+                const matchVer = !verified || m.verified;
+
+                return matchQuery && matchDept && matchYear && matchVer;
+            });
+
+            renderMatches(filtered);
+        }
+
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('filterDept').value = '';
+            document.getElementById('filterYear').value = '';
+            document.getElementById('filterVerified').checked = false;
+            renderMatches(allMatches);
+        }
+
+        function openRequestModal(receiverId, receiverName, skillRequestedName, skillRequestedId, skillOfferedName, skillOfferedId) {
+            document.getElementById('reqReceiverId').value = receiverId;
+            document.getElementById('reqReceiverName').innerText = receiverName;
+
+            // Requested Skill dropdown
+            const reqSelect = document.getElementById('reqSkillRequested');
+            if (skillRequestedId) {
+                reqSelect.innerHTML = `<option value="${skillRequestedId}" selected>${skillRequestedName}</option>`;
+            } else {
+                reqSelect.innerHTML = `<option value="1">General Mentoring</option>`;
+            }
+
+            // Offered Skill dropdown
+            const offSelect = document.getElementById('reqSkillOffered');
+            if (myTeachingSkills.length > 0) {
+                offSelect.innerHTML = myTeachingSkills.map(ts => `
+                    <option value="${ts.skillId}" ${ts.skillId === skillOfferedId ? 'selected' : ''}>${ts.skillName} (${ts.levelOrUrgency})</option>
+                `).join('');
+            } else {
+                offSelect.innerHTML = `<option value="" disabled selected>You have not added any skills you can teach!</option>`;
+            }
+
+            new bootstrap.Modal(document.getElementById('requestModal')).show();
+        }
+
+        async function submitExchangeRequest() {
+            const receiverId = document.getElementById('reqReceiverId').value;
+            const skillRequestedId = document.getElementById('reqSkillRequested').value;
+            const skillOfferedId = document.getElementById('reqSkillOffered').value;
+            const learningMode = document.getElementById('reqLearningMode').value;
+            const message = document.getElementById('reqMessage').value.trim();
+
+            if (!skillOfferedId) {
+                alert("Please add at least one skill you can teach from the 'My Skills' page first!");
+                return;
+            }
+
+            const payload = {
+                receiverId: Number(receiverId),
+                skillRequestedId: Number(skillRequestedId),
+                skillOfferedId: Number(skillOfferedId),
+                learningMode: learningMode,
+                message: message || "Hello! I would love to exchange skills with you."
+            };
+
+            const res = await API.post('/api/exchange-requests', payload);
+            if (res && res.success) {
+                bootstrap.Modal.getInstance(document.getElementById('requestModal')).hide();
+                showAlert("Skill exchange proposal dispatched successfully! You can track responses in 'Exchange Proposals'.", "success");
+            } else {
+                alert(res.message || "Failed to send proposal");
+            }
+        }
+
+        function openReportModal(targetUserId) {
+            document.getElementById('reportTargetId').value = targetUserId;
+            new bootstrap.Modal(document.getElementById('reportModal')).show();
+        }
+
+        async function submitReport() {
+            const reportedUserId = document.getElementById('reportTargetId').value;
+            const reason = document.getElementById('reportReason').value;
+            const description = document.getElementById('reportDesc').value.trim();
+
+            if (!description) {
+                alert("Please explain the issue");
+                return;
+            }
+
+            const res = await API.post('/api/reports', {
+                reportedUserId: Number(reportedUserId),
+                reason,
+                description
+            });
+
+            if (res && res.success) {
+                bootstrap.Modal.getInstance(document.getElementById('reportModal')).hide();
+                showAlert("Report submitted to administrator for audit.", "info");
+            } else {
+                alert(res.message || "Failed to submit report");
+            }
+        }
+    </script>
+</body>
+</html>

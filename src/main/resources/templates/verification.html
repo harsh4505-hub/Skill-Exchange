@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skill Verification & Proofs | Student Skill Exchange Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-light">
+
+    <!-- Navigation Header -->
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="bi bi-arrow-left-right text-gradient fs-3"></i>
+                <span class="text-gradient">SkillExchange</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navMenu">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4 gap-1">
+                    <li class="nav-item"><a class="nav-link" href="dashboard.html">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="matches.html">Find Matches</a></li>
+                    <li class="nav-item"><a class="nav-link" href="skills.html">My Skills</a></li>
+                    <li class="nav-item"><a class="nav-link" href="requests.html">Exchange Proposals</a></li>
+                    <li class="nav-item"><a class="nav-link" href="chat.html">Chat</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="verification.html">Verification</a></li>
+                    <li class="nav-item"><a class="nav-link" href="exchange-history.html">History</a></li>
+                </ul>
+                <div id="navbarUserControls"></div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container py-4">
+        <div id="alertContainer"></div>
+
+        <div class="card card-custom p-4 mb-4 border-0" style="background: linear-gradient(135deg, #e6faf4 0%, #ece9fe 100%);">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div>
+                    <span class="badge badge-custom badge-verified px-3 py-1 mb-2">
+                        <i class="bi bi-shield-check"></i> Quality & Credibility
+                    </span>
+                    <h3 class="fw-bold mb-1">Skill Verification Center</h3>
+                    <p class="text-muted small mb-0">Upload credentials, university competition certificates, or project repositories to earn the <strong>✓ VERIFIED SKILL</strong> badge.</p>
+                </div>
+                <button class="btn btn-primary-custom" onclick="openSubmitModal()">
+                    <i class="bi bi-cloud-arrow-up me-1"></i> Submit Skill Proof
+                </button>
+            </div>
+        </div>
+
+        <!-- Verification Records Table -->
+        <div class="card card-custom p-4 border-0">
+            <h5 class="fw-bold mb-3"><i class="bi bi-file-earmark-check text-success me-2"></i>My Verification Submissions</h5>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Skill</th>
+                            <th>Proof Document Name</th>
+                            <th>Path / Link</th>
+                            <th>Status</th>
+                            <th>Admin Feedback</th>
+                            <th>Submitted Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="verificationTableBody">
+                        <tr><td colspan="6" class="text-center py-4 text-muted">Loading verifications...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Submit Verification Modal -->
+    <div class="modal fade" id="submitProofModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-award me-2 text-success"></i>Submit Skill Proof for Audit</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Select Skill to Verify *</label>
+                        <select id="proofSkillSelect" class="form-select" required></select>
+                        <small class="text-muted">Must be a skill in your 'Skills I Can Teach' list.</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Document / Proof Title *</label>
+                        <input type="text" id="proofDocName" class="form-control" placeholder="e.g. HackerRank 5-Star Python / Adobe Certified Associate" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Document URL / File Reference</label>
+                        <input type="text" id="proofDocPath" class="form-control" placeholder="e.g. uploads/certificates/java_cert.pdf or github.com/user/project">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Description of Achievement</label>
+                        <textarea id="proofDesc" class="form-control" rows="3" placeholder="Provide context regarding the issuing body, score, or project functionality..."></textarea>
+                    </div>
+
+                    <button class="btn btn-success w-100" onclick="submitVerificationProof()">
+                        <i class="bi bi-send-check me-1"></i> Submit to Admin for Verification
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            await loadVerifications();
+        });
+
+        async function loadVerifications() {
+            // Load user teaching skills to populate dropdown
+            const profRes = await API.get('/api/students/profile/me');
+            if (profRes && profRes.success) {
+                const teach = profRes.data.teachingSkills || [];
+                const select = document.getElementById('proofSkillSelect');
+                if (teach.length > 0) {
+                    select.innerHTML = teach.map(ts => `<option value="${ts.skillId}">${ts.skillName}</option>`).join('');
+                } else {
+                    select.innerHTML = `<option disabled selected>No teaching skills added yet!</option>`;
+                }
+            }
+
+            // Load verification history
+            const res = await API.get('/api/verifications');
+            const tbody = document.getElementById('verificationTableBody');
+            if (res && res.success && res.data.length > 0) {
+                tbody.innerHTML = res.data.map(v => `
+                    <tr>
+                        <td><strong class="text-primary-custom">${v.skillName}</strong></td>
+                        <td>${v.documentName}</td>
+                        <td class="small font-monospace text-muted">${v.documentPath || 'None'}</td>
+                        <td><span class="badge ${getStatusBadge(v.status)} px-3 py-1">${v.status}</span></td>
+                        <td class="small text-muted">${v.adminComment || 'Awaiting administrator review'}</td>
+                        <td class="small text-muted">${new Date(v.submissionDate).toLocaleDateString()}</td>
+                    </tr>
+                `).join('');
+            } else {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">No verification requests submitted yet. Click 'Submit Skill Proof' to verify your skills!</td></tr>`;
+            }
+        }
+
+        function getStatusBadge(status) {
+            switch (status) {
+                case 'VERIFIED': return 'bg-success text-white';
+                case 'REJECTED': return 'bg-danger text-white';
+                default: return 'bg-warning text-dark';
+            }
+        }
+
+        function openSubmitModal() {
+            new bootstrap.Modal(document.getElementById('submitProofModal')).show();
+        }
+
+        async function submitVerificationProof() {
+            const skillId = document.getElementById('proofSkillSelect').value;
+            const documentName = document.getElementById('proofDocName').value.trim();
+            const documentPath = document.getElementById('proofDocPath').value.trim();
+            const description = document.getElementById('proofDesc').value.trim();
+
+            if (!skillId || !documentName) {
+                alert("Please select a skill and provide a document title");
+                return;
+            }
+
+            const res = await API.post('/api/verifications', {
+                skillId: Number(skillId),
+                documentName,
+                documentPath: documentPath || "uploads/proofs/" + documentName.toLowerCase().replace(/[^a-z0-9]/g, '_') + ".pdf",
+                description
+            });
+
+            if (res && res.success) {
+                bootstrap.Modal.getInstance(document.getElementById('submitProofModal')).hide();
+                showAlert("Skill verification submitted for administrator audit!", "success");
+                loadVerifications();
+            } else {
+                alert(res.message || "Failed to submit verification");
+            }
+        }
+    </script>
+</body>
+</html>
