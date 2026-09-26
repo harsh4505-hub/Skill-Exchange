@@ -30,11 +30,11 @@ All demo accounts come pre-configured with active skill relationships and pre-ha
 
 | Role | Name | Email | Password | Skills Taught / Desired |
 | :--- | :--- | :--- | :--- | :--- |
-| **Student** | Harsh Vardhan | `harsh@college.edu` | `password123` | **Teaches:** Java, Web Dev<br>**Wants:** Photoshop, Video Editing |
-| **Student** | Sejal Sharma | `sejal@college.edu` | `password123` | **Teaches:** Photoshop, Graphic Design<br>**Wants:** Java, Web Dev *(Perfect Match with Harsh!)* |
-| **Student** | Raza Khan | `raza@college.edu` | `password123` | **Teaches:** Python, Excel<br>**Wants:** Public Speaking |
-| **Student** | Udipti Sen | `udipti@college.edu` | `password123` | **Teaches:** Public Speaking<br>**Wants:** Python, Excel *(Perfect Match with Raza!)* |
-| **Admin** | Administrator | `admin@college.edu` | `password123` | Full administrative control, verification audits, abuse reports |
+| **Student** | Harsh Vardhan | `harsh@mgmmumbai.ac.in` | `password123` | **Teaches:** Java, Web Dev<br>**Wants:** Photoshop, Video Editing |
+| **Student** | Sejal Sharma | `sejal@mgmmumbai.ac.in` | `password123` | **Teaches:** Photoshop, Graphic Design<br>**Wants:** Java, Web Dev *(Perfect Match with Harsh!)* |
+| **Student** | Raza Khan | `raza@mgmmumbai.ac.in` | `password123` | **Teaches:** Python, Excel<br>**Wants:** Public Speaking |
+| **Student** | Udipti Sen | `udipti@mgmmumbai.ac.in` | `password123` | **Teaches:** Public Speaking<br>**Wants:** Python, Excel *(Perfect Match with Raza!)* |
+| **Admin** | Administrator | `admin@mgmmumbai.ac.in` | `password123` | Full administrative control, verification audits, abuse reports |
 
 > **Tip:** The login page (`login.html`) has **1-Click Quick Demo Login** buttons so you don't even need to type the credentials during your presentation!
 
@@ -113,7 +113,7 @@ http://localhost:8080
 2. **Explore Skill Matches:** Navigate to **Find Matches** to see Sejal ranked #1 with a 95% mutual compatibility score!
 3. **Send Proposal:** Click "Propose Exchange" to send a barter request.
 4. **Sign in as Sejal:** In an incognito window or after logging out, sign in as Sejal to accept the proposal and start chatting!
-5. **Sign in as Admin:** Login as `admin@college.edu` to review pending skill proof documents and award the **✓ VERIFIED SKILL** badge!
+5. **Sign in as Admin:** Login as `admin@mgmmumbai.ac.in` to review pending skill proof documents and award the **✓ VERIFIED SKILL** badge!
 
 ---
 

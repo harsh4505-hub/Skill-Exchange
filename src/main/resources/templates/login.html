@@ -43,7 +43,7 @@
                             <label class="form-label fw-semibold">College Email</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light"><i class="bi bi-envelope"></i></span>
-                                <input type="email" id="email" class="form-control" placeholder="harsh@college.edu" required>
+                                <input type="email" id="email" class="form-control" placeholder="harsh@mgmmumbai.ac.in" required>
                             </div>
                         </div>
 
@@ -69,16 +69,16 @@
                             <i class="bi bi-lightning-charge-fill text-warning me-1"></i>Quick Demo Evaluation Logins
                         </p>
                         <div class="d-flex flex-wrap gap-2 justify-content-center">
-                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="quickFill('harsh@college.edu', 'password123')">
+                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="quickFill('harsh@mgmmumbai.ac.in', 'password123')">
                                 Harsh (Student)
                             </button>
-                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="quickFill('sejal@college.edu', 'password123')">
+                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="quickFill('sejal@mgmmumbai.ac.in', 'password123')">
                                 Sejal (Student)
                             </button>
-                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="quickFill('raza@college.edu', 'password123')">
+                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="quickFill('raza@mgmmumbai.ac.in', 'password123')">
                                 Raza (Student)
                             </button>
-                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="quickFill('admin@college.edu', 'password123')">
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="quickFill('admin@mgmmumbai.ac.in', 'password123')">
                                 Admin (Staff)
                             </button>
                         </div>
@@ -105,7 +105,7 @@
                     <p class="text-muted small">Enter your registered college email address to receive password reset instructions.</p>
                     <div class="mb-3">
                         <label class="form-label fw-semibold">College Email</label>
-                        <input type="email" id="resetEmail" class="form-control" placeholder="student@college.edu">
+                        <input type="email" id="resetEmail" class="form-control" placeholder="student@mgmmumbai.ac.in">
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -128,12 +128,21 @@
 
         async function handleLogin(e) {
             e.preventDefault();
+            const emailInput = document.getElementById('email');
+            const email = (emailInput.value || '').trim();
+            const password = document.getElementById('password').value;
+
+            // Enforce official college domain ending with @mgmmumbai.ac.in
+            const collegeEmailPattern = /^[a-zA-Z0-9._%+-]+@mgmmumbai\.ac\.in$/i;
+            if (!collegeEmailPattern.test(email)) {
+                showAlert("Please use your official college email address ending with @mgmmumbai.ac.in.", "danger");
+                emailInput.focus();
+                return;
+            }
+
             const btn = document.getElementById('loginBtn');
             btn.disabled = true;
             btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>Authenticating...`;
-
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
 
             const res = await API.post('/api/auth/login', { email, password });
             if (res && res.success) {

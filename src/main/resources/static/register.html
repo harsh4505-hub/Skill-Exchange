@@ -45,7 +45,7 @@
 
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold">College Email *</label>
-                                <input type="email" id="email" class="form-control" placeholder="rahul@college.edu" required>
+                                <input type="email" id="email" class="form-control" placeholder="rahul@mgmmumbai.ac.in" required>
                             </div>
 
                             <div class="col-md-6">
@@ -122,6 +122,17 @@
     <script>
         async function handleRegister(e) {
             e.preventDefault();
+            const emailInput = document.getElementById('email');
+            const email = (emailInput.value || '').trim();
+
+            // Enforce official college domain ending with @mgmmumbai.ac.in
+            const collegeEmailPattern = /^[a-zA-Z0-9._%+-]+@mgmmumbai\.ac\.in$/i;
+            if (!collegeEmailPattern.test(email)) {
+                showAlert("Please use your official college email address ending with @mgmmumbai.ac.in.", "danger");
+                emailInput.focus();
+                return;
+            }
+
             const pwd = document.getElementById('password').value;
             const confirm = document.getElementById('confirmPassword').value;
 
@@ -136,7 +147,7 @@
 
             const payload = {
                 fullName: document.getElementById('fullName').value.trim(),
-                email: document.getElementById('email').value.trim(),
+                email: email,
                 password: pwd,
                 confirmPassword: confirm,
                 college: document.getElementById('college').value.trim(),

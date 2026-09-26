@@ -45,22 +45,35 @@ public class AuthService {
     @Autowired
     private HttpServletRequest request;
 
+    private static final java.util.regex.Pattern COLLEGE_EMAIL_PATTERN =
+            java.util.regex.Pattern.compile("^[a-zA-Z0-9._%+-]+@mgmmumbai\\.ac\\.in$", java.util.regex.Pattern.CASE_INSENSITIVE);
+
+    public static boolean isValidCollegeEmail(String email) {
+        if (email == null) return false;
+        return COLLEGE_EMAIL_PATTERN.matcher(email.trim()).matches();
+    }
+
     /**
      * Registers a new student account and creates their demographic profile.
      */
     @Transactional
     public AuthResponseDto registerStudent(RegisterRequestDto dto) {
+        String normalizedEmail = dto.getEmail() != null ? dto.getEmail().trim().toLowerCase() : "";
+        if (!isValidCollegeEmail(normalizedEmail)) {
+            throw new BadRequestException("Please use your official college email address ending with @mgmmumbai.ac.in.");
+        }
+
         if (!dto.getPassword().equals(dto.getConfirmPassword())) {
             throw new BadRequestException("Password and Confirm Password do not match");
         }
 
-        if (userRepository.existsByEmail(dto.getEmail().trim().toLowerCase())) {
+        if (userRepository.existsByEmail(normalizedEmail)) {
             throw new DuplicateResourceException("An account with this email already exists");
         }
 
         // Create User entity with encrypted password
         User user = new User();
-        user.setEmail(dto.getEmail().trim().toLowerCase());
+        user.setEmail(normalizedEmail);
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setRole("ROLE_STUDENT");
         user.setActive(true);
@@ -79,7 +92,7 @@ public class AuthService {
         profileRepository.save(profile);
 
         // Auto authenticate session
-        authenticateSession(dto.getEmail().trim().toLowerCase(), dto.getPassword());
+        authenticateSession(normalizedEmail, dto.getPassword());
 
         return new AuthResponseDto(
                 true,
@@ -95,10 +108,19 @@ public class AuthService {
      * Authenticates user credentials via Spring Security and stores session.
      */
     public AuthResponseDto login(AuthRequestDto dto) {
-        authenticateSession(dto.getEmail().trim().toLowerCase(), dto.getPassword());
+        String normalizedEmail = dto.getEmail() != null ? dto.getEmail().trim().toLowerCase() : "";
+        if (!isValidCollegeEmail(normalizedEmail)) {
+            throw new BadRequestException("Please use your official college email address ending with @mgmmumbai.ac.in.");
+        }
 
-        User user = userRepository.findByEmail(dto.getEmail().trim().toLowerCase())
+        authenticateSession(normalizedEmail, dto.getPassword());
+
+        User user = userRepository.findByEmail(normalizedEmail)
                 .orElseThrow(() -> new UnauthorizedException("Invalid email or password"));
+
+        if (!isValidCollegeEmail(user.getEmail())) {
+            throw new UnauthorizedException("Please use your official college email address ending with @mgmmumbai.ac.in.");
+        }
 
         String fullName = user.getEmail();
         if (user.getStudentProfile() != null) {

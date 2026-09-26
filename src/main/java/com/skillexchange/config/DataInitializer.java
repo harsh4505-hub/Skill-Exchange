@@ -86,11 +86,11 @@ public class DataInitializer implements CommandLineRunner {
         String encodedPwd = passwordEncoder.encode("password123");
 
         // 3. Admin Account
-        User adminUser = new User("admin@college.edu", encodedPwd, "ROLE_ADMIN");
+        User adminUser = new User("admin@mgmmumbai.ac.in", encodedPwd, "ROLE_ADMIN");
         userRepository.save(adminUser);
 
         // 4. Student 1: Harsh (Teaches: Java, Web; Wants: Photoshop, Video Editing)
-        User userHarsh = userRepository.save(new User("harsh@college.edu", encodedPwd, "ROLE_STUDENT"));
+        User userHarsh = userRepository.save(new User("harsh@mgmmumbai.ac.in", encodedPwd, "ROLE_STUDENT"));
         StudentProfile profileHarsh = new StudentProfile(userHarsh, "Harsh Vardhan", "College of Engineering & Technology", "Information Technology", "2nd Year", "9876543210");
         profileHarsh.setBio("2nd-year IT student passionate about Java backend architectures and algorithms. Wanting to learn design and video editing!");
         profileHarsh.setAvatarUrl("https://api.dicebear.com/7.x/bottts/svg?seed=Harsh");
@@ -109,7 +109,7 @@ public class DataInitializer implements CommandLineRunner {
         learningSkillRepository.save(new UserLearningSkill(userHarsh, skillVideo, "Medium"));
 
         // 5. Student 2: Sejal (Teaches: Photoshop, Graphic Design; Wants: Java, Web) -> Perfect mutual match with Harsh!
-        User userSejal = userRepository.save(new User("sejal@college.edu", encodedPwd, "ROLE_STUDENT"));
+        User userSejal = userRepository.save(new User("sejal@mgmmumbai.ac.in", encodedPwd, "ROLE_STUDENT"));
         StudentProfile profileSejal = new StudentProfile(userSejal, "Sejal Sharma", "College of Engineering & Technology", "Information Technology", "2nd Year", "9876543211");
         profileSejal.setBio("Creative designer and IT student. Certified in Adobe Photoshop. Looking to conquer core Java and web development!");
         profileSejal.setAvatarUrl("https://api.dicebear.com/7.x/bottts/svg?seed=Sejal");
@@ -128,7 +128,7 @@ public class DataInitializer implements CommandLineRunner {
         learningSkillRepository.save(new UserLearningSkill(userSejal, skillWeb, "Medium"));
 
         // 6. Student 3: Raza (Teaches: Python, Excel; Wants: Public Speaking)
-        User userRaza = userRepository.save(new User("raza@college.edu", encodedPwd, "ROLE_STUDENT"));
+        User userRaza = userRepository.save(new User("raza@mgmmumbai.ac.in", encodedPwd, "ROLE_STUDENT"));
         StudentProfile profileRaza = new StudentProfile(userRaza, "Raza Khan", "College of Engineering & Technology", "Computer Science", "3rd Year", "9876543212");
         profileRaza.setBio("Python enthusiast and data geek. Wanting to improve communication and speech delivery for campus placements.");
         profileRaza.setAvatarUrl("https://api.dicebear.com/7.x/bottts/svg?seed=Raza");
@@ -142,7 +142,7 @@ public class DataInitializer implements CommandLineRunner {
         learningSkillRepository.save(new UserLearningSkill(userRaza, skillSpeaking, "High"));
 
         // 7. Student 4: Udipti (Teaches: Public Speaking; Wants: Python, Excel) -> Perfect match with Raza!
-        User userUdipti = userRepository.save(new User("udipti@college.edu", encodedPwd, "ROLE_STUDENT"));
+        User userUdipti = userRepository.save(new User("udipti@mgmmumbai.ac.in", encodedPwd, "ROLE_STUDENT"));
         StudentProfile profileUdipti = new StudentProfile(userUdipti, "Udipti Sen", "College of Engineering & Technology", "Information Technology", "2nd Year", "9876543213");
         profileUdipti.setBio("College debate society president. Eager to help peers with confident public speaking in return for Python tutoring!");
         profileUdipti.setAvatarUrl("https://api.dicebear.com/7.x/bottts/svg?seed=Udipti");

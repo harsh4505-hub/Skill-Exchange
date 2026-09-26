@@ -13,6 +13,17 @@ const PORT = 8080;
 const STATIC_DIR = path.join(__dirname, 'src', 'main', 'resources', 'static');
 
 // ===================================================================
+// COLLEGE EMAIL DOMAIN RESTRICTION VALIDATOR (@mgmmumbai.ac.in)
+// ===================================================================
+
+const COLLEGE_EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@mgmmumbai\.ac\.in$/i;
+
+function isValidCollegeEmail(email) {
+    if (!email || typeof email !== 'string') return false;
+    return COLLEGE_EMAIL_REGEX.test(email.trim());
+}
+
+// ===================================================================
 // IN-MEMORY DATABASE STATE (Pre-seeded with Sample Demonstration Data)
 // ===================================================================
 
@@ -40,11 +51,11 @@ const state = {
     ],
 
     users: [
-        { id: 1, email: "admin@college.edu", role: "ROLE_ADMIN", password: "password123", active: true },
-        { id: 2, email: "harsh@college.edu", role: "ROLE_STUDENT", password: "password123", active: true },
-        { id: 3, email: "sejal@college.edu", role: "ROLE_STUDENT", password: "password123", active: true },
-        { id: 4, email: "raza@college.edu", role: "ROLE_STUDENT", password: "password123", active: true },
-        { id: 5, email: "udipti@college.edu", role: "ROLE_STUDENT", password: "password123", active: true }
+        { id: 1, email: "admin@mgmmumbai.ac.in", role: "ROLE_ADMIN", password: "password123", active: true },
+        { id: 2, email: "harsh@mgmmumbai.ac.in", role: "ROLE_STUDENT", password: "password123", active: true },
+        { id: 3, email: "sejal@mgmmumbai.ac.in", role: "ROLE_STUDENT", password: "password123", active: true },
+        { id: 4, email: "raza@mgmmumbai.ac.in", role: "ROLE_STUDENT", password: "password123", active: true },
+        { id: 5, email: "udipti@mgmmumbai.ac.in", role: "ROLE_STUDENT", password: "password123", active: true }
     ],
 
     profiles: [
@@ -52,7 +63,7 @@ const state = {
             id: 2,
             userId: 2,
             fullName: "Harsh Vardhan",
-            email: "harsh@college.edu",
+            email: "harsh@mgmmumbai.ac.in",
             college: "College of Engineering & Technology",
             department: "Information Technology",
             yearOfStudy: "2nd Year",
@@ -76,7 +87,7 @@ const state = {
             id: 3,
             userId: 3,
             fullName: "Sejal Sharma",
-            email: "sejal@college.edu",
+            email: "sejal@mgmmumbai.ac.in",
             college: "College of Engineering & Technology",
             department: "Information Technology",
             yearOfStudy: "2nd Year",
@@ -100,7 +111,7 @@ const state = {
             id: 4,
             userId: 4,
             fullName: "Raza Khan",
-            email: "raza@college.edu",
+            email: "raza@mgmmumbai.ac.in",
             college: "College of Engineering & Technology",
             department: "Computer Science",
             yearOfStudy: "3rd Year",
@@ -123,7 +134,7 @@ const state = {
             id: 5,
             userId: 5,
             fullName: "Udipti Sen",
-            email: "udipti@college.edu",
+            email: "udipti@mgmmumbai.ac.in",
             college: "College of Engineering & Technology",
             department: "Information Technology",
             yearOfStudy: "2nd Year",
@@ -149,7 +160,7 @@ const state = {
             id: 1,
             senderId: 2,
             senderName: "Harsh Vardhan",
-            senderEmail: "harsh@college.edu",
+            senderEmail: "harsh@mgmmumbai.ac.in",
             receiverId: 3,
             receiverName: "Sejal Sharma",
             skillOfferedId: 1,
@@ -165,7 +176,7 @@ const state = {
             id: 2,
             senderId: 4,
             senderName: "Raza Khan",
-            senderEmail: "raza@college.edu",
+            senderEmail: "raza@mgmmumbai.ac.in",
             receiverId: 5,
             receiverName: "Udipti Sen",
             skillOfferedId: 2,
@@ -181,7 +192,7 @@ const state = {
             id: 3,
             senderId: 3,
             senderName: "Sejal Sharma",
-            senderEmail: "sejal@college.edu",
+            senderEmail: "sejal@mgmmumbai.ac.in",
             receiverId: 2,
             receiverName: "Harsh Vardhan",
             skillOfferedId: 5,
@@ -240,7 +251,7 @@ const state = {
             id: 1,
             studentId: 4,
             studentName: "Raza Khan",
-            studentEmail: "raza@college.edu",
+            studentEmail: "raza@mgmmumbai.ac.in",
             skillId: 2,
             skillName: "Python",
             documentName: "HackerRank Python 5-Star Gold Badge",
@@ -304,7 +315,7 @@ const state = {
 state.currentUser = {
     authenticated: true,
     userId: 2,
-    email: "harsh@college.edu",
+    email: "harsh@mgmmumbai.ac.in",
     role: "ROLE_STUDENT",
     fullName: "Harsh Vardhan"
 };
@@ -364,10 +375,29 @@ const server = http.createServer(async (req, res) => {
 
         if (pathname === '/api/auth/login' && req.method === 'POST') {
             const body = await parseBody(req);
-            const user = state.users.find(u => u.email.toLowerCase() === body.email.toLowerCase() && u.password === body.password);
+            const normalizedEmail = (body.email || '').trim().toLowerCase();
+
+            // Backend validation: Official college email address ending with @mgmmumbai.ac.in
+            if (!isValidCollegeEmail(normalizedEmail)) {
+                return sendJson(res, 400, {
+                    success: false,
+                    message: "Please use your official college email address ending with @mgmmumbai.ac.in."
+                });
+            }
+
+            const user = state.users.find(u => u.email.toLowerCase() === normalizedEmail && u.password === body.password);
             if (!user) {
                 return sendJson(res, 401, { success: false, message: "Invalid email or password" });
             }
+
+            // Existing accounts must also adhere to official college domain rule
+            if (!isValidCollegeEmail(user.email)) {
+                return sendJson(res, 403, {
+                    success: false,
+                    message: "Please use your official college email address ending with @mgmmumbai.ac.in."
+                });
+            }
+
             const profile = state.profiles.find(p => p.userId === user.id);
             state.currentUser = {
                 authenticated: true,
@@ -386,22 +416,32 @@ const server = http.createServer(async (req, res) => {
 
         if (pathname === '/api/auth/register' && req.method === 'POST') {
             const body = await parseBody(req);
-            if (state.users.some(u => u.email.toLowerCase() === body.email.toLowerCase())) {
+            const normalizedEmail = (body.email || '').trim().toLowerCase();
+
+            // Backend validation: Reject any domain not ending in @mgmmumbai.ac.in
+            if (!isValidCollegeEmail(normalizedEmail)) {
+                return sendJson(res, 400, {
+                    success: false,
+                    message: "Please use your official college email address ending with @mgmmumbai.ac.in."
+                });
+            }
+
+            if (state.users.some(u => u.email.toLowerCase() === normalizedEmail)) {
                 return sendJson(res, 409, { success: false, message: "An account with this email already exists" });
             }
             const newId = state.users.length + 1;
-            const newUser = { id: newId, email: body.email, role: "ROLE_STUDENT", password: body.password, active: true };
+            const newUser = { id: newId, email: normalizedEmail, role: "ROLE_STUDENT", password: body.password, active: true };
             state.users.push(newUser);
 
             const newProfile = {
                 id: newId,
                 userId: newId,
-                fullName: body.fullName,
-                email: body.email,
-                college: body.college,
+                fullName: (body.fullName || '').trim(),
+                email: normalizedEmail,
+                college: (body.college || '').trim(),
                 department: body.department,
                 yearOfStudy: body.yearOfStudy,
-                phone: body.phone,
+                phone: (body.phone || '').trim(),
                 bio: `Hello! I am a student at ${body.college} looking to exchange skills.`,
                 avatarUrl: `https://api.dicebear.com/7.x/bottts/svg?seed=${newId}`,
                 verified: false,
@@ -416,9 +456,9 @@ const server = http.createServer(async (req, res) => {
             state.currentUser = {
                 authenticated: true,
                 userId: newId,
-                email: body.email,
+                email: normalizedEmail,
                 role: "ROLE_STUDENT",
-                fullName: body.fullName
+                fullName: (body.fullName || '').trim()
             };
             return sendJson(res, 200, { success: true, message: "Registration successful", data: state.currentUser });
         }

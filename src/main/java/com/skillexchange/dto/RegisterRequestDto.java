@@ -2,6 +2,7 @@ package com.skillexchange.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public class RegisterRequestDto {
@@ -12,6 +13,7 @@ public class RegisterRequestDto {
 
     @NotBlank(message = "Email is required")
     @Email(message = "Invalid email format")
+    @Pattern(regexp = "^[a-zA-Z0-9._%+-]+@mgmmumbai\\.ac\\.in$", flags = Pattern.Flag.CASE_INSENSITIVE, message = "Please use your official college email address ending with @mgmmumbai.ac.in.")
     private String email;
 
     @NotBlank(message = "Password is required")
