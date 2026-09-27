@@ -177,15 +177,15 @@ async function runTests() {
     // ----------------------------------------------------
     console.log('\n--- TEST SUITE 4: Landing Page vs Home Page ---');
 
-    // 4a. Check landing.html is removed and redirects to /index.html
+    // 4a. Check landing.html serves the public Neo-Brutalist intro page
     const landingRes = await makeRequest({
         hostname: 'localhost',
         port: 8080,
         path: '/landing.html',
         method: 'GET'
     });
-    assert('landing.html is removed and redirects (302) to /index.html', 
-        landingRes.statusCode === 302 && landingRes.headers.location === '/index.html'
+    assert('landing.html serves valid public intro page (200 OK)', 
+        landingRes.statusCode === 200 && landingRes.raw.includes('Share Your Skills') && landingRes.raw.includes('Explore Skill Exchange')
     );
 
     // 4b. Check index.html is normal working Home Page

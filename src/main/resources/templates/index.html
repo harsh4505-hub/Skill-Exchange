@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -10,6 +10,28 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <!-- Neo-Brutalist Theme CSS -->
     <link rel="stylesheet" href="css/style.css">
+
+    <!-- First-Visit Landing Page Check (Shown ONLY ONCE on first visit before login) -->
+    <script>
+        (async function() {
+            const hasViewedLanding = localStorage.getItem('se_landing_viewed');
+            if (hasViewedLanding !== 'true') {
+                try {
+                    const res = await fetch('/api/auth/current-user');
+                    const data = await res.json();
+                    if (data && data.success && data.data && data.data.authenticated) {
+                        // Already logged in: skip landing page forever
+                        localStorage.setItem('se_landing_viewed', 'true');
+                    } else {
+                        // First-ever visit by unauthenticated guest: show public landing page
+                        window.location.replace('landing.html');
+                    }
+                } catch (e) {
+                    window.location.replace('landing.html');
+                }
+            }
+        })();
+    </script>
 </head>
 <body>
 
