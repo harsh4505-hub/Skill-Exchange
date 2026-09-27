@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none">
+    <rect width="48" height="48" rx="10" fill="#18181b"/>
+    <!-- Interlocking Exchange Loops -->
+    <path d="M12 18C12 14.6863 14.6863 12 18 12H30C33.3137 12 36 14.6863 36 18C36 21.3137 33.3137 24 30 24H18" stroke="#818cf8" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M36 30C36 33.3137 33.3137 36 30 36H18C14.6863 36 12 33.3137 12 30C12 26.6863 14.6863 24 18 24H30" stroke="#34d399" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- Directional Node Dots -->
+    <circle cx="15" cy="18" r="2.5" fill="#ffffff"/>
+    <circle cx="33" cy="30" r="2.5" fill="#ffffff"/>
+</svg>
