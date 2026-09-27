@@ -1,0 +1,26 @@
+{
+  "name": "skill-exchange",
+  "version": "1.0.0",
+  "description": "> **A 2nd-Year Information Technology College Mini Project**  \r > Built with **Java 17, Spring Boot 3, Spring Data JPA, Spring Security, MySQL & Bootstrap 5**",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/harsh4505-hub/Skill-Exchange.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/harsh4505-hub/Skill-Exchange/issues"
+  },
+  "homepage": "https://github.com/harsh4505-hub/Skill-Exchange#readme",
+  "dependencies": {
+    "dotenv": "^18.0.4",
+    "nodemailer": "^10.0.11"
+  }
+}

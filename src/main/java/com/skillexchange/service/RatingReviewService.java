@@ -91,8 +91,8 @@ public class RatingReviewService {
                 reviewer.getStudentProfile().getFullName() : reviewer.getEmail();
         notificationService.createNotification(
                 reviewedStudent,
-                "New Peer Review Received (" + dto.getRating() + "★)",
-                reviewerName + " left a " + dto.getRating() + "-star review: \"" +
+                "New Peer Evaluation Received (" + dto.getRating() + "/5)",
+                reviewerName + " submitted an evaluation score of " + dto.getRating() + "/5: \"" +
                         (dto.getComment() != null ? dto.getComment() : "Great skill exchange!") + "\"",
                 "NEW_REVIEW",
                 saved.getId()

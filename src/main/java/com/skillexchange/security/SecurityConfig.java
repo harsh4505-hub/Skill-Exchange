@@ -55,6 +55,7 @@ public class SecurityConfig {
 
                 // Admin-only Endpoints
                 .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
+                .requestMatchers("/api/verifications/pending", "/api/verifications/*/approve", "/api/verifications/*/reject", "/api/verifications/*/request-resubmission").hasAuthority("ROLE_ADMIN")
 
                 // Student and General Authenticated API Endpoints
                 .requestMatchers("/api/students/**").authenticated()

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 48" width="240" height="48" fill="none">
+    <!-- Icon Mark -->
+    <rect width="44" height="44" x="2" y="2" rx="10" fill="#18181b"/>
+    <path d="M14 17C14 14.2386 16.2386 12 19 12H29C31.7614 12 34 14.2386 34 17C34 19.7614 31.7614 22 29 22H19" stroke="#818cf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M34 27C34 29.7614 31.7614 32 29 32H19C16.2386 32 14 29.7614 14 27C14 24.2386 16.2386 22 19 22H29" stroke="#34d399" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="16.5" cy="17" r="2" fill="#ffffff"/>
+    <circle cx="31.5" cy="27" r="2" fill="#ffffff"/>
+
+    <!-- Wordmark -->
+    <text x="56" y="26" font-family="'Space Grotesk', system-ui, -apple-system, sans-serif" font-weight="700" font-size="20" fill="#18181b" letter-spacing="-0.5px">Skill<tspan fill="#4f46e5">Exchange</tspan></text>
+    <!-- Academic Subtitle Tag -->
+    <text x="56.5" y="38" font-family="'JetBrains Mono', monospace" font-weight="600" font-size="8.5" fill="#71717a" letter-spacing="0.8px">MGM ACADEMIC NETWORK</text>
+</svg>

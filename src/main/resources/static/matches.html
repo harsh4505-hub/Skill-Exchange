@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Find Skill Matches | Student Skill Exchange Platform</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="css/style.css">
@@ -14,8 +15,7 @@
     <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container">
             <a class="navbar-brand" href="index.html">
-                <span class="brand-icon-box"><i class="bi bi-arrow-left-right"></i></span>
-                <span class="brand-title">Skill<strong>Exchange</strong></span>
+                <img src="images/logo.svg" alt="SkillExchange MGM" class="brand-logo-img">
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
                 <span class="navbar-toggler-icon"></span>
@@ -45,7 +45,7 @@
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <div>
                     <span class="section-tag mb-1">MODULE 04 & 05</span>
-                    <h3 class="fw-bold mb-1"><i class="bi bi-stars text-danger me-2"></i>ALGORITHMIC SKILL MATCHING</h3>
+                    <h3 class="fw-bold mb-1"><i class="bi bi-diagram-3-fill text-primary me-2"></i>ALGORITHMIC SKILL MATCHING</h3>
                     <p class="text-muted small mb-0">Our 5-factor explainable algorithm calculates mutual compatibility between what you wish to learn and what campus peers teach.</p>
                 </div>
                 <button class="btn btn-sm btn-outline-custom" type="button" data-bs-toggle="collapse" data-bs-target="#formulaCollapse">
@@ -73,7 +73,7 @@
                         <div class="col-md-4">
                             <div class="p-2 border rounded" style="background-color: var(--light-bg); border-color: var(--border-color) !important;">
                                 <strong class="text-dark">3. Peer Rating (15%)</strong>
-                                <p class="mb-0 text-muted small">Based on candidate's historical star ratings (out of 5★).</p>
+                                <p class="mb-0 text-muted small">Based on candidate's historical peer ratings (out of 5.0).</p>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -452,8 +452,8 @@
                                     <div>
                                         <h5 class="fw-bold mb-0 text-dark">${m.studentName}</h5>
                                         <small class="text-muted d-block">${m.department} &bull; ${m.yearOfStudy}</small>
-                                        <div class="small text-warning fw-bold mt-1">
-                                            ★ ${(m.averageRating || 0).toFixed(1)} / 5.0
+                                        <div class="small text-dark font-monospace fw-bold mt-1">
+                                            Rating: ${(m.averageRating || 0).toFixed(1)} / 5.0
                                         </div>
                                     </div>
                                 </div>

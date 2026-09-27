@@ -215,6 +215,18 @@ p {
     text-transform: uppercase;
 }
 
+.brand-logo-img {
+    height: 38px;
+    width: auto;
+    display: inline-block;
+    vertical-align: middle;
+    transition: transform 0.15s ease;
+}
+
+.navbar-brand:hover .brand-logo-img {
+    transform: translateY(-1px);
+}
+
 .brand-icon-box {
     display: inline-flex;
     align-items: center;
@@ -233,6 +245,20 @@ p {
 .navbar-brand:hover .brand-icon-box {
     transform: translate(-1px, -1px);
     box-shadow: 3px 3px 0px var(--primary);
+}
+
+.verified-pill {
+    display: inline-flex;
+    align-items: center;
+    background-color: var(--success-subtle);
+    color: var(--success-text);
+    border: 1.5px solid var(--border-color);
+    font-weight: 700;
+    padding: 0.3rem 0.75rem;
+    border-radius: var(--radius-sm);
+    box-shadow: 2px 2px 0px var(--border-color);
+    font-size: 0.8rem;
+    letter-spacing: 0.02em;
 }
 
 .brand-title {
@@ -284,6 +310,126 @@ p {
 .navbar-toggler:focus {
     box-shadow: 2px 2px 0px var(--border-color);
     outline: none;
+}
+
+/* ===================================================================
+   FORM CONTROLS & NEO-BRUTALIST CUSTOM VALIDATION SYSTEM
+   =================================================================== */
+
+.form-label {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--dark-text);
+    margin-bottom: 0.4rem;
+    display: inline-block;
+}
+
+.form-control,
+.form-select {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9375rem;
+    color: var(--dark-text);
+    background-color: #ffffff;
+    border: 2px solid var(--border-color) !important;
+    border-radius: var(--radius-sm) !important;
+    padding: 0.65rem 0.9rem;
+    box-shadow: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.form-control:focus,
+.form-select:focus {
+    color: var(--dark-text);
+    background-color: #ffffff;
+    border-color: var(--primary) !important;
+    box-shadow: 2px 2px 0px var(--border-color) !important;
+    outline: none;
+}
+
+.form-control::placeholder {
+    color: #9ca3af;
+    font-size: 0.875rem;
+}
+
+.form-check-input {
+    border: 2px solid var(--border-color) !important;
+    border-radius: var(--radius-sm) !important;
+    width: 1.15em;
+    height: 1.15em;
+    cursor: pointer;
+    box-shadow: none;
+}
+
+.form-check-input:checked {
+    background-color: var(--primary) !important;
+    border-color: var(--border-color) !important;
+}
+
+.form-check-input:focus {
+    box-shadow: 2px 2px 0px var(--border-color) !important;
+    outline: none;
+}
+
+/* --- Invalid Field State (Neo-Brutalist) --- */
+.form-control.is-invalid-field,
+.form-select.is-invalid-field {
+    border-color: #b91c1c !important;
+    background-color: #fffafb !important;
+    box-shadow: 2px 2px 0px #b91c1c !important;
+}
+
+.form-control.is-invalid-field:focus,
+.form-select.is-invalid-field:focus {
+    border-color: #b91c1c !important;
+    box-shadow: 3px 3px 0px #b91c1c !important;
+    outline: none;
+}
+
+.form-check-input.is-invalid-field {
+    border-color: #b91c1c !important;
+    box-shadow: 2px 2px 0px #b91c1c !important;
+}
+
+/* Inline Error Text Message */
+.field-error-msg {
+    display: block;
+    margin-top: 0.35rem;
+    font-size: 0.775rem;
+    font-weight: 600;
+    color: #b91c1c;
+    letter-spacing: 0.01em;
+    line-height: 1.35;
+    animation: fadeInError 0.15s ease-out;
+}
+
+@keyframes fadeInError {
+    from {
+        opacity: 0;
+        transform: translateY(-2px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Form-Level Summary Alert */
+.form-summary-alert {
+    background-color: #fef2f2;
+    border: 2px solid #b91c1c;
+    border-radius: var(--radius-sm);
+    box-shadow: 2px 2px 0px #b91c1c;
+    color: #991b1b;
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 /* ===================================================================
@@ -1197,15 +1343,96 @@ p {
 }
 
 /* ===================================================================
-   STAR RATING
+   ACADEMIC REPUTATION & RATING METRICS (STAR-FREE NUMERICAL SYSTEM)
    =================================================================== */
 
-.star-rating, .cursor-pointer {
-    cursor: pointer;
+.rating-score-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: #ffffff;
+    border: 2px solid var(--border-color);
+    box-shadow: 2px 2px 0 var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 0.2rem 0.6rem;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    font-weight: 700;
 }
 
-.text-warning {
-    color: #d97706 !important;
+.rating-score-badge .rating-label {
+    color: var(--muted-text);
+    text-transform: uppercase;
+    font-size: 0.68rem;
+    letter-spacing: 0.05em;
+}
+
+.rating-score-badge .rating-num {
+    color: var(--dark-text);
+    font-size: 0.95rem;
+}
+
+.rating-score-badge .rating-max {
+    color: var(--subtle-text);
+    font-size: 0.72rem;
+}
+
+.score-pill {
+    display: inline-block;
+    padding: 0.2rem 0.55rem;
+    border: 1.5px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: 700;
+    background: #ffffff;
+    color: var(--dark-text);
+}
+
+/* Numeric Rating Selector Pills */
+.score-selector {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    margin: 1rem 0;
+}
+
+.score-btn {
+    width: 46px;
+    height: 46px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    border: 2px solid var(--border-color);
+    box-shadow: 2px 2px 0 var(--border-color);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--dark-text);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.score-btn:hover {
+    background: var(--primary-subtle);
+    border-color: var(--primary);
+    transform: translate(-1px, -1px);
+    box-shadow: 3px 3px 0 var(--primary);
+}
+
+.score-btn.active {
+    background: var(--dark-text);
+    color: #ffffff;
+    box-shadow: 3px 3px 0 var(--primary);
+    border-color: var(--dark-text);
+}
+
+.brand-logo-img {
+    height: 36px;
+    width: auto;
+    display: block;
 }
 
 /* ===================================================================

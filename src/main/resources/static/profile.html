@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Profile | Student Skill Exchange Platform</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="css/style.css">
@@ -14,8 +15,7 @@
     <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container">
             <a class="navbar-brand" href="index.html">
-                <span class="brand-icon-box"><i class="bi bi-arrow-left-right"></i></span>
-                <span class="brand-title">Skill<strong>Exchange</strong></span>
+                <img src="images/logo.svg" alt="SkillExchange MGM" class="brand-logo-img">
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
                 <span class="navbar-toggler-icon"></span>
@@ -60,7 +60,7 @@
                     <div class="d-flex justify-content-center gap-3 py-2 border-top border-bottom my-3" style="border-color: var(--border-color) !important;">
                         <div>
                             <span class="text-muted small d-block" style="font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase;">Rating</span>
-                            <span class="fw-bold text-dark fs-5" id="profRating" style="font-family: var(--font-mono);">★ 0.0</span>
+                            <span class="fw-bold text-dark fs-5" id="profRating" style="font-family: var(--font-mono);">0.0 / 5.0</span>
                         </div>
                         <div class="border-end" style="border-color: var(--border-color) !important;"></div>
                         <div>
@@ -78,7 +78,8 @@
                         <label class="fw-bold small text-muted text-uppercase mb-1" style="font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.06em;">Academic Profile</label>
                         <p class="small mb-1"><i class="bi bi-mortarboard me-2 text-dark"></i><span id="profDept" class="fw-medium">Dept</span></p>
                         <p class="small mb-1"><i class="bi bi-calendar-event me-2 text-dark"></i><span id="profYear" class="fw-medium">Year</span></p>
-                        <p class="small mb-0"><i class="bi bi-envelope me-2 text-dark"></i><span id="profEmail" class="fw-medium">Email</span></p>
+                        <p class="small mb-1"><i class="bi bi-envelope me-2 text-dark"></i><span id="profEmail" class="fw-medium">Email</span></p>
+                        <p class="small mb-0" id="profPhoneWrap"><i class="bi bi-telephone me-2 text-dark"></i><span id="profPhone" class="fw-medium">Phone</span></p>
                     </div>
 
                     <!-- Actions for Self Profile -->
@@ -179,7 +180,7 @@
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <div>
                             <div class="text-uppercase fw-bold text-muted small mb-1" style="font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.06em;">Reputation</div>
-                            <h4 class="fw-bold mb-0">Peer Reviews & Ratings</h4>
+                            <h4 class="fw-bold mb-0">Peer Reviews & Academic Feedback</h4>
                         </div>
                         <span class="badge badge-custom bg-light text-dark" id="reviewCountBadge" style="font-family: var(--font-mono);">0 Reviews</span>
                     </div>
@@ -431,8 +432,23 @@
             document.getElementById('profBio').innerText = p.bio || "No biography provided.";
             document.getElementById('profAvatar').src = p.avatarUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=${p.userId || p.id}`;
 
-            document.getElementById('profRating').innerText = `★ ${(p.averageRating || 0).toFixed(1)}`;
+            document.getElementById('profRating').innerText = `${(p.averageRating || 0).toFixed(1)} / 5.0`;
             document.getElementById('profExchanges').innerText = p.completedExchangesCount || 0;
+
+            const phoneWrap = document.getElementById('profPhoneWrap');
+            if (phoneWrap) {
+                if (p.phone) {
+                    document.getElementById('profPhone').innerText = p.phone;
+                    phoneWrap.style.display = 'block';
+                } else {
+                    if (isOwnProfile) {
+                        document.getElementById('profPhone').innerText = "Not configured";
+                        phoneWrap.style.display = 'block';
+                    } else {
+                        phoneWrap.style.display = 'none'; // Protected PII for other peers
+                    }
+                }
+            }
 
             if (p.verified) {
                 document.getElementById('profVerifiedContainer').classList.remove('d-none');
@@ -537,7 +553,7 @@
                     <div class="p-3 border border-dark bg-white" style="border-width: 2px !important; box-shadow: 2px 2px 0 var(--border-color); border-radius: var(--radius-sm);">
                         <div class="d-flex justify-content-between align-items-center mb-1">
                             <span class="fw-bold">${r.reviewerName || 'Student Peer'}</span>
-                            <span class="text-dark small fw-bold" style="font-family: var(--font-mono);">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)} (${r.rating}/5)</span>
+                            <span class="score-pill">Score: ${r.rating} / 5</span>
                         </div>
                         <p class="mb-1 text-dark small">"${r.comment || 'Smooth and productive skill exchange!'}"</p>
                         <small class="text-muted" style="font-family: var(--font-mono); font-size:0.7rem;">${new Date(r.createdAt).toLocaleDateString()}</small>

@@ -51,6 +51,12 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Environment & Secrets
+.env
+.env.local
+.env.*
+!.env.example
+
 # Logs & temp
 logs/
 temp/

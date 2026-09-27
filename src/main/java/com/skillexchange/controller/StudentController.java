@@ -46,7 +46,13 @@ public class StudentController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<StudentProfileDto>> getStudentById(@PathVariable Long id) {
+        Long currentUserId = authService.getCurrentUserId();
+        User currentUser = authService.getCurrentUser();
         StudentProfileDto profile = profileService.getProfileDto(id);
+        // IDOR Protection: mask private student contact info if not the owner or administrator
+        if (!id.equals(currentUserId) && !"ROLE_ADMIN".equals(currentUser.getRole())) {
+            profile.setPhone(null);
+        }
         return ResponseEntity.ok(ApiResponse.ok("Student retrieved", profile));
     }
 

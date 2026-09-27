@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Exchange History & Reviews | Student Skill Exchange Platform</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="css/style.css">
@@ -14,8 +15,7 @@
     <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container">
             <a class="navbar-brand" href="index.html">
-                <span class="brand-icon-box"><i class="bi bi-arrow-left-right"></i></span>
-                <span class="brand-title">SkillExchange</span>
+                <img src="images/logo.svg" alt="SkillExchange MGM" class="brand-logo-img">
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
                 <span class="navbar-toggler-icon"></span>
@@ -114,7 +114,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title fw-bold"><i class="bi bi-star-fill text-warning me-2"></i>Rate & Review Peer Student</h5>
+                    <h5 class="modal-title fw-bold"><i class="bi bi-patch-check me-2 text-dark"></i>Evaluate Peer Student</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-4">
@@ -123,24 +123,24 @@
 
                     <div class="text-center mb-4">
                         <h6 class="fw-bold mb-2">How was your learning experience with <span id="revStudentName" class="text-dark text-decoration-underline">Student</span>?</h6>
-                        <!-- 5 Star Selection -->
-                        <div class="d-flex justify-content-center gap-2 fs-2 text-warning my-2" id="starPicker">
-                            <i class="bi bi-star-fill cursor-pointer" onclick="setStars(1)"></i>
-                            <i class="bi bi-star-fill cursor-pointer" onclick="setStars(2)"></i>
-                            <i class="bi bi-star-fill cursor-pointer" onclick="setStars(3)"></i>
-                            <i class="bi bi-star-fill cursor-pointer" onclick="setStars(4)"></i>
-                            <i class="bi bi-star-fill cursor-pointer" onclick="setStars(5)"></i>
+                        <!-- Numeric Score Selector (Star-Free) -->
+                        <div class="score-selector my-3" id="scorePicker">
+                            <button type="button" class="score-btn" onclick="setScore(1)">1</button>
+                            <button type="button" class="score-btn" onclick="setScore(2)">2</button>
+                            <button type="button" class="score-btn" onclick="setScore(3)">3</button>
+                            <button type="button" class="score-btn" onclick="setScore(4)">4</button>
+                            <button type="button" class="score-btn active" onclick="setScore(5)">5</button>
                         </div>
-                        <span class="small fw-bold text-muted" id="starLabel" style="font-family: var(--font-mono);">5 Stars (Excellent)</span>
+                        <span class="score-pill" id="scoreLabel">Rating Score: 5 / 5 (Exceptional)</span>
                     </div>
 
                     <div class="mb-4">
-                        <label class="form-label fw-bold text-uppercase small" style="font-family: var(--font-mono); font-size: 0.72rem;">Review Feedback & Insights</label>
+                        <label class="form-label fw-bold text-uppercase small" style="font-family: var(--font-mono); font-size: 0.72rem;">Academic Feedback & Insights</label>
                         <textarea id="revComment" class="form-control" rows="3" placeholder="Explain what you learned, punctuality, clarity of explanation..."></textarea>
                     </div>
 
                     <button class="btn btn-primary-custom w-100 fw-bold" onclick="submitReview()">
-                        <i class="bi bi-check-circle me-1"></i> Submit Review
+                        <i class="bi bi-check-circle me-1"></i> Submit Evaluation
                     </button>
                 </div>
             </div>
@@ -205,10 +205,10 @@
 
                                 ${status === 'COMPLETED' ? `
                                     ${e.reviewedByCurrentStudent ? `
-                                        <span class="verified-pill"><i class="bi bi-check2-circle me-1"></i> Reviewed</span>
+                                        <span class="verified-pill"><i class="bi bi-check2-circle me-1"></i> Evaluated</span>
                                     ` : `
-                                        <button class="btn btn-sm btn-warning text-dark fw-bold" onclick="openReviewModal(${e.id}, ${peerId}, '${peerName}')">
-                                            <i class="bi bi-star-fill me-1"></i> Leave Review
+                                        <button class="btn btn-sm btn-dark text-white fw-bold" onclick="openReviewModal(${e.id}, ${peerId}, '${peerName}')">
+                                            <i class="bi bi-pencil-square me-1"></i> Leave Evaluation
                                         </button>
                                     `}
                                 ` : ''}
@@ -245,18 +245,22 @@
             }
         }
 
-        function setStars(count) {
-            currentRating = count;
-            const stars = document.getElementById('starPicker').children;
-            for (let i = 0; i < 5; i++) {
-                if (i < count) {
-                    stars[i].className = 'bi bi-star-fill cursor-pointer';
+        function setScore(score) {
+            currentRating = score;
+            const buttons = document.querySelectorAll('#scorePicker .score-btn');
+            buttons.forEach((btn, idx) => {
+                if (idx + 1 === score) {
+                    btn.classList.add('active');
                 } else {
-                    stars[i].className = 'bi bi-star cursor-pointer text-muted';
+                    btn.classList.remove('active');
                 }
-            }
-            const labels = ["1 Star (Poor)", "2 Stars (Fair)", "3 Stars (Good)", "4 Stars (Very Good)", "5 Stars (Excellent)"];
-            document.getElementById('starLabel').innerText = labels[count - 1];
+            });
+            const labels = ["1 / 5 (Needs Improvement)", "2 / 5 (Fair)", "3 / 5 (Good)", "4 / 5 (Very Good)", "5 / 5 (Exceptional)"];
+            document.getElementById('scoreLabel').innerText = `Rating Score: ${labels[score - 1]}`;
+        }
+
+        function setStars(count) {
+            setScore(count);
         }
 
         function openReviewModal(exchangeId, studentId, studentName) {

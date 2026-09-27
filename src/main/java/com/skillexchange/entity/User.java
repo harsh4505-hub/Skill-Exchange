@@ -26,6 +26,9 @@ public class User {
     @Column(nullable = false)
     private boolean active = true;
 
+    @Column(name = "email_verified", nullable = false)
+    private boolean emailVerified = false;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
@@ -39,7 +42,8 @@ public class User {
         this.email = email;
         this.password = password;
         this.role = role;
-        this.active = true;
+        this.active = false;
+        this.emailVerified = false;
         this.createdAt = LocalDateTime.now();
     }
 
@@ -81,6 +85,14 @@ public class User {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public boolean isEmailVerified() {
+        return emailVerified;
+    }
+
+    public void setEmailVerified(boolean emailVerified) {
+        this.emailVerified = emailVerified;
     }
 
     public LocalDateTime getCreatedAt() {

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Registration | Student Skill Exchange Platform</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="css/style.css">
@@ -14,8 +15,7 @@
     <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container">
             <a class="navbar-brand" href="index.html">
-                <i class="bi bi-arrow-left-right text-gradient fs-3"></i>
-                <span class="text-gradient">SkillExchange</span>
+                <img src="images/logo.svg" alt="SkillExchange MGM" class="brand-logo-img">
             </a>
             <div class="ms-auto">
                 <a href="login.html" class="btn btn-outline-custom btn-sm">Already Registered? Sign In</a>
@@ -31,31 +31,41 @@
 
                 <div class="card card-custom p-4 p-md-5">
                     <div class="text-center mb-4">
-                        <span class="badge badge-custom badge-mutual mb-2 px-3 py-2">Join Peer Network</span>
-                        <h2 class="fw-bold mb-1">Create Student Account</h2>
-                        <p class="text-muted small">Fill in your academic details to start exchanging skills with fellow students</p>
+                        <span class="section-tag mb-1">MEMBERSHIP</span>
+                        <h2 class="fw-bold mb-1">CREATE STUDENT ACCOUNT</h2>
+                        <p class="text-muted small">Register with your official university credentials to start trading skills</p>
                     </div>
 
-                    <form id="registerForm" onsubmit="handleRegister(event)">
+                    <!-- Form-Level Summary Alert (Requirement #9) -->
+                    <div id="formSummaryAlert" class="form-summary-alert" style="display: none;" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill flex-shrink-0"></i>
+                        <span>Please correct the highlighted fields before continuing.</span>
+                    </div>
+
+                    <form id="registerForm" novalidate onsubmit="handleRegister(event)">
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">Full Name *</label>
-                                <input type="text" id="fullName" class="form-control" placeholder="e.g. Rahul Sharma" required>
+                                <label class="form-label" for="fullName">Full Name <span class="text-danger">*</span></label>
+                                <input type="text" id="fullName" class="form-control" placeholder="e.g. Rahul Sharma" autocomplete="name" aria-describedby="fullName-error" aria-invalid="false">
+                                <div id="fullName-error" class="field-error-msg" role="alert" style="display: none;"></div>
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">College Email *</label>
-                                <input type="email" id="email" class="form-control" placeholder="rahul@mgmmumbai.ac.in" required>
+                                <label class="form-label" for="email">College Email <span class="text-danger">*</span></label>
+                                <input type="email" id="email" class="form-control" placeholder="rahul@mgmmumbai.ac.in" autocomplete="email" aria-describedby="email-error" aria-invalid="false">
+                                <small class="text-muted d-block mt-1" style="font-size:0.75rem;">Must end with @mgmmumbai.ac.in</small>
+                                <div id="email-error" class="field-error-msg" role="alert" style="display: none;"></div>
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">College / University *</label>
-                                <input type="text" id="college" class="form-control" placeholder="e.g. Institute of Engineering & Tech" required>
+                                <label class="form-label" for="college">College / Institute <span class="text-danger">*</span></label>
+                                <input type="text" id="college" class="form-control" placeholder="e.g. College of Engineering & Tech" aria-describedby="college-error" aria-invalid="false">
+                                <div id="college-error" class="field-error-msg" role="alert" style="display: none;"></div>
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">Department *</label>
-                                <select id="department" class="form-select" required>
+                                <label class="form-label" for="department">Department <span class="text-danger">*</span></label>
+                                <select id="department" class="form-select" aria-describedby="department-error" aria-invalid="false">
                                     <option value="" disabled selected>Select Department</option>
                                     <option value="Information Technology">Information Technology</option>
                                     <option value="Computer Science">Computer Science & Engineering</option>
@@ -65,11 +75,12 @@
                                     <option value="Management Studies">Management Studies</option>
                                     <option value="Other">Other Department</option>
                                 </select>
+                                <div id="department-error" class="field-error-msg" role="alert" style="display: none;"></div>
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">Year of Study *</label>
-                                <select id="yearOfStudy" class="form-select" required>
+                                <label class="form-label" for="yearOfStudy">Year of Study <span class="text-danger">*</span></label>
+                                <select id="yearOfStudy" class="form-select" aria-describedby="yearOfStudy-error" aria-invalid="false">
                                     <option value="" disabled selected>Select Year</option>
                                     <option value="1st Year">1st Year (Freshman)</option>
                                     <option value="2nd Year" selected>2nd Year (Sophomore)</option>
@@ -77,29 +88,34 @@
                                     <option value="4th Year">4th Year (Senior)</option>
                                     <option value="Postgraduate">Postgraduate</option>
                                 </select>
+                                <div id="yearOfStudy-error" class="field-error-msg" role="alert" style="display: none;"></div>
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">Phone Number</label>
-                                <input type="tel" id="phone" class="form-control" placeholder="e.g. 9876543210">
+                                <label class="form-label" for="phone">Phone Number <span class="text-muted fw-normal text-capitalize" style="font-size:0.75rem;">(Optional)</span></label>
+                                <input type="tel" id="phone" class="form-control" placeholder="e.g. 9876543210" autocomplete="tel" aria-describedby="phone-error" aria-invalid="false">
+                                <div id="phone-error" class="field-error-msg" role="alert" style="display: none;"></div>
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">Password *</label>
-                                <input type="password" id="password" class="form-control" placeholder="At least 6 characters" minlength="6" required>
+                                <label class="form-label" for="password">Password <span class="text-danger">*</span></label>
+                                <input type="password" id="password" class="form-control" placeholder="At least 6 characters" autocomplete="new-password" aria-describedby="password-error" aria-invalid="false">
+                                <div id="password-error" class="field-error-msg" role="alert" style="display: none;"></div>
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">Confirm Password *</label>
-                                <input type="password" id="confirmPassword" class="form-control" placeholder="Repeat password" required>
+                                <label class="form-label" for="confirmPassword">Confirm Password <span class="text-danger">*</span></label>
+                                <input type="password" id="confirmPassword" class="form-control" placeholder="Repeat password" autocomplete="new-password" aria-describedby="confirmPassword-error" aria-invalid="false">
+                                <div id="confirmPassword-error" class="field-error-msg" role="alert" style="display: none;"></div>
                             </div>
                         </div>
 
-                        <div class="form-check mt-4 mb-4">
-                            <input class="form-check-input" type="checkbox" id="termsCheck" required>
+                        <div class="form-check mt-4 mb-3">
+                            <input class="form-check-input" type="checkbox" id="termsCheck" aria-describedby="termsCheck-error" aria-invalid="false">
                             <label class="form-check-label small text-muted" for="termsCheck">
-                                I agree to the <a href="javascript:void(0)" class="text-primary-custom text-decoration-none">Community Guidelines</a> and verify that I am an enrolled college student.
+                                I agree to the <a href="javascript:void(0)" class="fw-bold text-dark text-decoration-underline">Community Guidelines</a> and verify that I am an actively enrolled college student.
                             </label>
+                            <div id="termsCheck-error" class="field-error-msg mt-1" role="alert" style="display: none;"></div>
                         </div>
 
                         <button type="submit" id="regBtn" class="btn btn-primary-custom w-100 py-2 fs-6">
@@ -109,7 +125,7 @@
 
                     <div class="text-center mt-4">
                         <span class="text-muted small">Already have an account? </span>
-                        <a href="login.html" class="small fw-semibold text-primary-custom text-decoration-none">Sign in here</a>
+                        <a href="login.html" class="small fw-bold text-dark text-decoration-underline">Sign in here</a>
                     </div>
                 </div>
             </div>
@@ -120,26 +136,170 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/app.js"></script>
     <script>
+        // ===================================================================
+        // PROFESSIONAL FORM VALIDATION SYSTEM (NO BROWSER POPUPS)
+        // ===================================================================
+
+        const collegeEmailPattern = /^[a-zA-Z0-9._%+-]+@mgmmumbai\.ac\.in$/i;
+
+        const validators = {
+            fullName: () => {
+                const val = (document.getElementById('fullName').value || '').trim();
+                if (!val) return "Full name is required.";
+                if (val.length < 2 || !/^[a-zA-Z\s.'-]+$/.test(val)) return "Please enter a valid full name.";
+                return null;
+            },
+            email: () => {
+                const val = (document.getElementById('email').value || '').trim().toLowerCase();
+                if (!val) return "College email is required.";
+                if (!collegeEmailPattern.test(val)) {
+                    return "Use your official college email ending with @mgmmumbai.ac.in.";
+                }
+                const parts = val.split('@');
+                if (parts.length !== 2 || parts[1] !== 'mgmmumbai.ac.in' || parts[0].startsWith('.') || parts[0].endsWith('.') || parts[0].includes('..')) {
+                    return "Use your official college email ending with @mgmmumbai.ac.in.";
+                }
+                return null;
+            },
+            college: () => {
+                const val = (document.getElementById('college').value || '').trim();
+                if (!val) return "College / institute is required.";
+                return null;
+            },
+            department: () => {
+                const val = document.getElementById('department').value;
+                if (!val) return "Please select your department.";
+                return null;
+            },
+            yearOfStudy: () => {
+                const val = document.getElementById('yearOfStudy').value;
+                if (!val) return "Please select your year of study.";
+                return null;
+            },
+            phone: () => {
+                const val = (document.getElementById('phone').value || '').trim();
+                if (!val) return null; // Optional: no error when empty
+                const clean = val.replace(/\D/g, '');
+                if (!/^[0-9+\-\s()]{7,15}$/.test(val) || clean.length < 10) {
+                    return "Please enter a valid phone number.";
+                }
+                return null;
+            },
+            password: () => {
+                const val = document.getElementById('password').value || '';
+                if (!val) return "Password is required.";
+                if (val.length < 6) return "Password must meet the minimum security requirements.";
+                return null;
+            },
+            confirmPassword: () => {
+                const pwd = document.getElementById('password').value || '';
+                const confirm = document.getElementById('confirmPassword').value || '';
+                if (!confirm) return "Please confirm your password.";
+                if (pwd !== confirm) return "Passwords do not match.";
+                return null;
+            },
+            termsCheck: () => {
+                const checked = document.getElementById('termsCheck').checked;
+                if (!checked) return "Please accept the Community Guidelines to continue.";
+                return null;
+            }
+        };
+
+        // Apply visual error state to a specific field
+        function setFieldError(fieldId, errorMsg) {
+            const input = document.getElementById(fieldId);
+            const errorElem = document.getElementById(`${fieldId}-error`);
+            if (!input || !errorElem) return;
+
+            if (errorMsg) {
+                input.classList.add('is-invalid-field');
+                input.setAttribute('aria-invalid', 'true');
+                errorElem.innerText = errorMsg;
+                errorElem.style.display = 'block';
+            } else {
+                input.classList.remove('is-invalid-field');
+                input.setAttribute('aria-invalid', 'false');
+                errorElem.innerText = '';
+                errorElem.style.display = 'none';
+            }
+        }
+
+        // Validate an individual field
+        function validateField(fieldId) {
+            if (!validators[fieldId]) return true;
+            const error = validators[fieldId]();
+            setFieldError(fieldId, error);
+            return !error;
+        }
+
+        // Setup real-time blur and input listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            const fieldIds = Object.keys(validators);
+
+            fieldIds.forEach(fieldId => {
+                const input = document.getElementById(fieldId);
+                if (!input) return;
+
+                // Validate on blur if user interacts with field
+                input.addEventListener('blur', () => {
+                    validateField(fieldId);
+                });
+
+                // Clear or update error on live correction
+                const eventType = (input.tagName === 'SELECT' || input.type === 'checkbox') ? 'change' : 'input';
+                input.addEventListener(eventType, () => {
+                    if (input.classList.contains('is-invalid-field')) {
+                        validateField(fieldId);
+                    }
+                    // When password changes, also recheck confirmPassword if touched
+                    if (fieldId === 'password') {
+                        const confirmInput = document.getElementById('confirmPassword');
+                        if (confirmInput.value.length > 0) {
+                            validateField('confirmPassword');
+                        }
+                    }
+                    // Auto-hide form summary if all invalid states resolved
+                    const hasErrors = document.querySelectorAll('.is-invalid-field').length > 0;
+                    if (!hasErrors) {
+                        document.getElementById('formSummaryAlert').style.display = 'none';
+                    }
+                });
+            });
+        });
+
+        // Form submission handler
         async function handleRegister(e) {
             e.preventDefault();
-            const emailInput = document.getElementById('email');
-            const email = (emailInput.value || '').trim();
 
-            // Enforce official college domain ending with @mgmmumbai.ac.in
-            const collegeEmailPattern = /^[a-zA-Z0-9._%+-]+@mgmmumbai\.ac\.in$/i;
-            if (!collegeEmailPattern.test(email)) {
-                showAlert("Please use your official college email address ending with @mgmmumbai.ac.in.", "danger");
-                emailInput.focus();
+            const fieldIds = Object.keys(validators);
+            let firstInvalidInput = null;
+            let hasError = false;
+
+            fieldIds.forEach(fieldId => {
+                const isValid = validateField(fieldId);
+                if (!isValid) {
+                    hasError = true;
+                    if (!firstInvalidInput) {
+                        firstInvalidInput = document.getElementById(fieldId);
+                    }
+                }
+            });
+
+            const summaryAlert = document.getElementById('formSummaryAlert');
+
+            if (hasError) {
+                summaryAlert.style.display = 'flex';
+                if (firstInvalidInput) {
+                    firstInvalidInput.focus();
+                }
                 return;
             }
 
+            summaryAlert.style.display = 'none';
+
+            const email = document.getElementById('email').value.trim().toLowerCase();
             const pwd = document.getElementById('password').value;
             const confirm = document.getElementById('confirmPassword').value;
-
-            if (pwd !== confirm) {
-                showAlert("Password and Confirm Password do not match!", "danger");
-                return;
-            }
 
             const btn = document.getElementById('regBtn');
             btn.disabled = true;
@@ -156,14 +316,28 @@
                 phone: document.getElementById('phone').value.trim()
             };
 
-            const res = await API.post('/api/auth/register', payload);
-            if (res && res.success) {
-                showAlert("Account successfully created! Redirecting to your dashboard...", "success");
-                setTimeout(() => {
-                    window.location.href = "dashboard.html";
-                }, 1000);
-            } else {
-                showAlert(res.message || "Registration failed. Please check your details.", "danger");
+            try {
+                const res = await API.post('/api/auth/register', payload);
+                if (res && res.success) {
+                    if (res.requiresVerification) {
+                        sessionStorage.setItem('pendingVerificationEmail', email);
+                        showAlert("Registration initiated! A verification code has been dispatched to your college email.", "success");
+                        setTimeout(() => {
+                            window.location.href = `verify-email.html?email=${encodeURIComponent(email)}`;
+                        }, 1200);
+                    } else {
+                        showAlert("Account successfully created! Redirecting to your dashboard...", "success");
+                        setTimeout(() => {
+                            window.location.href = "dashboard.html";
+                        }, 1000);
+                    }
+                } else {
+                    showAlert(res.message || "Registration failed. Please check your details.", "danger");
+                    btn.disabled = false;
+                    btn.innerHTML = `<i class="bi bi-person-check-fill me-2"></i>Complete Student Registration`;
+                }
+            } catch (err) {
+                showAlert("Unable to connect to registration service. Please try again.", "danger");
                 btn.disabled = false;
                 btn.innerHTML = `<i class="bi bi-person-check-fill me-2"></i>Complete Student Registration`;
             }

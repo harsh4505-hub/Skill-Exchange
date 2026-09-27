@@ -2,6 +2,8 @@ package com.skillexchange.controller;
 
 import com.skillexchange.dto.ApiResponse;
 import com.skillexchange.dto.SkillVerificationDto;
+import com.skillexchange.entity.User;
+import com.skillexchange.exception.UnauthorizedException;
 import com.skillexchange.service.AuthService;
 import com.skillexchange.service.SkillVerificationService;
 import jakarta.validation.Valid;
@@ -39,8 +41,16 @@ public class VerificationController {
         return ResponseEntity.ok(ApiResponse.ok("Verifications retrieved", list));
     }
 
+    private void requireAdmin() {
+        User currentUser = authService.getCurrentUser();
+        if (currentUser == null || !"ROLE_ADMIN".equals(currentUser.getRole())) {
+            throw new UnauthorizedException("Administrator authorization required for verification decisions.");
+        }
+    }
+
     @GetMapping("/pending")
     public ResponseEntity<ApiResponse<List<SkillVerificationDto>>> getPendingVerifications() {
+        requireAdmin();
         List<SkillVerificationDto> list = verificationService.getAllPendingVerifications();
         return ResponseEntity.ok(ApiResponse.ok("Pending verifications", list));
     }
@@ -49,6 +59,7 @@ public class VerificationController {
     public ResponseEntity<ApiResponse<SkillVerificationDto>> approveVerification(
             @PathVariable Long id,
             @RequestBody(required = false) Map<String, String> body) {
+        requireAdmin();
         String comment = body != null ? body.get("adminComment") : null;
         SkillVerificationDto approved = verificationService.approveVerification(id, comment);
         return ResponseEntity.ok(ApiResponse.ok("Verification approved! Verified badge awarded.", approved));
@@ -65,6 +76,7 @@ public class VerificationController {
     public ResponseEntity<ApiResponse<SkillVerificationDto>> rejectVerification(
             @PathVariable Long id,
             @RequestBody(required = false) Map<String, String> body) {
+        requireAdmin();
         String comment = body != null ? body.get("adminComment") : null;
         SkillVerificationDto rejected = verificationService.rejectVerification(id, comment);
         return ResponseEntity.ok(ApiResponse.ok("Verification rejected.", rejected));
@@ -74,6 +86,7 @@ public class VerificationController {
     public ResponseEntity<ApiResponse<SkillVerificationDto>> requestResubmission(
             @PathVariable Long id,
             @RequestBody(required = false) Map<String, String> body) {
+        requireAdmin();
         String comment = body != null ? body.get("adminComment") : null;
         SkillVerificationDto dto = verificationService.requestResubmission(id, comment);
         return ResponseEntity.ok(ApiResponse.ok("Resubmission requested.", dto));

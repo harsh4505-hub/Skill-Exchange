@@ -183,13 +183,13 @@ public class DataInitializer implements CommandLineRunner {
         exchangeRepository.save(sampleExchange2);
 
         // 10. Sample Pending Verification for Raza
-        SkillVerification verification = new SkillVerification(userRaza, skillPython, "HackerRank Python 5-Star Certificate", "uploads/verifications/raza_python.pdf", "Achieved 5 stars on HackerRank Python problem solving.");
+        SkillVerification verification = new SkillVerification(userRaza, skillPython, "HackerRank Python Problem Solving Certificate", "uploads/verifications/raza_python.pdf", "Completed advanced Python problem solving certification.");
         verification.setStatus("PENDING");
         verificationRepository.save(verification);
 
         // 11. Initial Notifications
         notificationRepository.save(new Notification(userHarsh, "Welcome to Skill Exchange!", "Start by exploring student matches or adding skills you teach and want to learn.", "INFO", null));
-        notificationRepository.save(new Notification(userHarsh, "Review Received (5★)", "Sejal left you a 5-star review for your Java exchange!", "NEW_REVIEW", 1L));
+        notificationRepository.save(new Notification(userHarsh, "Evaluation Received (5/5)", "Sejal left you an evaluation score of 5/5 for your Java exchange!", "NEW_REVIEW", 1L));
 
         System.out.println(">>> Sample data seeding complete!");
     }

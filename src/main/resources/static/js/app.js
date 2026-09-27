@@ -4,9 +4,24 @@
  */
 
 const API = {
+    getHeaders(extraHeaders = {}) {
+        const headers = { "Content-Type": "application/json", ...extraHeaders };
+        const token = localStorage.getItem('authToken');
+        if (token) {
+            headers["Authorization"] = `Bearer ${token}`;
+        }
+        return headers;
+    },
+
+    getCurrentUser() {
+        return CurrentUser;
+    },
+
     async get(endpoint) {
         try {
-            const res = await fetch(endpoint);
+            const res = await fetch(endpoint, {
+                headers: this.getHeaders()
+            });
             return await res.json();
         } catch (err) {
             console.error("GET Error on " + endpoint, err);
@@ -18,7 +33,7 @@ const API = {
         try {
             const res = await fetch(endpoint, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: this.getHeaders(),
                 body: JSON.stringify(data)
             });
             return await res.json();
@@ -32,7 +47,7 @@ const API = {
         try {
             const res = await fetch(endpoint, {
                 method: "PUT",
-                headers: { "Content-Type": "application/json" },
+                headers: this.getHeaders(),
                 body: data ? JSON.stringify(data) : null
             });
             return await res.json();
@@ -44,7 +59,10 @@ const API = {
 
     async delete(endpoint) {
         try {
-            const res = await fetch(endpoint, { method: "DELETE" });
+            const res = await fetch(endpoint, {
+                method: "DELETE",
+                headers: this.getHeaders()
+            });
             return await res.json();
         } catch (err) {
             console.error("DELETE Error on " + endpoint, err);
@@ -99,7 +117,7 @@ function updateNavbarLoggedIn(user) {
                     <li><a class="dropdown-item py-2" href="dashboard.html"><i class="bi bi-speedometer2 me-2 text-primary"></i>Dashboard</a></li>
                     <li><a class="dropdown-item py-2" href="profile.html"><i class="bi bi-person me-2 text-primary"></i>My Profile</a></li>
                     <li><a class="dropdown-item py-2" href="skills.html"><i class="bi bi-mortarboard me-2 text-primary"></i>My Skills</a></li>
-                    <li><a class="dropdown-item py-2" href="matches.html"><i class="bi bi-stars me-2 text-danger"></i>Find Matches</a></li>
+                    <li><a class="dropdown-item py-2" href="matches.html"><i class="bi bi-compass me-2 text-primary"></i>Find Matches</a></li>
                     <li><a class="dropdown-item py-2" href="requests.html"><i class="bi bi-arrow-left-right me-2 text-primary"></i>Exchange Requests</a></li>
                     <li><a class="dropdown-item py-2" href="chat.html"><i class="bi bi-chat-dots me-2 text-primary"></i>Messages</a></li>
                     <li><a class="dropdown-item py-2" href="verification.html"><i class="bi bi-patch-check me-2 text-success"></i>Skill Verification</a></li>
@@ -141,6 +159,7 @@ function updateNavbarLoggedOut() {
 
 async function logout() {
     await API.post("/api/auth/logout", {});
+    localStorage.removeItem("authToken");
     CurrentUser = null;
     window.location.href = "login.html?logout=true";
 }
@@ -194,16 +213,13 @@ function showAlert(message, type = "success", containerId = "alertContainer") {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// Star rating UI helper
+// Academic numerical rating UI helper (Star-free)
+function renderRating(rating) {
+    const score = (rating || 0).toFixed(1);
+    return `<span class="rating-score-badge"><span class="rating-label">Rating</span> <span class="rating-num">${score}</span><span class="rating-max">/5.0</span></span>`;
+}
+
+// Backwards-compatible alias for existing callers
 function renderStars(rating) {
-    let stars = '';
-    const rounded = Math.round(rating || 0);
-    for (let i = 1; i <= 5; i++) {
-        if (i <= rounded) {
-            stars += '<i class="bi bi-star-fill text-warning me-1"></i>';
-        } else {
-            stars += '<i class="bi bi-star text-muted me-1"></i>';
-        }
-    }
-    return `<span class="d-inline-flex align-items-center">${stars} <strong class="ms-1">${(rating || 0).toFixed(1)}</strong></span>`;
+    return renderRating(rating);
 }

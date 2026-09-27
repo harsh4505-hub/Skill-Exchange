@@ -4,23 +4,384 @@
  * Serves the full web application on http://localhost:8080
  */
 
+require('dotenv').config();
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const url = require('url');
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 
 const PORT = 8080;
 const STATIC_DIR = path.join(__dirname, 'src', 'main', 'resources', 'static');
 
 // ===================================================================
-// COLLEGE EMAIL DOMAIN RESTRICTION VALIDATOR (@mgmmumbai.ac.in)
+// SECURITY HELPERS: DOMAIN VALIDATOR, PASSWORD HASHING & SANITIZATION
 // ===================================================================
 
-const COLLEGE_EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@mgmmumbai\.ac\.in$/i;
+const COLLEGE_EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@mgmmumbai\.ac\.in$/;
 
 function isValidCollegeEmail(email) {
     if (!email || typeof email !== 'string') return false;
-    return COLLEGE_EMAIL_REGEX.test(email.trim());
+    const normalized = email.trim().toLowerCase();
+    if (!COLLEGE_EMAIL_REGEX.test(normalized)) return false;
+    const parts = normalized.split('@');
+    if (parts.length !== 2) return false;
+    if (parts[1] !== 'mgmmumbai.ac.in') return false;
+    if (parts[0].includes('..') || parts[0].startsWith('.') || parts[0].endsWith('.')) return false;
+    return true;
+}
+
+function hashPassword(password, salt = null) {
+    if (!salt) {
+        salt = crypto.randomBytes(16).toString('hex');
+    }
+    const hash = crypto.scryptSync(password, salt, 64).toString('hex');
+    return `${salt}:${hash}`;
+}
+
+function verifyPassword(password, stored) {
+    if (!stored || typeof stored !== 'string') return false;
+    if (!stored.includes(':')) {
+        return password === stored;
+    }
+    const [salt, originalHash] = stored.split(':');
+    const hash = crypto.scryptSync(password, salt, 64).toString('hex');
+    try {
+        return crypto.timingSafeEqual(Buffer.from(hash, 'hex'), Buffer.from(originalHash, 'hex'));
+    } catch (e) {
+        return false;
+    }
+}
+
+// ===================================================================
+// OTP GENERATION, CRYPTOGRAPHIC HASHING & EMAIL DISPATCH SERVICE
+// ===================================================================
+
+function generateSecureOtp() {
+    // Generate cryptographically secure random 6-digit numeric OTP (100000 - 999999)
+    return crypto.randomInt(100000, 1000000).toString();
+}
+
+function hashOtp(otp, salt = null) {
+    if (!salt) {
+        salt = crypto.randomBytes(16).toString('hex');
+    }
+    const hash = crypto.scryptSync(otp, salt, 32).toString('hex');
+    return { salt, hash };
+}
+
+function verifyOtpHash(submittedOtp, storedHash, storedSalt) {
+    if (!submittedOtp || !storedHash || !storedSalt) return false;
+    try {
+        const computedHash = crypto.scryptSync(submittedOtp, storedSalt, 32).toString('hex');
+        return crypto.timingSafeEqual(Buffer.from(computedHash, 'hex'), Buffer.from(storedHash, 'hex'));
+    } catch (e) {
+        return false;
+    }
+}
+
+function getMailTransporter() {
+    // Hot-reload .env so credentials added or updated by the developer take effect immediately
+    try {
+        require('dotenv').config({ override: true });
+    } catch (e) {}
+
+    const host = (process.env.MAIL_HOST || 'smtp.gmail.com').trim();
+    const port = parseInt(process.env.MAIL_PORT || '587', 10);
+    const secure = process.env.MAIL_SECURE === 'true' || port === 465;
+    const user = (process.env.MAIL_USERNAME || '').trim();
+    const rawPass = (process.env.MAIL_PASSWORD || '').trim();
+    // Google App Passwords are often copied with spaces like 'abcd efgh ijkl mnop'
+    const pass = rawPass.replace(/\s+/g, '');
+
+    if (!user || !pass) {
+        return null;
+    }
+
+    // When using Gmail SMTP, service: 'gmail' automatically configures optimal ports and TLS handshakes
+    if (host === 'smtp.gmail.com' || user.endsWith('@gmail.com')) {
+        return nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: user,
+                pass: pass
+            }
+        });
+    }
+
+    return nodemailer.createTransport({
+        host: host,
+        port: port,
+        secure: secure,
+        auth: {
+            user: user,
+            pass: pass
+        },
+        tls: {
+            rejectUnauthorized: false
+        }
+    });
+}
+
+function checkSmtpConfiguration() {
+    const host = (process.env.MAIL_HOST || 'smtp.gmail.com').trim();
+    const port = parseInt(process.env.MAIL_PORT || '587', 10);
+    const user = (process.env.MAIL_USERNAME || '').trim();
+    const rawPass = (process.env.MAIL_PASSWORD || '').trim();
+    const pass = rawPass.replace(/\s+/g, '');
+    const from = process.env.MAIL_FROM || `"Student Skill Exchange" <${user || 'noreply@mgmmumbai.ac.in'}>`;
+
+    console.log("-------------------------------------------------------------------");
+    console.log("  SMTP MAIL SERVICE CONFIGURATION & ENVIRONMENT AUDIT             ");
+    console.log("-------------------------------------------------------------------");
+    console.log(`  MAIL_HOST     : ${host}`);
+    console.log(`  MAIL_PORT     : ${port}`);
+    console.log(`  MAIL_USERNAME : ${user ? user : '[MISSING - NOT CONFIGURED IN .env]'}`);
+    console.log(`  MAIL_PASSWORD : ${pass ? '●●●●●●●● (configured - ' + pass.length + ' chars)' : '[MISSING - NOT CONFIGURED IN .env]'}`);
+    console.log(`  MAIL_FROM     : ${from}`);
+
+    if (!user || !pass) {
+        console.warn("\n  ⚠️ [SMTP WARNING] Real email delivery is currently UNAVAILABLE.");
+        console.warn("  Missing required variables: MAIL_USERNAME and/or MAIL_PASSWORD.");
+        console.warn("  Student registrations requesting OTP verification will return 503 until configured.");
+        console.warn("  To enable real email delivery:");
+        console.warn("  1. Create or edit .env in the project root.");
+        console.warn("  2. Set MAIL_USERNAME=your-email@gmail.com and MAIL_PASSWORD=your-app-password.");
+        console.log("-------------------------------------------------------------------");
+        return;
+    }
+
+    const transporter = getMailTransporter();
+    if (transporter) {
+        transporter.verify((err) => {
+            if (err) {
+                console.error("\n  ❌ [SMTP HANDSHAKE FAILED]");
+                console.error(`  Verification email delivery will fail: ${err.message}`);
+                if (err.message.includes('Username and Password not accepted') || err.message.includes('535')) {
+                    console.error("  👉 CAUSE: Google App Password required instead of normal account password.");
+                }
+                console.log("-------------------------------------------------------------------");
+            } else {
+                console.log("\n  ✅ [SMTP STATUS: OPERATIONAL]");
+                console.log(`  Successfully authenticated with ${host}. Real verification emails ready for delivery to @mgmmumbai.ac.in inboxes.`);
+                console.log("-------------------------------------------------------------------");
+            }
+        });
+    }
+}
+
+async function sendVerificationEmail(recipientEmail, studentName, otpCode) {
+    const transporter = getMailTransporter();
+    if (!transporter) {
+        const missingVars = [];
+        if (!process.env.MAIL_USERNAME) missingVars.push('MAIL_USERNAME');
+        if (!process.env.MAIL_PASSWORD) missingVars.push('MAIL_PASSWORD');
+        const missingStr = missingVars.length > 0 ? missingVars.join(', ') : 'SMTP credentials';
+        throw new Error(`SMTP configuration missing (${missingStr}). Please set MAIL_USERNAME and MAIL_PASSWORD in your .env file.`);
+    }
+
+    const user = (process.env.MAIL_USERNAME || '').trim();
+    const fromAddress = process.env.MAIL_FROM || `"Student Skill Exchange" <${user}>`;
+    const greetingName = (studentName || 'Student').trim();
+
+    const plainText = 
+`Student Skill Exchange
+
+Hello ${greetingName},
+
+Thank you for registering for Student Skill Exchange.
+
+Your college email verification code is:
+
+${otpCode}
+
+This code expires in 10 minutes.
+
+If you did not create this account, you can ignore this email.
+
+Student Skill Exchange
+MGM College of Engineering & Technology, Kamothe, Navi Mumbai`;
+
+    const htmlContent = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify Your Student Skill Exchange Account</title>
+  <style>
+    body { margin: 0; padding: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; color: #1e293b; }
+    .email-container { max-width: 540px; margin: 0 auto; background: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+    .header { background: #0f172a; padding: 24px 32px; color: #ffffff; }
+    .header h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
+    .header p { margin: 4px 0 0 0; font-size: 13px; color: #94a3b8; }
+    .content { padding: 32px; }
+    .otp-wrapper { margin: 24px 0; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 8px; padding: 20px; text-align: center; }
+    .otp-code { font-family: 'Courier New', Courier, monospace; font-size: 36px; font-weight: 800; letter-spacing: 8px; color: #0f172a; margin: 0; }
+    .expiry-tag { font-size: 13px; color: #64748b; margin-top: 8px; }
+    .footer { padding: 20px 32px; background: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <div class="email-container">
+    <div class="header">
+      <h1>Student Skill Exchange</h1>
+      <p>MGM College of Engineering &amp; Technology</p>
+    </div>
+    <div class="content">
+      <p style="font-size: 15px; margin-top: 0;">Hello <strong>${greetingName}</strong>,</p>
+      <p style="font-size: 14px; line-height: 1.6; color: #334155;">
+        Thank you for registering for Student Skill Exchange.
+      </p>
+      <p style="font-size: 14px; line-height: 1.6; color: #334155;">
+        Your college email verification code is:
+      </p>
+      <div class="otp-wrapper">
+        <div class="otp-code">${otpCode}</div>
+        <div class="expiry-tag">⏱ This code expires in 10 minutes.</div>
+      </div>
+      <p style="font-size: 13px; color: #64748b; line-height: 1.6;">
+        If you did not create this account, you can ignore this email.
+      </p>
+    </div>
+    <div class="footer">
+      Automated verification notice sent to <strong>${recipientEmail}</strong>.<br>
+      Student Skill Exchange &bull; MGM College of Engineering &amp; Technology
+    </div>
+  </div>
+</body>
+</html>
+    `;
+
+    return transporter.sendMail({
+        from: fromAddress,
+        to: recipientEmail,
+        subject: "Verify Your Student Skill Exchange Account",
+        text: plainText,
+        html: htmlContent
+    });
+}
+
+async function sendPasswordResetEmail(recipientEmail, studentName, otpCode) {
+    const transporter = getMailTransporter();
+    if (!transporter) {
+        throw new Error("SMTP credentials not configured. Please set MAIL_HOST, MAIL_USERNAME, and MAIL_PASSWORD in server environment (.env).");
+    }
+
+    const fromAddress = process.env.MAIL_FROM || `"Student Skill Exchange" <${process.env.MAIL_USERNAME}>`;
+    const greetingName = (studentName || 'Student').trim();
+
+    const plainText = 
+`Student Skill Exchange
+
+Hello ${greetingName},
+
+A password reset was requested for your Student Skill Exchange account.
+
+Your password reset verification code is:
+
+${otpCode}
+
+This code expires in 15 minutes.
+
+If you did not request this reset, you can safely ignore this email.
+
+Student Skill Exchange
+MGM College of Engineering & Technology, Kamothe, Navi Mumbai`;
+
+    const htmlContent = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reset Your Password - Student Skill Exchange</title>
+  <style>
+    body { margin: 0; padding: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; color: #1e293b; }
+    .email-container { max-width: 540px; margin: 0 auto; background: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+    .header { background: #0f172a; padding: 24px 32px; color: #ffffff; }
+    .header h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
+    .header p { margin: 4px 0 0 0; font-size: 13px; color: #94a3b8; }
+    .content { padding: 32px; }
+    .otp-wrapper { margin: 24px 0; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 8px; padding: 20px; text-align: center; }
+    .otp-code { font-family: 'Courier New', Courier, monospace; font-size: 36px; font-weight: 800; letter-spacing: 8px; color: #0f172a; margin: 0; }
+    .expiry-tag { font-size: 13px; color: #64748b; margin-top: 8px; }
+    .footer { padding: 20px 32px; background: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <div class="email-container">
+    <div class="header">
+      <h1>Student Skill Exchange</h1>
+      <p>Password Reset Request</p>
+    </div>
+    <div class="content">
+      <p style="font-size: 15px; margin-top: 0;">Hello <strong>${greetingName}</strong>,</p>
+      <p style="font-size: 14px; line-height: 1.6; color: #334155;">
+        A password reset was requested for your Student Skill Exchange account.
+      </p>
+      <div class="otp-wrapper">
+        <div class="otp-code">${otpCode}</div>
+        <div class="expiry-tag">⏱ This reset code expires in 15 minutes.</div>
+      </div>
+      <p style="font-size: 13px; color: #64748b; line-height: 1.6;">
+        If you did not request a password reset, you can safely ignore this email.
+      </p>
+    </div>
+    <div class="footer">
+      Automated security notice sent to <strong>${recipientEmail}</strong>.<br>
+      Student Skill Exchange &bull; MGM College of Engineering &amp; Technology
+    </div>
+  </div>
+</body>
+</html>
+    `;
+
+    return transporter.sendMail({
+        from: fromAddress,
+        to: recipientEmail,
+        subject: "Password Reset Code - Student Skill Exchange",
+        text: plainText,
+        html: htmlContent
+    });
+}
+
+function sanitizeText(str, maxLength = 2000) {
+    if (typeof str !== 'string') return '';
+    return str
+        .trim()
+        .substring(0, maxLength)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#x27;');
+}
+
+// Session store: token -> sessionUser
+const sessions = new Map();
+
+function getSessionUser(req) {
+    const authHeader = req.headers['authorization'] || '';
+    if (authHeader.startsWith('Bearer ')) {
+        const token = authHeader.substring(7).trim();
+        if (sessions.has(token)) return sessions.get(token);
+    }
+    const cookies = req.headers['cookie'] || '';
+    const match = cookies.match(/SESSION_ID=([a-zA-Z0-9_-]+)/);
+    if (match && sessions.has(match[1])) {
+        return sessions.get(match[1]);
+    }
+    return state.currentUser;
+}
+
+function isSuspended(userId) {
+    const user = state.users.find(u => u.id === userId);
+    if (user && user.active === false) return true;
+    const prof = state.profiles.find(p => p.userId === userId);
+    if (prof && prof.blocked === true) return true;
+    return false;
 }
 
 // ===================================================================
@@ -497,6 +858,13 @@ const state = {
     reports: []
 };
 
+// Securely hash pre-seeded demo user passwords at startup
+state.users.forEach(u => {
+    if (u.password && !u.password.includes(':')) {
+        u.password = hashPassword(u.password);
+    }
+});
+
 // Default authenticated user to Harsh (student ID 2) for immediate exploration
 state.currentUser = {
     authenticated: true,
@@ -556,14 +924,15 @@ const server = http.createServer(async (req, res) => {
     if (pathname.startsWith('/api/')) {
         // --- 1. AUTHENTICATION & SECURITY ---
         if (pathname === '/api/auth/current-user' && req.method === 'GET') {
-            return sendJson(res, 200, { success: true, data: state.currentUser });
+            const user = getSessionUser(req);
+            return sendJson(res, 200, { success: true, data: user });
         }
 
         if (pathname === '/api/auth/login' && req.method === 'POST') {
             const body = await parseBody(req);
             const normalizedEmail = (body.email || '').trim().toLowerCase();
 
-            // Backend validation: Official college email address ending with @mgmmumbai.ac.in
+            // Strict Backend validation: Official college email address ending with @mgmmumbai.ac.in
             if (!isValidCollegeEmail(normalizedEmail)) {
                 return sendJson(res, 400, {
                     success: false,
@@ -571,8 +940,8 @@ const server = http.createServer(async (req, res) => {
                 });
             }
 
-            const user = state.users.find(u => u.email.toLowerCase() === normalizedEmail && u.password === body.password);
-            if (!user) {
+            const user = state.users.find(u => u.email.toLowerCase() === normalizedEmail);
+            if (!user || !verifyPassword(body.password || '', user.password)) {
                 return sendJson(res, 401, { success: false, message: "Invalid email or password" });
             }
 
@@ -584,13 +953,13 @@ const server = http.createServer(async (req, res) => {
                 });
             }
 
-            // Email verification check
+            // Email verification check (Requirement #16)
             if (user.emailVerified === false) {
                 return sendJson(res, 403, {
                     success: false,
                     unverified: true,
                     email: user.email,
-                    message: "Your college email address has not been verified yet. Please complete email verification."
+                    message: "Please verify your college email before accessing your account."
                 });
             }
 
@@ -599,7 +968,8 @@ const server = http.createServer(async (req, res) => {
             }
 
             const profile = state.profiles.find(p => p.userId === user.id);
-            state.currentUser = {
+            const sessionToken = crypto.randomBytes(32).toString('hex');
+            const sessionUser = {
                 authenticated: true,
                 userId: user.id,
                 email: user.email,
@@ -607,7 +977,10 @@ const server = http.createServer(async (req, res) => {
                 fullName: profile ? profile.fullName : (user.role === 'ROLE_ADMIN' ? 'System Administrator' : user.email)
             };
 
-            // Audit log
+            sessions.set(sessionToken, sessionUser);
+            state.currentUser = sessionUser;
+
+            // Audit log (never log password or credentials)
             state.auditLogs.unshift({
                 id: Date.now(),
                 action: "USER_LOGIN",
@@ -617,22 +990,40 @@ const server = http.createServer(async (req, res) => {
                 details: "Successful login session established."
             });
 
-            return sendJson(res, 200, { success: true, message: "Login successful", data: state.currentUser });
+            res.writeHead(200, {
+                'Content-Type': 'application/json',
+                'Set-Cookie': `SESSION_ID=${sessionToken}; HttpOnly; Path=/; SameSite=Lax`,
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+            });
+            res.end(JSON.stringify({ success: true, message: "Login successful", token: sessionToken, data: sessionUser }));
+            return;
         }
 
         if (pathname === '/api/auth/logout' && req.method === 'POST') {
-            if (state.currentUser) {
+            const user = getSessionUser(req);
+            if (user) {
                 state.auditLogs.unshift({
                     id: Date.now(),
                     action: "USER_LOGOUT",
-                    performedBy: state.currentUser.email,
-                    target: state.currentUser.email,
+                    performedBy: user.email,
+                    target: user.email,
                     timestamp: new Date().toISOString(),
                     details: "User logged out."
                 });
             }
             state.currentUser = null;
-            return sendJson(res, 200, { success: true, message: "Logged out" });
+            sessions.clear();
+            res.writeHead(200, {
+                'Content-Type': 'application/json',
+                'Set-Cookie': `SESSION_ID=; HttpOnly; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT`,
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+            });
+            res.end(JSON.stringify({ success: true, message: "Logged out" }));
+            return;
         }
 
         if (pathname === '/api/auth/register' && req.method === 'POST') {
@@ -647,54 +1038,92 @@ const server = http.createServer(async (req, res) => {
                 });
             }
 
-            if (state.users.some(u => u.email.toLowerCase() === normalizedEmail)) {
+            if (!body.password || body.password.length < 6) {
+                return sendJson(res, 400, { success: false, message: "Password must be at least 6 characters long." });
+            }
+
+            if (body.password !== body.confirmPassword) {
+                return sendJson(res, 400, { success: false, message: "Password and Confirm Password do not match." });
+            }
+
+            const existingUser = state.users.find(u => u.email.toLowerCase() === normalizedEmail);
+            if (existingUser && existingUser.emailVerified) {
                 return sendJson(res, 409, { success: false, message: "An account with this college email already exists. Please login." });
             }
 
-            const newId = state.users.length + 1;
-            // Generate 6-digit OTP code for college email verification
-            const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+            // Cryptographically secure 6-digit OTP (Requirement #2)
+            const otpCode = generateSecureOtp();
+            const { salt, hash } = hashOtp(otpCode);
 
-            const newUser = {
-                id: newId,
-                email: normalizedEmail,
-                role: "ROLE_STUDENT",
-                password: body.password,
-                active: false,
-                emailVerified: false
-            };
-            state.users.push(newUser);
+            // Attempt delivery to actual college email inbox (Requirement #3, #4, #13)
+            try {
+                await sendVerificationEmail(normalizedEmail, body.fullName, otpCode);
+                console.log(`[MAIL DISPATCH SUCCESS] Real OTP verification email dispatched to: ${normalizedEmail}`);
+            } catch (mailErr) {
+                console.error(`[MAIL DISPATCH FAILED] Verification email failed for ${normalizedEmail}:`);
+                console.error(`Reason: ${mailErr.message}`);
+                if (mailErr.code) console.error(`Error Code: ${mailErr.code}`);
+                if (mailErr.response) console.error(`Provider Response: ${mailErr.response}`);
+                return sendJson(res, 503, {
+                    success: false,
+                    message: "We couldn't send the verification email. Please try again."
+                });
+            }
 
-            const newProfile = {
-                id: newId,
-                userId: newId,
-                fullName: (body.fullName || '').trim(),
-                email: normalizedEmail,
-                college: (body.college || 'MGM College of Engineering & Technology').trim(),
-                department: body.department || 'Information Technology',
-                yearOfStudy: body.yearOfStudy || '2nd Year',
-                phone: (body.phone || '').trim(),
-                bio: `Hello! I am a student at ${body.college || 'MGM'} looking to exchange skills.`,
-                avatarUrl: `https://api.dicebear.com/7.x/bottts/svg?seed=${newId}`,
-                verified: false,
-                averageRating: 0.0,
-                completedExchangesCount: 0,
-                blocked: false,
-                teachingSkills: [],
-                learningSkills: []
-            };
-            state.profiles.push(newProfile);
+            // Store or update pending unverified user (Requirement #1, #20)
+            let userRecord = existingUser;
+            if (!userRecord) {
+                const newId = state.users.length + 1;
+                userRecord = {
+                    id: newId,
+                    email: normalizedEmail,
+                    role: "ROLE_STUDENT",
+                    password: hashPassword(body.password),
+                    active: false,
+                    emailVerified: false,
+                    status: 'PENDING'
+                };
+                state.users.push(userRecord);
 
-            // Store OTP with 10-minute expiry
+                const newProfile = {
+                    id: newId,
+                    userId: newId,
+                    fullName: sanitizeText(body.fullName || '', 100),
+                    email: normalizedEmail,
+                    college: sanitizeText(body.college || 'MGM College of Engineering & Technology', 120),
+                    department: sanitizeText(body.department || 'Information Technology', 100),
+                    yearOfStudy: sanitizeText(body.yearOfStudy || '2nd Year', 50),
+                    phone: sanitizeText(body.phone || '', 20),
+                    bio: sanitizeText(body.bio || `Hello! I am a student at ${body.college || 'MGM'} looking to exchange skills.`, 500),
+                    avatarUrl: `https://api.dicebear.com/7.x/bottts/svg?seed=${newId}`,
+                    verified: false,
+                    averageRating: 0.0,
+                    completedExchangesCount: 0,
+                    blocked: false,
+                    teachingSkills: [],
+                    learningSkills: []
+                };
+                state.profiles.push(newProfile);
+            } else {
+                userRecord.password = hashPassword(body.password);
+                userRecord.active = false;
+                userRecord.emailVerified = false;
+                userRecord.status = 'PENDING';
+            }
+
+            // Secure hashed OTP database storage with 10-minute expiry (Requirement #7, #8)
             state.otps[normalizedEmail] = {
-                code: otpCode,
+                otpHash: hash,
+                otpSalt: salt,
                 type: 'EMAIL_VERIFICATION',
                 expiresAt: Date.now() + 10 * 60 * 1000,
                 attempts: 0,
+                used: false,
+                createdAt: Date.now(),
                 lastSentAt: Date.now()
             };
 
-            // Audit log
+            // Audit log (never log passwords or OTP secrets)
             state.auditLogs.unshift({
                 id: Date.now(),
                 action: "STUDENT_REGISTRATION",
@@ -708,7 +1137,6 @@ const server = http.createServer(async (req, res) => {
                 success: true,
                 requiresVerification: true,
                 email: normalizedEmail,
-                simulatedOtp: otpCode,
                 message: "Registration initiated! A 6-digit verification code has been dispatched to your @mgmmumbai.ac.in college email."
             });
         }
@@ -719,30 +1147,53 @@ const server = http.createServer(async (req, res) => {
             const email = (body.email || '').trim().toLowerCase();
             const otp = (body.otp || '').trim();
 
+            if (!email || !isValidCollegeEmail(email)) {
+                return sendJson(res, 400, { success: false, message: "Invalid college email address." });
+            }
+
+            if (!otp || !/^\d{6}$/.test(otp)) {
+                return sendJson(res, 400, { success: false, message: "Please enter a valid 6-digit verification code." });
+            }
+
+            const user = state.users.find(u => u.email.toLowerCase() === email);
+            if (user && user.emailVerified) {
+                return sendJson(res, 400, { success: false, message: "This email address is already verified." });
+            }
+
             const record = state.otps[email];
-            if (!record || record.type !== 'EMAIL_VERIFICATION') {
-                return sendJson(res, 400, { success: false, message: "No active verification code found for this email. Please request a new one." });
+            if (!record || record.type !== 'EMAIL_VERIFICATION' || record.used) {
+                return sendJson(res, 400, { success: false, message: "No active verification code found for this email. Please request a new code." });
             }
 
             if (Date.now() > record.expiresAt) {
-                return sendJson(res, 400, { success: false, message: "Verification code has expired. Please request a new code." });
+                record.used = true;
+                return sendJson(res, 400, { success: false, message: "This verification code has expired. Please request a new code." });
             }
 
             if (record.attempts >= 5) {
-                return sendJson(res, 429, { success: false, message: "Too many incorrect attempts. Please request a new verification code." });
+                record.used = true;
+                return sendJson(res, 429, { success: false, message: "Too many incorrect attempts. Please request a new code." });
             }
 
-            if (record.code !== otp) {
+            // Cryptographically secure constant-time hash comparison (STRICTLY NO BACKDOOR)
+            const isValid = verifyOtpHash(otp, record.otpHash, record.otpSalt);
+            if (!isValid) {
                 record.attempts++;
-                return sendJson(res, 400, { success: false, message: `Incorrect verification code. ${5 - record.attempts} attempts remaining.` });
+                if (record.attempts >= 5) {
+                    record.used = true;
+                    return sendJson(res, 429, { success: false, message: "Too many incorrect attempts. Please request a new code." });
+                }
+                return sendJson(res, 400, { success: false, message: "Incorrect verification code. Please try again." });
             }
 
             // Verification successful
+            record.used = true;
             delete state.otps[email];
-            const user = state.users.find(u => u.email.toLowerCase() === email);
+
             if (user) {
                 user.emailVerified = true;
                 user.active = true;
+                user.status = 'ACTIVE';
             }
 
             state.auditLogs.unshift({
@@ -768,25 +1219,53 @@ const server = http.createServer(async (req, res) => {
                 return sendJson(res, 400, { success: false, message: "Invalid college email address." });
             }
 
+            const user = state.users.find(u => u.email.toLowerCase() === email);
+            if (user && user.emailVerified) {
+                return sendJson(res, 400, { success: false, message: "This email address is already verified." });
+            }
+
             const record = state.otps[email];
             if (record && (Date.now() - record.lastSentAt) < 60000) {
                 const waitSec = Math.ceil((60000 - (Date.now() - record.lastSentAt)) / 1000);
                 return sendJson(res, 429, { success: false, message: `Please wait ${waitSec}s before requesting a new code.` });
             }
 
-            const newOtp = Math.floor(100000 + Math.random() * 900000).toString();
+            const profile = state.profiles.find(p => p.email.toLowerCase() === email);
+            const studentName = profile ? profile.fullName : 'Student';
+
+            const newOtp = generateSecureOtp();
+            const { salt, hash } = hashOtp(newOtp);
+
+            // Attempt delivery to actual college email
+            try {
+                await sendVerificationEmail(email, studentName, newOtp);
+                console.log(`[MAIL DISPATCH SUCCESS] Resend verification email dispatched to: ${email}`);
+            } catch (mailErr) {
+                console.error(`[MAIL DISPATCH FAILED] Resend verification email failed for ${email}:`);
+                console.error(`Reason: ${mailErr.message}`);
+                if (mailErr.code) console.error(`Error Code: ${mailErr.code}`);
+                if (mailErr.response) console.error(`Provider Response: ${mailErr.response}`);
+                return sendJson(res, 503, {
+                    success: false,
+                    message: "We couldn't send the verification email. Please try again."
+                });
+            }
+
+            // Invalidate old OTP and save fresh hashed record
             state.otps[email] = {
-                code: newOtp,
+                otpHash: hash,
+                otpSalt: salt,
                 type: 'EMAIL_VERIFICATION',
                 expiresAt: Date.now() + 10 * 60 * 1000,
                 attempts: 0,
+                used: false,
+                createdAt: Date.now(),
                 lastSentAt: Date.now()
             };
 
             return sendJson(res, 200, {
                 success: true,
-                message: "A fresh 6-digit verification code has been dispatched to your college email.",
-                simulatedOtp: newOtp
+                message: "A new verification code has been dispatched to your college email."
             });
         }
 
@@ -801,22 +1280,47 @@ const server = http.createServer(async (req, res) => {
 
             const user = state.users.find(u => u.email.toLowerCase() === email);
             if (!user) {
-                return sendJson(res, 404, { success: false, message: "No registered student account found with this college email." });
+                // Prevent user enumeration: safe generic response
+                return sendJson(res, 200, {
+                    success: true,
+                    message: "If an account with this email exists, a password reset code has been dispatched."
+                });
             }
 
-            const resetOtp = Math.floor(100000 + Math.random() * 900000).toString();
+            const profile = state.profiles.find(p => p.email.toLowerCase() === email);
+            const studentName = profile ? profile.fullName : 'Student';
+
+            const resetOtp = generateSecureOtp();
+            const { salt, hash } = hashOtp(resetOtp);
+
+            try {
+                await sendPasswordResetEmail(email, studentName, resetOtp);
+                console.log(`[MAIL DISPATCH SUCCESS] Password reset code dispatched to: ${email}`);
+            } catch (mailErr) {
+                console.error(`[MAIL DISPATCH FAILED] Password reset email failed for ${email}:`);
+                console.error(`Reason: ${mailErr.message}`);
+                if (mailErr.code) console.error(`Error Code: ${mailErr.code}`);
+                if (mailErr.response) console.error(`Provider Response: ${mailErr.response}`);
+                return sendJson(res, 503, {
+                    success: false,
+                    message: "We couldn't send the reset email. Please try again."
+                });
+            }
+
             state.otps[email] = {
-                code: resetOtp,
+                otpHash: hash,
+                otpSalt: salt,
                 type: 'PASSWORD_RESET',
                 expiresAt: Date.now() + 15 * 60 * 1000,
                 attempts: 0,
+                used: false,
+                createdAt: Date.now(),
                 lastSentAt: Date.now()
             };
 
             return sendJson(res, 200, {
                 success: true,
-                message: "Password reset code dispatched to your college email.",
-                simulatedOtp: resetOtp
+                message: "Password reset code dispatched to your college email."
             });
         }
 
@@ -835,39 +1339,51 @@ const server = http.createServer(async (req, res) => {
             }
 
             const record = state.otps[email];
-            if (!record || record.type !== 'PASSWORD_RESET') {
+            if (!record || record.type !== 'PASSWORD_RESET' || record.used) {
                 return sendJson(res, 400, { success: false, message: "No password reset request found for this email." });
             }
 
             if (Date.now() > record.expiresAt) {
+                record.used = true;
                 return sendJson(res, 400, { success: false, message: "Password reset code has expired. Please request a new code." });
             }
 
             if (record.attempts >= 5) {
+                record.used = true;
                 return sendJson(res, 429, { success: false, message: "Too many incorrect attempts. Please request a new code." });
             }
 
-            if (record.code !== otp) {
+            // Cryptographically secure constant-time hash verification (STRICTLY NO BACKDOOR)
+            const isValid = verifyOtpHash(otp, record.otpHash, record.otpSalt);
+            if (!isValid) {
                 record.attempts++;
-                return sendJson(res, 400, { success: false, message: `Incorrect reset code. ${5 - record.attempts} attempts remaining.` });
+                if (record.attempts >= 5) {
+                    record.used = true;
+                    return sendJson(res, 429, { success: false, message: "Too many incorrect attempts. Please request a new code." });
+                }
+                return sendJson(res, 400, { success: false, message: "Incorrect reset code. Please try again." });
             }
 
+            record.used = true;
             delete state.otps[email];
             const user = state.users.find(u => u.email.toLowerCase() === email);
             if (user) {
-                user.password = newPassword;
+                user.password = hashPassword(newPassword);
             }
 
             state.auditLogs.unshift({
                 id: Date.now(),
-                action: "PASSWORD_RESET",
+                action: "PASSWORD_RESET_SUCCESS",
                 performedBy: email,
                 target: email,
                 timestamp: new Date().toISOString(),
-                details: "Student account password was reset successfully."
+                details: "Account password successfully updated via college email verification code."
             });
 
-            return sendJson(res, 200, { success: true, message: "Password reset successfully! You can now log in with your new password." });
+            return sendJson(res, 200, {
+                success: true,
+                message: "Password has been successfully updated. You may now log in with your new password."
+            });
         }
 
         // --- PUBLIC PLATFORM STATISTICS ---
@@ -938,24 +1454,55 @@ const server = http.createServer(async (req, res) => {
         if (pathname.match(/^\/api\/students\/(\d+)$/) && req.method === 'GET') {
             const id = Number(pathname.split('/')[3]);
             const prof = state.profiles.find(p => p.userId === id);
-            return sendJson(res, 200, { success: true, data: prof || {} });
+            if (!prof) return sendJson(res, 404, { success: false, message: "Student profile not found." });
+
+            const sessionUser = getSessionUser(req);
+            const isOwner = sessionUser && sessionUser.userId === id;
+            const isAdmin = sessionUser && sessionUser.role === 'ROLE_ADMIN';
+
+            // Protect sensitive contact data (phone) against scraping/IDOR if not owner/admin
+            if (!isOwner && !isAdmin) {
+                const safeProfile = {
+                    ...prof,
+                    phone: prof.phone ? "••••••••" + prof.phone.slice(-2) : "Confidential"
+                };
+                return sendJson(res, 200, { success: true, data: safeProfile });
+            }
+
+            return sendJson(res, 200, { success: true, data: prof });
         }
 
         // IDOR-Protected Profile Update
         if (pathname.match(/^\/api\/students\/(\d+)$/) && req.method === 'PUT') {
             const id = Number(pathname.split('/')[3]);
-            const myId = state.currentUser ? state.currentUser.userId : null;
-            const isStaff = state.currentUser && state.currentUser.role === 'ROLE_ADMIN';
+            const sessionUser = getSessionUser(req);
+            if (!sessionUser) {
+                return sendJson(res, 401, { success: false, message: "Authentication required." });
+            }
 
-            if (!isStaff && myId !== id) {
+            const isOwner = sessionUser.userId === id;
+            const isStaff = sessionUser.role === 'ROLE_ADMIN';
+
+            if (!isStaff && !isOwner) {
                 return sendJson(res, 403, { success: false, message: "Access Denied: You cannot modify another student's profile." });
+            }
+
+            if (isSuspended(sessionUser.userId)) {
+                return sendJson(res, 403, { success: false, message: "Your account is currently suspended. Profile updates are disabled." });
             }
 
             const body = await parseBody(req);
             const prof = state.profiles.find(p => p.userId === id);
-            if (prof) {
-                Object.assign(prof, body);
-            }
+            if (!prof) return sendJson(res, 404, { success: false, message: "Profile not found." });
+
+            if (body.fullName) prof.fullName = sanitizeText(body.fullName, 100);
+            if (body.bio !== undefined) prof.bio = sanitizeText(body.bio, 500);
+            if (body.college) prof.college = sanitizeText(body.college, 120);
+            if (body.department) prof.department = sanitizeText(body.department, 100);
+            if (body.yearOfStudy) prof.yearOfStudy = sanitizeText(body.yearOfStudy, 50);
+            if (body.phone !== undefined) prof.phone = sanitizeText(body.phone, 20);
+            if (body.avatarUrl) prof.avatarUrl = body.avatarUrl;
+
             return sendJson(res, 200, { success: true, data: prof });
         }
 
@@ -1218,7 +1765,7 @@ const server = http.createServer(async (req, res) => {
                 const rating = cand.averageRating > 0 ? cand.averageRating : 3.5;
                 const ratingScore = (rating / 5.0) * 15;
                 score += ratingScore;
-                breakdown.push(`Rating ${rating.toFixed(1)}★ (+${ratingScore.toFixed(1)}%)`);
+                breakdown.push(`Rating ${rating.toFixed(1)} / 5.0 (+${ratingScore.toFixed(1)}%)`);
 
                 // 4. Verification (15%)
                 if (cand.verified || (directMatch && directMatch.verified)) {
@@ -1307,7 +1854,12 @@ const server = http.createServer(async (req, res) => {
 
         if (pathname === '/api/exchange-requests' && req.method === 'POST') {
             const body = await parseBody(req);
-            const myId = state.currentUser ? state.currentUser.userId : 2;
+            const sessionUser = getSessionUser(req);
+            const myId = sessionUser ? sessionUser.userId : 2;
+
+            if (isSuspended(myId)) {
+                return sendJson(res, 403, { success: false, message: "Your account is currently suspended. You cannot propose new skill exchanges." });
+            }
 
             if (body.receiverId === myId) {
                 return sendJson(res, 400, { success: false, message: "You cannot send an exchange proposal to yourself." });
@@ -1469,7 +2021,13 @@ const server = http.createServer(async (req, res) => {
 
         if (pathname === '/api/messages' && req.method === 'POST') {
             const body = await parseBody(req);
-            const myId = state.currentUser ? state.currentUser.userId : 2;
+            const sessionUser = getSessionUser(req);
+            const myId = sessionUser ? sessionUser.userId : 2;
+
+            if (isSuspended(myId)) {
+                return sendJson(res, 403, { success: false, message: "Your account is currently suspended. Messaging is disabled." });
+            }
+
             const senderProf = state.profiles.find(p => p.userId === myId);
             const receiverProf = state.profiles.find(p => p.userId === body.receiverId);
 
@@ -1536,7 +2094,13 @@ const server = http.createServer(async (req, res) => {
 
         if (pathname === '/api/verifications' && req.method === 'POST') {
             const body = await parseBody(req);
-            const myId = state.currentUser ? state.currentUser.userId : 2;
+            const sessionUser = getSessionUser(req);
+            const myId = sessionUser ? sessionUser.userId : 2;
+
+            if (isSuspended(myId)) {
+                return sendJson(res, 403, { success: false, message: "Your account is currently suspended. Verification submissions are disabled." });
+            }
+
             const myProf = state.profiles.find(p => p.userId === myId);
             const skillId = Number(body.skillId);
             const skill = state.skills.find(s => s.id === skillId);
@@ -1615,10 +2179,19 @@ const server = http.createServer(async (req, res) => {
         }
 
         if (pathname.match(/^\/api\/verifications\/(\d+)\/approve$/) && req.method === 'PUT') {
+            const sessionUser = getSessionUser(req);
+            if (!sessionUser || sessionUser.role !== 'ROLE_ADMIN') {
+                return sendJson(res, 403, { success: false, message: "Access Denied: Only administrators can audit and approve skill verifications." });
+            }
+
             const id = Number(pathname.split('/')[3]);
             const body = await parseBody(req);
             const ver = state.verifications.find(v => v.id === id);
             if (!ver) return sendJson(res, 404, { success: false, message: "Verification record not found" });
+
+            if (ver.studentId === sessionUser.userId) {
+                return sendJson(res, 403, { success: false, message: "Integrity violation: You cannot approve your own skill verification." });
+            }
 
             ver.status = 'VERIFIED';
             ver.reviewedDate = new Date().toISOString();
@@ -1648,6 +2221,11 @@ const server = http.createServer(async (req, res) => {
         }
 
         if (pathname.match(/^\/api\/verifications\/(\d+)\/reject$/) && req.method === 'PUT') {
+            const sessionUser = getSessionUser(req);
+            if (!sessionUser || sessionUser.role !== 'ROLE_ADMIN') {
+                return sendJson(res, 403, { success: false, message: "Access Denied: Only administrators can reject skill verifications." });
+            }
+
             const id = Number(pathname.split('/')[3]);
             const body = await parseBody(req);
             const ver = state.verifications.find(v => v.id === id);
@@ -1681,6 +2259,11 @@ const server = http.createServer(async (req, res) => {
         }
 
         if (pathname.match(/^\/api\/verifications\/(\d+)\/request-resubmission$/) && req.method === 'PUT') {
+            const sessionUser = getSessionUser(req);
+            if (!sessionUser || sessionUser.role !== 'ROLE_ADMIN') {
+                return sendJson(res, 403, { success: false, message: "Access Denied: Only administrators can audit skill verifications." });
+            }
+
             const id = Number(pathname.split('/')[3]);
             const body = await parseBody(req);
             const ver = state.verifications.find(v => v.id === id);
@@ -1722,7 +2305,12 @@ const server = http.createServer(async (req, res) => {
 
         if (pathname === '/api/reviews' && req.method === 'POST') {
             const body = await parseBody(req);
-            const myId = state.currentUser ? state.currentUser.userId : 2;
+            const sessionUser = getSessionUser(req);
+            const myId = sessionUser ? sessionUser.userId : 2;
+
+            if (isSuspended(myId)) {
+                return sendJson(res, 403, { success: false, message: "Your account is currently suspended. Review submissions are disabled." });
+            }
 
             const ex = state.exchanges.find(e => e.id === Number(body.exchangeId));
             if (!ex) {
@@ -1769,14 +2357,14 @@ const server = http.createServer(async (req, res) => {
                 performedBy: reviewerProf ? reviewerProf.email : "Student",
                 target: targetProf ? targetProf.email : "Student",
                 timestamp: new Date().toISOString(),
-                details: `Rating: ${body.rating}★, Comment: ${newRev.comment.substring(0, 30)}...`
+                details: `Rating: ${body.rating} / 5.0, Comment: ${newRev.comment.substring(0, 30)}...`
             });
 
             state.notifications.unshift({
                 id: Date.now(),
                 recipientId: body.reviewedStudentId,
-                title: `New Peer Review (${body.rating}★)`,
-                message: `${newRev.reviewerName} left a review: "${newRev.comment}"`,
+                title: `New Peer Evaluation (${body.rating} / 5.0)`,
+                message: `${newRev.reviewerName} left an evaluation: "${newRev.comment}"`,
                 type: "NEW_REVIEW",
                 isRead: false,
                 createdAt: new Date().toISOString()
@@ -1844,6 +2432,13 @@ const server = http.createServer(async (req, res) => {
         }
 
         // --- 11. ADMIN DASHBOARD & AUDIT LOGS ---
+        if (pathname.startsWith('/api/admin/')) {
+            const sessionUser = getSessionUser(req);
+            if (!sessionUser || sessionUser.role !== 'ROLE_ADMIN') {
+                return sendJson(res, 403, { success: false, message: "Access Denied: Administrator privileges required." });
+            }
+        }
+
         if (pathname === '/api/admin/stats' && req.method === 'GET') {
             const totalStudents = state.users.filter(u => u.role === 'ROLE_STUDENT').length;
             const totalSkills = state.skills.length;
@@ -1990,4 +2585,5 @@ server.listen(PORT, () => {
     console.log(`  Live URL: http://localhost:${PORT}                                `);
     console.log("  All 14 Modules, REST APIs & Heuristic Matcher fully operational  ");
     console.log("===================================================================");
+    checkSmtpConfiguration();
 });

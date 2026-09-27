@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Dashboard | Student Skill Exchange Platform</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="css/style.css">
@@ -14,8 +15,7 @@
     <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container">
             <a class="navbar-brand" href="index.html">
-                <span class="brand-icon-box"><i class="bi bi-arrow-left-right"></i></span>
-                <span class="brand-title">Skill<strong>Exchange</strong></span>
+                <img src="images/logo.svg" alt="SkillExchange MGM" class="brand-logo-img">
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
                 <span class="navbar-toggler-icon"></span>
@@ -58,7 +58,7 @@
                 </div>
                 <div class="d-flex gap-2">
                     <a href="matches.html" class="btn btn-sm btn-primary-custom">
-                        <i class="bi bi-stars me-1"></i>Explore Matches
+                        <i class="bi bi-compass me-1"></i>Explore Matches
                     </a>
                     <a href="skills.html" class="btn btn-sm btn-outline-custom">
                         <i class="bi bi-plus-circle me-1"></i>Manage Skills
@@ -119,10 +119,10 @@
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
                             <span class="text-muted small fw-bold text-uppercase" style="letter-spacing: 0.05em; font-size: 0.72rem;">Completed & Rating</span>
-                            <h3 class="fw-bold mt-1 mb-0" id="statCompleted">0 <small class="fs-6 text-warning">★ 0.0</small></h3>
+                            <h3 class="fw-bold mt-1 mb-0" id="statCompleted">0 <small class="fs-6 text-muted font-monospace fw-semibold ms-1">Rating 0.0/5.0</small></h3>
                         </div>
                         <div class="border border-2 border-dark rounded d-flex align-items-center justify-content-center bg-light" style="width: 44px; height: 44px; box-shadow: 2px 2px 0px var(--border-color);">
-                            <i class="bi bi-trophy fs-5 text-warning"></i>
+                            <i class="bi bi-trophy fs-5 text-dark"></i>
                         </div>
                     </div>
                     <a href="profile.html" class="small text-dark fw-bold text-decoration-underline mt-3 d-inline-flex align-items-center gap-1">View Reviews <i class="bi bi-arrow-right"></i></a>
@@ -136,7 +136,7 @@
                 <!-- Recommended Matches Preview -->
                 <div class="card card-custom p-4 mb-4 bg-white">
                     <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-2 border-dark">
-                        <h5 class="fw-bold mb-0"><i class="bi bi-stars text-danger me-2"></i>Top Recommended Skill Matches</h5>
+                        <h5 class="fw-bold mb-0"><i class="bi bi-diagram-3-fill text-primary me-2"></i>Top Recommended Skill Matches</h5>
                         <a href="matches.html" class="btn btn-sm btn-outline-custom">View All Matches</a>
                     </div>
                     <div id="recommendedMatchesContainer">
@@ -216,7 +216,7 @@
 
                 document.getElementById('statTeachCount').innerText = p.teachingSkills ? p.teachingSkills.length : 0;
                 document.getElementById('statLearnCount').innerText = p.learningSkills ? p.learningSkills.length : 0;
-                document.getElementById('statCompleted').innerHTML = `${p.completedExchangesCount} <small class="fs-6 text-warning">★ ${(p.averageRating || 0).toFixed(1)}</small>`;
+                document.getElementById('statCompleted').innerHTML = `${p.completedExchangesCount} <small class="fs-6 text-muted font-monospace fw-semibold ms-1">Rating ${(p.averageRating || 0).toFixed(1)}/5.0</small>`;
             }
 
             // Active exchanges count
@@ -250,7 +250,7 @@
                                         <h6 class="mb-0 fw-bold">${m.studentName}</h6>
                                         ${(m.skillTheyTeachYouVerified || m.verified) ? '<span class="badge badge-verified" style="font-size:0.65rem;"><i class="bi bi-patch-check-fill"></i> ✓ Verified</span>' : ''}
                                     </div>
-                                    <small class="text-muted">${m.department} &bull; Rating: <strong class="text-dark">${(m.averageRating || 0).toFixed(1)}★</strong></small>
+                                    <small class="text-muted">${m.department} &bull; Rating: <strong class="text-dark font-monospace">${(m.averageRating || 0).toFixed(1)} / 5.0</strong></small>
                                 </div>
                             </div>
                             <div class="d-flex align-items-center gap-2">

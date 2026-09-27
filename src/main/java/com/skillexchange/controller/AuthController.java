@@ -38,6 +38,21 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.ok("Login successful", response));
     }
 
+    @PostMapping("/verify-email")
+    public ResponseEntity<ApiResponse<String>> verifyEmail(@RequestBody java.util.Map<String, String> payload) {
+        String email = payload.get("email");
+        String otp = payload.get("otp");
+        authService.verifyEmail(email, otp);
+        return ResponseEntity.ok(ApiResponse.ok("College email verified successfully! Your account is now active. You may log in."));
+    }
+
+    @PostMapping("/resend-otp")
+    public ResponseEntity<ApiResponse<String>> resendOtp(@RequestBody java.util.Map<String, String> payload) {
+        String email = payload.get("email");
+        authService.resendOtp(email);
+        return ResponseEntity.ok(ApiResponse.ok("A fresh 6-digit verification code has been dispatched to your college email."));
+    }
+
     @GetMapping("/current-user")
     public ResponseEntity<ApiResponse<AuthResponseDto>> getCurrentUser() {
         try {
