@@ -65,29 +65,14 @@
                         <strong class="text-dark font-monospace" id="displayEmail">student@mgmmumbai.ac.in</strong>
                     </p>
 
-                    <!-- Evaluation Helper Banner -->
-                    <div id="simulatedOtpBanner" class="p-3 mb-3 border border-dark text-start" style="background: var(--canvas-bg); border-width: 2px !important; border-radius: var(--radius-sm); display: none;">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <span class="fw-bold small text-uppercase" style="font-family: var(--font-mono); font-size: 0.7rem;"><i class="bi bi-shield-lock me-1"></i>College Email Simulation</span>
-                            <span class="badge badge-custom bg-dark text-white" style="font-size: 0.65rem;">Dev / Demo</span>
-                        </div>
-                        <p class="small text-muted mb-2">Simulated code dispatched to your mailbox:</p>
-                        <div class="d-flex align-items-center justify-content-between">
-                            <span class="fs-5 fw-bold font-monospace text-dark" id="simulatedOtpCode">------</span>
-                            <button type="button" class="btn btn-sm btn-outline-custom" onclick="autoFillOtp()">
-                                Auto-Fill Code
-                            </button>
-                        </div>
-                    </div>
-
                     <form id="verifyOtpForm" onsubmit="handleVerifyOtp(event)">
-                        <div class="otp-input-group">
-                            <input type="text" class="otp-digit" maxlength="1" id="otp1" required autocomplete="off">
-                            <input type="text" class="otp-digit" maxlength="1" id="otp2" required autocomplete="off">
-                            <input type="text" class="otp-digit" maxlength="1" id="otp3" required autocomplete="off">
-                            <input type="text" class="otp-digit" maxlength="1" id="otp4" required autocomplete="off">
-                            <input type="text" class="otp-digit" maxlength="1" id="otp5" required autocomplete="off">
-                            <input type="text" class="otp-digit" maxlength="1" id="otp6" required autocomplete="off">
+                        <div class="otp-input-group" id="otpContainer">
+                            <input type="text" class="otp-digit" maxlength="1" id="otp1" inputmode="numeric" pattern="[0-9]*" required autocomplete="off">
+                            <input type="text" class="otp-digit" maxlength="1" id="otp2" inputmode="numeric" pattern="[0-9]*" required autocomplete="off">
+                            <input type="text" class="otp-digit" maxlength="1" id="otp3" inputmode="numeric" pattern="[0-9]*" required autocomplete="off">
+                            <input type="text" class="otp-digit" maxlength="1" id="otp4" inputmode="numeric" pattern="[0-9]*" required autocomplete="off">
+                            <input type="text" class="otp-digit" maxlength="1" id="otp5" inputmode="numeric" pattern="[0-9]*" required autocomplete="off">
+                            <input type="text" class="otp-digit" maxlength="1" id="otp6" inputmode="numeric" pattern="[0-9]*" required autocomplete="off">
                         </div>
 
                         <button type="submit" id="verifyBtn" class="btn btn-primary-custom w-100 py-2 mb-3">
@@ -105,7 +90,7 @@
                 </div>
 
                 <div class="text-center mt-3">
-                    <small class="text-muted">Domain policy enforced: <strong>@mgmmumbai.ac.in</strong></small>
+                    <small class="text-muted">Official college domain policy enforced: <strong>@mgmmumbai.ac.in</strong></small>
                 </div>
             </div>
         </div>
@@ -121,15 +106,9 @@
         document.addEventListener("DOMContentLoaded", () => {
             const urlParams = new URLSearchParams(window.location.search);
             currentEmail = urlParams.get('email') || sessionStorage.getItem('pendingVerificationEmail') || '';
-            const simulatedOtp = urlParams.get('otp') || sessionStorage.getItem('simulatedOtp') || '';
 
             if (currentEmail) {
                 document.getElementById('displayEmail').innerText = currentEmail;
-            }
-
-            if (simulatedOtp) {
-                document.getElementById('simulatedOtpBanner').style.display = 'block';
-                document.getElementById('simulatedOtpCode').innerText = simulatedOtp;
             }
 
             setupOtpInputFields();
@@ -146,39 +125,54 @@
             ];
 
             inputs.forEach((input, index) => {
+                input.addEventListener('focus', () => {
+                    input.select();
+                });
+
                 input.addEventListener('input', (e) => {
-                    if (e.target.value.length === 1 && index < inputs.length - 1) {
+                    const cleaned = e.target.value.replace(/[^0-9]/g, '');
+                    e.target.value = cleaned;
+
+                    if (cleaned.length === 1 && index < inputs.length - 1) {
                         inputs[index + 1].focus();
                     }
                 });
 
                 input.addEventListener('keydown', (e) => {
-                    if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                    if (e.key === 'Backspace') {
+                        if (!e.target.value && index > 0) {
+                            inputs[index - 1].focus();
+                            inputs[index - 1].value = '';
+                        }
+                    } else if (e.key === 'ArrowLeft' && index > 0) {
                         inputs[index - 1].focus();
+                    } else if (e.key === 'ArrowRight' && index < inputs.length - 1) {
+                        inputs[index + 1].focus();
                     }
                 });
 
                 input.addEventListener('paste', (e) => {
                     e.preventDefault();
                     const text = (e.clipboardData || window.clipboardData).getData('text').trim();
-                    if (/^\d{6}$/.test(text)) {
-                        text.split('').forEach((char, i) => {
-                            inputs[i].value = char;
-                        });
+                    const digits = text.replace(/[^0-9]/g, '');
+
+                    if (digits.length >= 6) {
+                        for (let i = 0; i < 6; i++) {
+                            inputs[i].value = digits[i];
+                        }
                         inputs[5].focus();
+                    } else if (digits.length > 0) {
+                        for (let i = 0; i < digits.length && (index + i) < inputs.length; i++) {
+                            inputs[index + i].value = digits[i];
+                        }
+                        const nextIndex = Math.min(index + digits.length, inputs.length - 1);
+                        inputs[nextIndex].focus();
                     }
                 });
             });
 
-            inputs[0].focus();
-        }
-
-        function autoFillOtp() {
-            const code = document.getElementById('simulatedOtpCode').innerText.trim();
-            if (code && code.length === 6) {
-                for (let i = 1; i <= 6; i++) {
-                    document.getElementById(`otp${i}`).value = code[i - 1];
-                }
+            if (inputs[0]) {
+                inputs[0].focus();
             }
         }
 
@@ -186,7 +180,7 @@
             e.preventDefault();
             const otp = [1, 2, 3, 4, 5, 6].map(i => document.getElementById(`otp${i}`).value).join('');
 
-            if (otp.length !== 6) {
+            if (otp.length !== 6 || !/^\d{6}$/.test(otp)) {
                 showAlert("Please enter all 6 digits of the confirmation code.", "danger");
                 return;
             }
@@ -202,9 +196,8 @@
                 });
 
                 if (res && res.success) {
-                    showAlert("College email verified successfully! Redirecting to login...", "success");
+                    showAlert("College email verified successfully! Your account is activated. Redirecting to login...", "success");
                     sessionStorage.removeItem('pendingVerificationEmail');
-                    sessionStorage.removeItem('simulatedOtp');
                     setTimeout(() => {
                         window.location.href = 'login.html?verified=true';
                     }, 1500);
@@ -223,16 +216,24 @@
         async function handleResendOtp() {
             if (cooldownSeconds > 0) return;
 
-            const res = await API.post('/api/auth/resend-otp', { email: currentEmail });
-            if (res && res.success) {
-                showAlert("A new verification code has been dispatched to your college email.", "info");
-                if (res.simulatedOtp) {
-                    document.getElementById('simulatedOtpBanner').style.display = 'block';
-                    document.getElementById('simulatedOtpCode').innerText = res.simulatedOtp;
+            const resendBtn = document.getElementById('resendBtn');
+            resendBtn.disabled = true;
+            resendBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> Sending...`;
+
+            try {
+                const res = await API.post('/api/auth/resend-otp', { email: currentEmail });
+                if (res && res.success) {
+                    showAlert("A fresh verification code has been dispatched to your official college inbox.", "info");
+                    startCooldown(60);
+                } else {
+                    showAlert(res.message || "We couldn't send the verification email. Please try again.", "danger");
+                    resendBtn.disabled = false;
+                    resendBtn.innerHTML = `<i class="bi bi-arrow-repeat me-1"></i> Resend Verification Code`;
                 }
-                startCooldown(60);
-            } else {
-                showAlert(res.message || "Failed to resend verification code.", "danger");
+            } catch (err) {
+                showAlert("We couldn't send the verification email. Please try again.", "danger");
+                resendBtn.disabled = false;
+                resendBtn.innerHTML = `<i class="bi bi-arrow-repeat me-1"></i> Resend Verification Code`;
             }
         }
 
@@ -249,6 +250,7 @@
                 if (cooldownSeconds <= 0) {
                     clearInterval(cooldownTimer);
                     resendBtn.disabled = false;
+                    resendBtn.innerHTML = `<i class="bi bi-arrow-repeat me-1"></i> Resend Verification Code`;
                     cooldownText.innerText = '';
                 } else {
                     cooldownText.innerText = `Request new code in ${cooldownSeconds}s`;

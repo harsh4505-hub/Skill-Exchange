@@ -7,6 +7,8 @@ public class AuthResponseDto {
     private String email;
     private String role;
     private String fullName;
+    private boolean requiresVerification;
+    private boolean emailVerified;
 
     public AuthResponseDto() {
     }
@@ -18,6 +20,19 @@ public class AuthResponseDto {
         this.email = email;
         this.role = role;
         this.fullName = fullName;
+        this.requiresVerification = false;
+        this.emailVerified = true;
+    }
+
+    public AuthResponseDto(boolean authenticated, String message, Long userId, String email, String role, String fullName, boolean requiresVerification, boolean emailVerified) {
+        this.authenticated = authenticated;
+        this.message = message;
+        this.userId = userId;
+        this.email = email;
+        this.role = role;
+        this.fullName = fullName;
+        this.requiresVerification = requiresVerification;
+        this.emailVerified = emailVerified;
     }
 
     public boolean isAuthenticated() {
@@ -66,5 +81,21 @@ public class AuthResponseDto {
 
     public void setFullName(String fullName) {
         this.fullName = fullName;
+    }
+
+    public boolean isRequiresVerification() {
+        return requiresVerification;
+    }
+
+    public void setRequiresVerification(boolean requiresVerification) {
+        this.requiresVerification = requiresVerification;
+    }
+
+    public boolean isEmailVerified() {
+        return emailVerified;
+    }
+
+    public void setEmailVerified(boolean emailVerified) {
+        this.emailVerified = emailVerified;
     }
 }

@@ -143,7 +143,9 @@
                 showAlert("Login successful! Redirecting...", "success");
                 setTimeout(() => {
                     if (res.data.role === 'ROLE_ADMIN') {
-                        window.location.href = 'admin-dashboard.html';
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const redirectUrl = urlParams.get('redirect') || 'admin-dashboard.html';
+                        window.location.href = redirectUrl;
                     } else {
                         window.location.href = 'dashboard.html';
                     }

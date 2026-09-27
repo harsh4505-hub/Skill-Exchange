@@ -8,9 +8,37 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const url = require('url');
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 
 const PORT = 8080;
 const STATIC_DIR = path.join(__dirname, 'src', 'main', 'resources', 'static');
+
+// Auto-load environment variables from .env file if present
+const envPath = path.join(__dirname, '.env');
+if (fs.existsSync(envPath)) {
+    try {
+        const envContent = fs.readFileSync(envPath, 'utf8');
+        envContent.split(/\r?\n/).forEach(line => {
+            const trimmed = line.trim();
+            if (trimmed && !trimmed.startsWith('#')) {
+                const idx = trimmed.indexOf('=');
+                if (idx > 0) {
+                    const key = trimmed.slice(0, idx).trim();
+                    let val = trimmed.slice(idx + 1).trim();
+                    if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+                        val = val.slice(1, -1);
+                    }
+                    if (!process.env[key]) {
+                        process.env[key] = val;
+                    }
+                }
+            }
+        });
+    } catch (e) {
+        console.error("Warning: Could not parse .env file:", e.message);
+    }
+}
 
 // ===================================================================
 // COLLEGE EMAIL DOMAIN RESTRICTION VALIDATOR (@mgmmumbai.ac.in)
@@ -21,6 +49,176 @@ const COLLEGE_EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@mgmmumbai\.ac\.in$/i;
 function isValidCollegeEmail(email) {
     if (!email || typeof email !== 'string') return false;
     return COLLEGE_EMAIL_REGEX.test(email.trim());
+}
+
+// ===================================================================
+// CRYPTOGRAPHIC OTP & GMAIL SMTP EMAIL SERVICE
+// ===================================================================
+
+function hashOtp(otp) {
+    return crypto.createHash('sha256').update(String(otp).trim()).digest('hex');
+}
+
+function generateSecureOtp() {
+    // Generates a cryptographically secure 6-digit number between 100000 and 999999
+    return crypto.randomInt(100000, 1000000).toString();
+}
+
+function getMailTransporter() {
+    const user = process.env.MAIL_USERNAME;
+    const pass = process.env.MAIL_PASSWORD;
+    if (!user || !pass) {
+        return null;
+    }
+    return nodemailer.createTransport({
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false, // TLS via STARTTLS
+        auth: {
+            user: user.trim(),
+            pass: pass.trim().replace(/\s+/g, '') // Strips any spaces if user copied "xxxx yyyy zzzz wwww"
+        },
+        tls: {
+            rejectUnauthorized: true
+        }
+    });
+}
+
+async function sendVerificationEmail(recipientEmail, studentName, otpCode) {
+    const rawUser = process.env.MAIL_USERNAME;
+    const rawPass = process.env.MAIL_PASSWORD;
+    const userClean = rawUser ? rawUser.trim() : '';
+    const passClean = rawPass ? rawPass.trim().replace(/\s+/g, '') : '';
+
+    const isUserConfigured = userClean.length > 0;
+    const isPassConfigured = passClean.length > 0;
+    const isRecipientValid = isValidCollegeEmail(recipientEmail);
+
+    console.log("\n==================== [EMAIL DEBUG] ====================");
+    console.log("SMTP host configured: YES (smtp.gmail.com)");
+    console.log("SMTP port: 587");
+    console.log("MAIL_USERNAME configured: " + (isUserConfigured ? "YES" : "NO"));
+    console.log("MAIL_PASSWORD configured: " + (isPassConfigured ? "YES" : "NO"));
+    console.log("Transporter available: YES");
+    console.log("Recipient domain valid (@mgmmumbai.ac.in): " + (isRecipientValid ? "YES" : "NO"));
+
+    if (!isUserConfigured || !isPassConfigured) {
+        const reason = (!isUserConfigured && !isPassConfigured)
+            ? "Both MAIL_USERNAME and MAIL_PASSWORD are missing from the environment (.env)"
+            : (!isUserConfigured ? "MAIL_USERNAME is not configured" : "MAIL_PASSWORD is not configured");
+        console.log("SMTP connection: NOT ATTEMPTED");
+        console.log("Reason: " + reason);
+        console.log("Remedy: Set MAIL_USERNAME and MAIL_PASSWORD in a .env file in the project root.");
+        console.log("========================================================\n");
+        throw new Error(reason);
+    }
+
+    const transporter = getMailTransporter();
+    const mailOptions = {
+        from: `"Student Skill Exchange" <${userClean}>`,
+        to: recipientEmail,
+        subject: "Verify Your Student Skill Exchange Account",
+        text: `Student Skill Exchange\n\nHello ${studentName || 'Student'},\n\nThank you for registering with Student Skill Exchange.\n\nYour 6-digit verification code is:\n\n${otpCode}\n\nThis code will expire in 10 minutes.\n\nIf you did not create this account, you can safely ignore this email.\n\nStudent Skill Exchange`,
+        html: `
+            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 28px; border: 1px solid #e2e8f0; border-radius: 8px; background: #ffffff; color: #1e293b;">
+                <div style="text-align: center; margin-bottom: 24px;">
+                    <h2 style="margin: 0; color: #0f172a; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;">Student Skill Exchange</h2>
+                    <p style="margin: 4px 0 0; color: #64748b; font-size: 13px; font-weight: 500;">Official MGM Student Peer Learning Network</p>
+                </div>
+                <div style="border-top: 1px solid #f1f5f9; padding-top: 20px;">
+                    <p style="font-size: 15px; line-height: 1.5; margin: 0 0 16px;">Hello <strong>${studentName || 'Student'}</strong>,</p>
+                    <p style="font-size: 14px; color: #475569; line-height: 1.6; margin: 0 0 20px;">
+                        Thank you for registering with Student Skill Exchange. Use the 6-digit confirmation code below to verify your official college email address:
+                    </p>
+                    <div style="background: #f8fafc; border: 2px dashed #0f172a; border-radius: 8px; padding: 18px; text-align: center; margin: 24px 0;">
+                        <span style="font-size: 34px; font-weight: 800; font-family: 'Courier New', Courier, monospace; letter-spacing: 8px; color: #0f172a;">${otpCode}</span>
+                    </div>
+                    <p style="font-size: 13px; color: #64748b; line-height: 1.5; margin: 0 0 12px;">
+                        ⏳ <strong>This code will expire in 10 minutes.</strong>
+                    </p>
+                    <p style="font-size: 13px; color: #64748b; line-height: 1.5; margin: 0 0 12px;">
+                        If you did not create this account, you can safely ignore this email.
+                    </p>
+                    <p style="font-size: 12px; color: #94a3b8; margin: 24px 0 0; border-top: 1px solid #f1f5f9; padding-top: 16px;">
+                        Student Skill Exchange &bull; MGM Mumbai
+                    </p>
+                </div>
+            </div>
+        `
+    };
+
+    try {
+        await transporter.sendMail(mailOptions);
+        console.log("SMTP connection: SUCCESS");
+        console.log("Email delivery: DELIVERED to " + recipientEmail);
+        console.log("========================================================\n");
+    } catch (err) {
+        console.log("SMTP connection: FAILED");
+        let failureReason = err.message || 'SMTP communication error';
+        if (err.responseCode === 535 || (err.message && err.message.includes('535'))) {
+            failureReason = "SMTP 535: Authentication failed (Invalid Gmail username or Google App Password).";
+        } else if (err.code === 'ETIMEDOUT' || err.code === 'ESOCKETTIMEDOUT') {
+            failureReason = "Connection timeout connecting to smtp.gmail.com:587";
+        }
+        console.log("Reason: " + failureReason);
+        console.log("========================================================\n");
+        throw err;
+    }
+}
+
+async function sendPasswordResetEmail(recipientEmail, studentName, resetCode) {
+    const user = process.env.MAIL_USERNAME;
+    const pass = process.env.MAIL_PASSWORD;
+    if (!user || !pass) {
+        console.error("Password reset email failed: Missing MAIL_USERNAME or MAIL_PASSWORD environment variables.");
+        throw new Error("Missing SMTP credentials");
+    }
+
+    const transporter = getMailTransporter();
+    const mailOptions = {
+        from: `"Student Skill Exchange" <${user.trim()}>`,
+        to: recipientEmail,
+        subject: "Reset Your Student Skill Exchange Password",
+        text: `Student Skill Exchange\n\nHello ${studentName || 'Student'},\n\nWe received a request to reset your password.\n\nYour 6-digit reset code is:\n\n${resetCode}\n\nThis code will expire in 15 minutes.\n\nIf you did not request a password reset, you can safely ignore this email.\n\nStudent Skill Exchange`,
+        html: `
+            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 28px; border: 1px solid #e2e8f0; border-radius: 8px; background: #ffffff; color: #1e293b;">
+                <div style="text-align: center; margin-bottom: 24px;">
+                    <h2 style="margin: 0; color: #0f172a; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;">Student Skill Exchange</h2>
+                    <p style="margin: 4px 0 0; color: #64748b; font-size: 13px; font-weight: 500;">Official MGM Student Peer Learning Network</p>
+                </div>
+                <div style="border-top: 1px solid #f1f5f9; padding-top: 20px;">
+                    <p style="font-size: 15px; line-height: 1.5; margin: 0 0 16px;">Hello <strong>${studentName || 'Student'}</strong>,</p>
+                    <p style="font-size: 14px; color: #475569; line-height: 1.6; margin: 0 0 20px;">
+                        We received a request to reset your account password. Use the 6-digit code below to proceed:
+                    </p>
+                    <div style="background: #f8fafc; border: 2px dashed #0f172a; border-radius: 8px; padding: 18px; text-align: center; margin: 24px 0;">
+                        <span style="font-size: 34px; font-weight: 800; font-family: 'Courier New', Courier, monospace; letter-spacing: 8px; color: #0f172a;">${resetCode}</span>
+                    </div>
+                    <p style="font-size: 13px; color: #64748b; line-height: 1.5; margin: 0 0 12px;">
+                        ⏳ <strong>This code will expire in 15 minutes.</strong>
+                    </p>
+                    <p style="font-size: 13px; color: #64748b; line-height: 1.5; margin: 0 0 12px;">
+                        If you did not request a password reset, you can safely ignore this email.
+                    </p>
+                    <p style="font-size: 12px; color: #94a3b8; margin: 24px 0 0; border-top: 1px solid #f1f5f9; padding-top: 16px;">
+                        Student Skill Exchange &bull; MGM Mumbai
+                    </p>
+                </div>
+            </div>
+        `
+    };
+
+    try {
+        await transporter.sendMail(mailOptions);
+        console.log(`[EmailService] Password reset email delivered to: ${recipientEmail}`);
+    } catch (err) {
+        if (err.responseCode === 535) {
+            console.error("Password reset email failed: SMTP authentication failed.");
+        } else {
+            console.error(`Password reset email failed: ${err.message || 'SMTP error'}`);
+        }
+        throw err;
+    }
 }
 
 // ===================================================================
@@ -340,9 +538,60 @@ const state = {
     ],
 
     messages: [
-        { id: 1, senderId: 2, receiverId: 3, messageText: "Hi Sejal! Thanks for accepting my Java for Photoshop request!", sentAt: new Date(Date.now() - 2 * 86400000).toISOString(), isRead: true },
-        { id: 2, senderId: 3, receiverId: 2, messageText: "Hey Harsh! Super excited! When are you free for our first session?", sentAt: new Date(Date.now() - 2 * 86400000 + 3600000).toISOString(), isRead: true },
-        { id: 3, senderId: 2, receiverId: 3, messageText: "I'm free tomorrow after 5 PM in the college library or over Google Meet!", sentAt: new Date(Date.now() - 1 * 86400000).toISOString(), isRead: true }
+        {
+            id: 1,
+            senderId: 2,
+            senderName: "Harsh Vardhan",
+            receiverId: 3,
+            receiverName: "Sejal Sharma",
+            messageText: "Hi Sejal! Thanks for accepting my Java for Photoshop request!",
+            sentAt: new Date(Date.now() - 2 * 86400000).toISOString(),
+            deliveredAt: new Date(Date.now() - 2 * 86400000 + 2000).toISOString(),
+            seenAt: new Date(Date.now() - 2 * 86400000 + 60000).toISOString(),
+            status: "SEEN",
+            isRead: true,
+            attachmentUrl: null,
+            attachmentType: null,
+            attachmentName: null,
+            attachmentSize: null,
+            replyTo: null
+        },
+        {
+            id: 2,
+            senderId: 3,
+            senderName: "Sejal Sharma",
+            receiverId: 2,
+            receiverName: "Harsh Vardhan",
+            messageText: "Hey Harsh! Super excited! When are you free for our first session?",
+            sentAt: new Date(Date.now() - 2 * 86400000 + 3600000).toISOString(),
+            deliveredAt: new Date(Date.now() - 2 * 86400000 + 3602000).toISOString(),
+            seenAt: new Date(Date.now() - 2 * 86400000 + 3660000).toISOString(),
+            status: "SEEN",
+            isRead: true,
+            attachmentUrl: null,
+            attachmentType: null,
+            attachmentName: null,
+            attachmentSize: null,
+            replyTo: null
+        },
+        {
+            id: 3,
+            senderId: 2,
+            senderName: "Harsh Vardhan",
+            receiverId: 3,
+            receiverName: "Sejal Sharma",
+            messageText: "I'm free tomorrow after 5 PM in the college library or over Google Meet!",
+            sentAt: new Date(Date.now() - 1 * 86400000).toISOString(),
+            deliveredAt: new Date(Date.now() - 1 * 86400000 + 2000).toISOString(),
+            seenAt: new Date(Date.now() - 1 * 86400000 + 120000).toISOString(),
+            status: "SEEN",
+            isRead: true,
+            attachmentUrl: null,
+            attachmentType: null,
+            attachmentName: null,
+            attachmentSize: null,
+            replyTo: null
+        }
     ],
 
     verifications: [
@@ -494,7 +743,87 @@ const state = {
         }
     ],
 
-    reports: []
+    reports: [
+        {
+            id: 1,
+            reporterId: 3,
+            reporterName: "Sejal Sharma",
+            reportedEntity: "USER",
+            reportedUserId: 4,
+            reportedUserName: "Raza Khan",
+            reason: "Unresponsive after agreeing to campus exchange session",
+            category: "Incomplete Barter",
+            description: "User agreed to meet in IT lab for Python exchange on Friday but did not attend and hasn't replied to chat.",
+            evidence: "Chat timestamp screenshot 2026-09-24",
+            status: "OPEN",
+            priority: "MEDIUM",
+            createdAt: new Date(Date.now() - 2 * 86400000).toISOString(),
+            adminNotes: ""
+        },
+        {
+            id: 2,
+            reporterId: 2,
+            reporterName: "Harsh Vardhan",
+            reportedEntity: "SKILL",
+            reportedSkillId: 2,
+            reportedSkillTitle: "Python Scripting & DSA",
+            reportedUserId: 4,
+            reportedUserName: "Raza Khan",
+            reason: "Misleading skill level claims",
+            category: "Fake Profile",
+            description: "Skill is marked as Advanced but provider acknowledged they are still learning basic syntax.",
+            evidence: "Message exchange excerpt",
+            status: "INVESTIGATING",
+            priority: "HIGH",
+            createdAt: new Date(Date.now() - 86400000).toISOString(),
+            adminNotes: "Reviewing student verification proof and code repository"
+        },
+        {
+            id: 3,
+            reporterId: 5,
+            reporterName: "Udipti Sen",
+            reportedEntity: "REVIEW",
+            reportedUserId: 2,
+            reportedUserName: "Harsh Vardhan",
+            reason: "Duplicate or accidental review submission",
+            category: "Other",
+            description: "Submitted double review by mistake.",
+            evidence: "Review ID #2",
+            status: "RESOLVED",
+            priority: "LOW",
+            createdAt: new Date(Date.now() - 4 * 86400000).toISOString(),
+            adminNotes: "Duplicate entry resolved and archived."
+        }
+    ],
+
+    admins: [
+        { id: 1, email: "admin@mgmmumbai.ac.in", name: "System Administrator", role: "SUPER_ADMIN", active: true, lastActive: new Date().toISOString(), createdAt: "2026-08-15T09:00:00Z" },
+        { id: 2, email: "moderator@mgmmumbai.ac.in", name: "Prof. S. Kulkarni (Staff Auditor)", role: "MODERATOR", active: true, lastActive: new Date(Date.now() - 3600000).toISOString(), createdAt: "2026-09-01T10:00:00Z" },
+        { id: 3, email: "support@mgmmumbai.ac.in", name: "Ananya Deshmukh (Student Council)", role: "SUPPORT_ADMIN", active: true, lastActive: new Date(Date.now() - 86400000).toISOString(), createdAt: "2026-09-10T14:30:00Z" }
+    ],
+
+    announcements: [
+        {
+            id: 1,
+            title: "Semester Skill Exchange Fest Announcement",
+            message: "The university semester exchange drive is now active. Complete verified trades to earn official certificate badges!",
+            audience: "ALL_USERS",
+            sender: "admin@mgmmumbai.ac.in",
+            priority: "NORMAL",
+            createdAt: new Date(Date.now() - 3 * 86400000).toISOString()
+        }
+    ],
+
+    settings: {
+        platformName: "Student Skill Exchange Platform",
+        supportEmail: "admin@mgmmumbai.ac.in",
+        allowedDomain: "@mgmmumbai.ac.in",
+        autoVerifyTrusted: false,
+        requireProjectProof: true,
+        maxActiveExchangesPerStudent: 3,
+        twoFactorEnforced: false,
+        maintenanceMode: false
+    }
 };
 
 // Default authenticated user to Harsh (student ID 2) for immediate exploration
@@ -556,6 +885,13 @@ const server = http.createServer(async (req, res) => {
     if (pathname.startsWith('/api/')) {
         // --- 1. AUTHENTICATION & SECURITY ---
         if (pathname === '/api/auth/current-user' && req.method === 'GET') {
+            if (state.currentUser) {
+                const prof = state.profiles.find(p => p.userId === state.currentUser.userId);
+                if (prof) {
+                    state.currentUser.avatarUrl = prof.avatarUrl || null;
+                    if (prof.fullName) state.currentUser.fullName = prof.fullName;
+                }
+            }
             return sendJson(res, 200, { success: true, data: state.currentUser });
         }
 
@@ -647,68 +983,90 @@ const server = http.createServer(async (req, res) => {
                 });
             }
 
-            if (state.users.some(u => u.email.toLowerCase() === normalizedEmail)) {
-                return sendJson(res, 409, { success: false, message: "An account with this college email already exists. Please login." });
+            const existingUser = state.users.find(u => u.email.toLowerCase() === normalizedEmail);
+            if (existingUser && existingUser.emailVerified && existingUser.active) {
+                return sendJson(res, 409, {
+                    success: false,
+                    message: "An active account with this college email already exists. Please login."
+                });
             }
 
-            const newId = state.users.length + 1;
-            // Generate 6-digit OTP code for college email verification
-            const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+            // Generate secure 6-digit OTP
+            const otpCode = generateSecureOtp();
+            const studentName = (body.fullName || '').trim() || 'Student';
 
-            const newUser = {
-                id: newId,
-                email: normalizedEmail,
-                role: "ROLE_STUDENT",
-                password: body.password,
-                active: false,
-                emailVerified: false
-            };
-            state.users.push(newUser);
+            // Attempt delivery through real Gmail SMTP
+            try {
+                await sendVerificationEmail(normalizedEmail, studentName, otpCode);
+            } catch (err) {
+                return sendJson(res, 500, {
+                    success: false,
+                    message: "We couldn't send the verification email. Please try again."
+                });
+            }
 
-            const newProfile = {
-                id: newId,
-                userId: newId,
-                fullName: (body.fullName || '').trim(),
-                email: normalizedEmail,
-                college: (body.college || 'MGM College of Engineering & Technology').trim(),
-                department: body.department || 'Information Technology',
-                yearOfStudy: body.yearOfStudy || '2nd Year',
-                phone: (body.phone || '').trim(),
-                bio: `Hello! I am a student at ${body.college || 'MGM'} looking to exchange skills.`,
-                avatarUrl: `https://api.dicebear.com/7.x/bottts/svg?seed=${newId}`,
-                verified: false,
-                averageRating: 0.0,
-                completedExchangesCount: 0,
-                blocked: false,
-                teachingSkills: [],
-                learningSkills: []
-            };
-            state.profiles.push(newProfile);
+            let user = existingUser;
+            if (!user) {
+                const newId = state.users.length + 1;
+                user = {
+                    id: newId,
+                    email: normalizedEmail,
+                    role: "ROLE_STUDENT",
+                    password: body.password,
+                    active: false,
+                    emailVerified: false
+                };
+                state.users.push(user);
 
-            // Store OTP with 10-minute expiry
+                const newProfile = {
+                    id: newId,
+                    userId: newId,
+                    fullName: studentName,
+                    email: normalizedEmail,
+                    college: (body.college || 'MGM College of Engineering & Technology').trim(),
+                    department: body.department || 'Information Technology',
+                    yearOfStudy: body.yearOfStudy || '2nd Year',
+                    phone: (body.phone || '').trim(),
+                    bio: `Hello! I am a student at ${body.college || 'MGM'} looking to exchange skills.`,
+                    avatarUrl: `https://api.dicebear.com/7.x/bottts/svg?seed=${newId}`,
+                    verified: false,
+                    averageRating: 0.0,
+                    completedExchangesCount: 0,
+                    blocked: false,
+                    teachingSkills: [],
+                    learningSkills: []
+                };
+                state.profiles.push(newProfile);
+            } else {
+                // Update password for unverified account re-attempting registration
+                user.password = body.password;
+                user.active = false;
+                user.emailVerified = false;
+            }
+
+            // Store securely hashed OTP with 10-minute expiry
             state.otps[normalizedEmail] = {
-                code: otpCode,
+                otpHash: hashOtp(otpCode),
                 type: 'EMAIL_VERIFICATION',
                 expiresAt: Date.now() + 10 * 60 * 1000,
                 attempts: 0,
                 lastSentAt: Date.now()
             };
 
-            // Audit log
+            // Audit log without secret or OTP
             state.auditLogs.unshift({
                 id: Date.now(),
                 action: "STUDENT_REGISTRATION",
                 performedBy: normalizedEmail,
                 target: normalizedEmail,
                 timestamp: new Date().toISOString(),
-                details: "New college student registration initiated. Verification OTP dispatched."
+                details: "New college student registration initiated. Verification OTP dispatched via Gmail SMTP."
             });
 
             return sendJson(res, 200, {
                 success: true,
                 requiresVerification: true,
                 email: normalizedEmail,
-                simulatedOtp: otpCode,
                 message: "Registration initiated! A 6-digit verification code has been dispatched to your @mgmmumbai.ac.in college email."
             });
         }
@@ -719,22 +1077,37 @@ const server = http.createServer(async (req, res) => {
             const email = (body.email || '').trim().toLowerCase();
             const otp = (body.otp || '').trim();
 
+            if (!isValidCollegeEmail(email)) {
+                return sendJson(res, 400, { success: false, message: "Invalid college email address." });
+            }
+
+            if (!/^\d{6}$/.test(otp)) {
+                return sendJson(res, 400, { success: false, message: "Please provide a valid 6-digit confirmation code." });
+            }
+
             const record = state.otps[email];
             if (!record || record.type !== 'EMAIL_VERIFICATION') {
                 return sendJson(res, 400, { success: false, message: "No active verification code found for this email. Please request a new one." });
             }
 
             if (Date.now() > record.expiresAt) {
-                return sendJson(res, 400, { success: false, message: "Verification code has expired. Please request a new code." });
+                delete state.otps[email];
+                return sendJson(res, 400, { success: false, message: "This verification code has expired. Please request a new code." });
             }
 
             if (record.attempts >= 5) {
+                delete state.otps[email];
                 return sendJson(res, 429, { success: false, message: "Too many incorrect attempts. Please request a new verification code." });
             }
 
-            if (record.code !== otp) {
+            if (record.otpHash !== hashOtp(otp)) {
                 record.attempts++;
-                return sendJson(res, 400, { success: false, message: `Incorrect verification code. ${5 - record.attempts} attempts remaining.` });
+                const remaining = 5 - record.attempts;
+                if (remaining <= 0) {
+                    delete state.otps[email];
+                    return sendJson(res, 429, { success: false, message: "Too many incorrect attempts. Please request a new verification code." });
+                }
+                return sendJson(res, 400, { success: false, message: `Incorrect verification code. Please try again. (${remaining} attempts remaining)` });
             }
 
             // Verification successful
@@ -768,15 +1141,37 @@ const server = http.createServer(async (req, res) => {
                 return sendJson(res, 400, { success: false, message: "Invalid college email address." });
             }
 
+            const user = state.users.find(u => u.email.toLowerCase() === email);
+            if (!user) {
+                return sendJson(res, 404, { success: false, message: "No registered student account found with this email." });
+            }
+
+            if (user.emailVerified && user.active) {
+                return sendJson(res, 400, { success: false, message: "This account has already been verified. You can log in directly." });
+            }
+
             const record = state.otps[email];
             if (record && (Date.now() - record.lastSentAt) < 60000) {
                 const waitSec = Math.ceil((60000 - (Date.now() - record.lastSentAt)) / 1000);
                 return sendJson(res, 429, { success: false, message: `Please wait ${waitSec}s before requesting a new code.` });
             }
 
-            const newOtp = Math.floor(100000 + Math.random() * 900000).toString();
+            const newOtp = generateSecureOtp();
+            const profile = state.profiles.find(p => p.email.toLowerCase() === email);
+            const studentName = profile ? profile.fullName : 'Student';
+
+            try {
+                await sendVerificationEmail(email, studentName, newOtp);
+            } catch (err) {
+                return sendJson(res, 500, {
+                    success: false,
+                    message: "We couldn't send the verification email. Please try again."
+                });
+            }
+
+            // Invalidate old OTP and store new hashed OTP
             state.otps[email] = {
-                code: newOtp,
+                otpHash: hashOtp(newOtp),
                 type: 'EMAIL_VERIFICATION',
                 expiresAt: Date.now() + 10 * 60 * 1000,
                 attempts: 0,
@@ -785,8 +1180,7 @@ const server = http.createServer(async (req, res) => {
 
             return sendJson(res, 200, {
                 success: true,
-                message: "A fresh 6-digit verification code has been dispatched to your college email.",
-                simulatedOtp: newOtp
+                message: "A fresh 6-digit verification code has been dispatched to your official college email."
             });
         }
 
@@ -804,9 +1198,21 @@ const server = http.createServer(async (req, res) => {
                 return sendJson(res, 404, { success: false, message: "No registered student account found with this college email." });
             }
 
-            const resetOtp = Math.floor(100000 + Math.random() * 900000).toString();
+            const resetOtp = generateSecureOtp();
+            const profile = state.profiles.find(p => p.email.toLowerCase() === email);
+            const studentName = profile ? profile.fullName : 'Student';
+
+            try {
+                await sendPasswordResetEmail(email, studentName, resetOtp);
+            } catch (err) {
+                return sendJson(res, 500, {
+                    success: false,
+                    message: "We couldn't send the password reset email. Please try again."
+                });
+            }
+
             state.otps[email] = {
-                code: resetOtp,
+                otpHash: hashOtp(resetOtp),
                 type: 'PASSWORD_RESET',
                 expiresAt: Date.now() + 15 * 60 * 1000,
                 attempts: 0,
@@ -815,8 +1221,7 @@ const server = http.createServer(async (req, res) => {
 
             return sendJson(res, 200, {
                 success: true,
-                message: "Password reset code dispatched to your college email.",
-                simulatedOtp: resetOtp
+                message: "Password reset code dispatched to your official college email."
             });
         }
 
@@ -840,16 +1245,23 @@ const server = http.createServer(async (req, res) => {
             }
 
             if (Date.now() > record.expiresAt) {
+                delete state.otps[email];
                 return sendJson(res, 400, { success: false, message: "Password reset code has expired. Please request a new code." });
             }
 
             if (record.attempts >= 5) {
+                delete state.otps[email];
                 return sendJson(res, 429, { success: false, message: "Too many incorrect attempts. Please request a new code." });
             }
 
-            if (record.code !== otp) {
+            if (record.otpHash !== hashOtp(otp)) {
                 record.attempts++;
-                return sendJson(res, 400, { success: false, message: `Incorrect reset code. ${5 - record.attempts} attempts remaining.` });
+                const remaining = 5 - record.attempts;
+                if (remaining <= 0) {
+                    delete state.otps[email];
+                    return sendJson(res, 429, { success: false, message: "Too many incorrect attempts. Please request a new code." });
+                }
+                return sendJson(res, 400, { success: false, message: `Incorrect reset code. Please try again. (${remaining} attempts remaining)` });
             }
 
             delete state.otps[email];
@@ -893,34 +1305,64 @@ const server = http.createServer(async (req, res) => {
         // --- SECURE FILE UPLOAD ---
         if (pathname === '/api/upload' && req.method === 'POST') {
             const body = await parseBody(req);
-            const fileName = body.fileName || 'document.pdf';
+            const fileName = body.fileName || 'file.dat';
             const fileData = body.fileData || ''; // base64 or text
+            const rawFolder = (body.folder || 'chat').replace(/[^a-z0-9_-]/gi, '');
+            const folder = ['chat', 'avatars', 'proofs'].includes(rawFolder) ? rawFolder : 'chat';
 
             const ext = path.extname(fileName).toLowerCase();
-            const allowedExts = ['.pdf', '.png', '.jpg', '.jpeg'];
-            const dangerousExts = ['.exe', '.bat', '.cmd', '.sh', '.php', '.js', '.py', '.html', '.msi', '.vbs'];
+            const allowedExts = [
+                '.pdf', '.png', '.jpg', '.jpeg', '.webp', '.gif',
+                '.doc', '.docx', '.txt', '.zip', '.mp4', '.webm'
+            ];
+            const dangerousExts = ['.exe', '.bat', '.cmd', '.sh', '.php', '.js', '.py', '.html', '.msi', '.vbs', '.jar', '.com', '.scr'];
 
             if (dangerousExts.includes(ext)) {
                 return sendJson(res, 400, { success: false, message: "Security Warning: Executable and script file uploads are strictly prohibited." });
             }
 
             if (!allowedExts.includes(ext)) {
-                return sendJson(res, 400, { success: false, message: "Invalid file type. Allowed formats: PDF, PNG, JPG, JPEG." });
+                return sendJson(res, 400, { success: false, message: "Invalid file type. Allowed formats: Images (PNG, JPG, WEBP, GIF), Documents (PDF, DOC, DOCX, TXT, ZIP), Videos (MP4, WEBM)." });
             }
 
             // Generate safe filename
-            const safeName = `proof_${Date.now()}_${Math.random().toString(36).substring(2, 8)}${ext}`;
-            const uploadDir = path.join(STATIC_DIR, 'uploads', 'proofs');
+            const prefix = folder === 'avatars' ? 'avatar' : (folder === 'proofs' ? 'proof' : 'chat');
+            const safeName = `${prefix}_${Date.now()}_${Math.random().toString(36).substring(2, 8)}${ext}`;
+            const uploadDir = path.join(STATIC_DIR, 'uploads', folder);
             try {
                 if (!fs.existsSync(uploadDir)) {
                     fs.mkdirSync(uploadDir, { recursive: true });
                 }
                 const buffer = Buffer.from(fileData.replace(/^data:[^;]+;base64,/, ''), 'base64');
+                // Enforce 15MB limit
+                if (buffer.length > 15 * 1024 * 1024) {
+                    return sendJson(res, 400, { success: false, message: "File exceeds maximum permitted size of 15MB." });
+                }
                 fs.writeFileSync(path.join(uploadDir, safeName), buffer);
-                const fileUrl = `uploads/proofs/${safeName}`;
-                return sendJson(res, 200, { success: true, url: fileUrl, message: "File uploaded securely." });
+                const fileUrl = `uploads/${folder}/${safeName}`;
+
+                // Formatted file size string
+                let formattedSize = (buffer.length / 1024).toFixed(1) + ' KB';
+                if (buffer.length >= 1024 * 1024) {
+                    formattedSize = (buffer.length / (1024 * 1024)).toFixed(1) + ' MB';
+                }
+
+                // File category
+                let fileCategory = 'file';
+                if (['.png', '.jpg', '.jpeg', '.webp', '.gif'].includes(ext)) fileCategory = 'image';
+                else if (['.mp4', '.webm'].includes(ext)) fileCategory = 'video';
+
+                return sendJson(res, 200, {
+                    success: true,
+                    url: fileUrl,
+                    fileName: fileName,
+                    fileSize: buffer.length,
+                    formattedSize: formattedSize,
+                    fileType: fileCategory,
+                    message: "File uploaded securely."
+                });
             } catch (err) {
-                return sendJson(res, 200, { success: true, url: `uploads/proofs/${safeName}`, message: "Proof document reference recorded." });
+                return sendJson(res, 500, { success: false, message: "Failed to upload file: " + err.message });
             }
         }
 
@@ -1457,12 +1899,17 @@ const server = http.createServer(async (req, res) => {
         if (pathname.match(/^\/api\/messages\/(\d+)$/) && req.method === 'GET') {
             const partnerId = Number(pathname.split('/')[3]);
             const myId = state.currentUser ? state.currentUser.userId : 2;
+            const now = new Date().toISOString();
             const msgs = state.messages.filter(m =>
                 (m.senderId === myId && m.receiverId === partnerId) ||
                 (m.senderId === partnerId && m.receiverId === myId)
             );
             msgs.forEach(m => {
-                if (m.receiverId === myId) m.isRead = true;
+                if (m.receiverId === myId) {
+                    m.isRead = true;
+                    m.status = "SEEN";
+                    if (!m.seenAt) m.seenAt = now;
+                }
             });
             return sendJson(res, 200, { success: true, data: msgs });
         }
@@ -1473,29 +1920,59 @@ const server = http.createServer(async (req, res) => {
             const senderProf = state.profiles.find(p => p.userId === myId);
             const receiverProf = state.profiles.find(p => p.userId === body.receiverId);
 
+            const now = new Date().toISOString();
+            const nextId = state.messages.length > 0 ? Math.max(...state.messages.map(m => m.id)) + 1 : 1;
             const newMsg = {
-                id: state.messages.length + 1,
+                id: nextId,
                 senderId: myId,
                 senderName: senderProf ? senderProf.fullName : "Student",
-                receiverId: body.receiverId,
+                receiverId: Number(body.receiverId),
                 receiverName: receiverProf ? receiverProf.fullName : "Student",
-                messageText: body.messageText,
-                sentAt: new Date().toISOString(),
+                messageText: (body.messageText || '').trim(),
+                attachmentUrl: body.attachmentUrl || null,
+                attachmentType: body.attachmentType || null,
+                attachmentName: body.attachmentName || null,
+                attachmentSize: body.attachmentSize || null,
+                replyTo: body.replyTo || null,
+                sentAt: now,
+                deliveredAt: now,
+                seenAt: null,
+                status: "DELIVERED",
                 isRead: false
             };
             state.messages.push(newMsg);
 
+            const notifText = newMsg.messageText 
+                ? (newMsg.messageText.length > 50 ? newMsg.messageText.substring(0, 47) + "..." : newMsg.messageText)
+                : `Sent an attachment: ${newMsg.attachmentName || 'file'}`;
+
             state.notifications.unshift({
                 id: Date.now(),
-                recipientId: body.receiverId,
+                recipientId: Number(body.receiverId),
                 title: `Message from ${newMsg.senderName}`,
-                message: newMsg.messageText.length > 50 ? newMsg.messageText.substring(0, 47) + "..." : newMsg.messageText,
+                message: notifText,
                 type: "NEW_MESSAGE",
                 isRead: false,
-                createdAt: new Date().toISOString()
+                createdAt: now
             });
 
             return sendJson(res, 200, { success: true, data: newMsg });
+        }
+
+        if (pathname.match(/^\/api\/messages\/(\d+)$/) && req.method === 'DELETE') {
+            const msgId = Number(pathname.split('/')[3]);
+            const myId = state.currentUser ? state.currentUser.userId : 2;
+            const isAdmin = state.currentUser && state.currentUser.role === 'ROLE_ADMIN';
+            const idx = state.messages.findIndex(m => m.id === msgId);
+            if (idx === -1) {
+                return sendJson(res, 404, { success: false, message: "Message not found" });
+            }
+            const msg = state.messages[idx];
+            if (!isAdmin && msg.senderId !== myId) {
+                return sendJson(res, 403, { success: false, message: "Security violation: You can only delete your own sent messages." });
+            }
+            state.messages.splice(idx, 1);
+            return sendJson(res, 200, { success: true, message: "Message deleted successfully." });
         }
 
         if (pathname === '/api/messages/conversations' && req.method === 'GET') {
@@ -1508,9 +1985,25 @@ const server = http.createServer(async (req, res) => {
             state.exchanges.forEach(e => {
                 if (e.student1Id === myId) partners.add(e.student2Id);
                 if (e.student2Id === myId) partners.add(e.student1Id);
+                if (e.userAId === myId) partners.add(e.userBId);
+                if (e.userBId === myId) partners.add(e.userAId);
             });
 
-            const data = Array.from(partners).map(pId => state.profiles.find(p => p.userId === pId)).filter(Boolean);
+            const data = Array.from(partners).map(pId => {
+                const prof = state.profiles.find(p => p.userId === pId);
+                if (!prof) return null;
+                // Find last message and unread count
+                const thread = state.messages.filter(m => (m.senderId === myId && m.receiverId === pId) || (m.senderId === pId && m.receiverId === myId));
+                const lastMsg = thread.length > 0 ? thread[thread.length - 1] : null;
+                const unread = thread.filter(m => m.receiverId === myId && !m.isRead).length;
+                return {
+                    ...prof,
+                    lastMessage: lastMsg ? (lastMsg.messageText || (lastMsg.attachmentName ? `📎 ${lastMsg.attachmentName}` : 'Attachment')) : null,
+                    lastMessageAt: lastMsg ? lastMsg.sentAt : null,
+                    unreadCount: unread
+                };
+            }).filter(Boolean);
+
             return sendJson(res, 200, { success: true, data });
         }
 
@@ -1843,38 +2336,251 @@ const server = http.createServer(async (req, res) => {
             return sendJson(res, 200, { success: true, data: newReport, message: "Report submitted to administration for safety audit." });
         }
 
-        // --- 11. ADMIN DASHBOARD & AUDIT LOGS ---
+        // --- 11. COMPREHENSIVE ADMIN API SUITE ---
+
+        // 11.1 Platform Overview KPI Stats
         if (pathname === '/api/admin/stats' && req.method === 'GET') {
             const totalStudents = state.users.filter(u => u.role === 'ROLE_STUDENT').length;
+            const activeStudents = state.users.filter(u => u.role === 'ROLE_STUDENT' && u.active).length;
+            const verifiedStudents = state.profiles.filter(p => p.verified).length;
             const totalSkills = state.skills.length;
+            const activeSkillListings = state.profiles.reduce((acc, p) => acc + (p.teachingSkills ? p.teachingSkills.length : 0), 0);
             const totalExchanges = state.exchanges.length;
             const completedExchanges = state.exchanges.filter(e => e.status === 'COMPLETED').length;
             const pendingVerifications = state.verifications.filter(v => v.status === 'PENDING').length;
-            const pendingReports = state.reports.filter(r => r.status === 'PENDING').length;
+            const pendingReports = state.reports.filter(r => r.status === 'OPEN' || r.status === 'INVESTIGATING').length;
+            const disputedExchanges = state.exchanges.filter(e => e.status === 'DISPUTED').length;
+            const avgRating = (state.profiles.reduce((acc, p) => acc + (p.averageRating || 0), 0) / (state.profiles.length || 1)).toFixed(1);
 
             return sendJson(res, 200, {
                 success: true,
-                data: { totalStudents, totalSkills, totalExchanges, completedExchanges, pendingVerifications, pendingReports }
+                data: {
+                    totalUsers: totalStudents + state.admins.length,
+                    totalStudents,
+                    activeStudents,
+                    verifiedStudents,
+                    totalSkills,
+                    activeSkillListings,
+                    totalExchanges,
+                    completedExchanges,
+                    disputedExchanges,
+                    pendingVerifications,
+                    pendingReports,
+                    averageRating: parseFloat(avgRating) || 4.8,
+                    hoursSavedEstimate: completedExchanges * 6,
+                    barterSavingsValue: "₹" + (completedExchanges * 4500).toLocaleString()
+                }
             });
         }
 
-        if (pathname === '/api/admin/audit-logs' && req.method === 'GET') {
-            return sendJson(res, 200, { success: true, data: state.auditLogs });
+        // 11.2 Users Management
+        if (pathname === '/api/admin/users' && req.method === 'GET') {
+            const q = (parsedUrl.query.q || '').toLowerCase();
+            const statusFilter = (parsedUrl.query.status || 'ALL').toUpperCase();
+
+            let usersList = state.profiles.map(p => {
+                const user = state.users.find(u => u.id === p.userId) || { active: true, email: p.email, role: 'ROLE_STUDENT' };
+                const teachCount = p.teachingSkills ? p.teachingSkills.length : 0;
+                const learnCount = p.learningSkills ? p.learningSkills.length : 0;
+                const exchangeCount = state.exchanges.filter(e => e.student1Id === p.userId || e.student2Id === p.userId).length;
+
+                return {
+                    id: p.id,
+                    userId: p.userId,
+                    fullName: p.fullName,
+                    email: p.email,
+                    department: p.department,
+                    college: p.college,
+                    yearOfStudy: p.yearOfStudy,
+                    phone: p.phone,
+                    bio: p.bio,
+                    avatarUrl: p.avatarUrl,
+                    verified: p.verified,
+                    active: user.active !== false && !p.blocked,
+                    suspended: p.blocked || user.active === false,
+                    averageRating: p.averageRating,
+                    completedExchangesCount: p.completedExchangesCount,
+                    totalExchanges: exchangeCount,
+                    teachingSkillsCount: teachCount,
+                    learningSkillsCount: learnCount,
+                    joinedAt: "2026-08-20T10:00:00Z"
+                };
+            });
+
+            if (q) {
+                usersList = usersList.filter(u => 
+                    u.fullName.toLowerCase().includes(q) || 
+                    u.email.toLowerCase().includes(q) || 
+                    u.department.toLowerCase().includes(q) || 
+                    String(u.userId).includes(q)
+                );
+            }
+
+            if (statusFilter === 'VERIFIED') usersList = usersList.filter(u => u.verified);
+            if (statusFilter === 'UNVERIFIED') usersList = usersList.filter(u => !u.verified);
+            if (statusFilter === 'ACTIVE') usersList = usersList.filter(u => u.active);
+            if (statusFilter === 'SUSPENDED') usersList = usersList.filter(u => u.suspended);
+
+            return sendJson(res, 200, { success: true, data: usersList });
+        }
+
+        if (pathname.match(/^\/api\/admin\/users\/(\d+)$/) && req.method === 'GET') {
+            const userId = Number(pathname.split('/')[4]);
+            const prof = state.profiles.find(p => p.userId === userId || p.id === userId);
+            if (!prof) return sendJson(res, 404, { success: false, message: "User profile not found." });
+
+            const user = state.users.find(u => u.id === prof.userId) || { active: true };
+            const studentExchanges = state.exchanges.filter(e => e.student1Id === prof.userId || e.student2Id === prof.userId);
+            const studentReviews = state.reviews.filter(r => r.reviewedStudentId === prof.userId);
+            const studentProjects = state.projects.filter(p => p.studentId === prof.userId);
+            const studentExperiences = state.experiences.filter(e => e.studentId === prof.userId);
+            const studentReports = state.reports.filter(r => r.reportedUserId === prof.userId);
+
+            return sendJson(res, 200, {
+                success: true,
+                data: {
+                    ...prof,
+                    active: user.active !== false && !prof.blocked,
+                    exchanges: studentExchanges,
+                    reviews: studentReviews,
+                    projects: studentProjects,
+                    experiences: studentExperiences,
+                    reports: studentReports
+                }
+            });
+        }
+
+        if (pathname.match(/^\/api\/admin\/users\/(\d+)\/toggle-status$/) && req.method === 'PUT') {
+            const userId = Number(pathname.split('/')[4]);
+            const user = state.users.find(u => u.id === userId);
+            const prof = state.profiles.find(p => p.userId === userId || p.id === userId);
+            const body = await parseBody(req);
+
+            if (prof) prof.blocked = !prof.blocked;
+            if (user) user.active = !user.active;
+
+            const isSuspended = prof ? prof.blocked : true;
+
+            state.auditLogs.unshift({
+                id: Date.now(),
+                action: isSuspended ? "USER_SUSPENDED" : "USER_REACTIVATED",
+                performedBy: state.currentUser ? state.currentUser.email : "Admin",
+                target: prof ? prof.email : `User #${userId}`,
+                timestamp: new Date().toISOString(),
+                details: body.reason ? `Reason: ${body.reason}` : `Account status modified by administrator.`
+            });
+
+            return sendJson(res, 200, {
+                success: true,
+                message: isSuspended ? "User suspended successfully." : "User reactivated successfully.",
+                data: { suspended: isSuspended, active: !isSuspended }
+            });
+        }
+
+        if (pathname.match(/^\/api\/admin\/users\/(\d+)\/toggle-verify$/) && req.method === 'PUT') {
+            const userId = Number(pathname.split('/')[4]);
+            const prof = state.profiles.find(p => p.userId === userId || p.id === userId);
+            if (!prof) return sendJson(res, 404, { success: false, message: "User not found." });
+
+            prof.verified = !prof.verified;
+            if (prof.teachingSkills) {
+                prof.teachingSkills.forEach(t => { t.verified = prof.verified; });
+            }
+
+            state.auditLogs.unshift({
+                id: Date.now(),
+                action: prof.verified ? "USER_VERIFIED" : "USER_UNVERIFIED",
+                performedBy: state.currentUser ? state.currentUser.email : "Admin",
+                target: prof.email,
+                timestamp: new Date().toISOString(),
+                details: `Verification badge ${prof.verified ? 'awarded' : 'revoked'}.`
+            });
+
+            return sendJson(res, 200, { success: true, data: { verified: prof.verified } });
+        }
+
+        // 11.3 Skill Listings Oversight
+        if (pathname === '/api/admin/skills' && req.method === 'GET') {
+            const listings = [];
+            state.profiles.forEach(p => {
+                if (p.teachingSkills) {
+                    p.teachingSkills.forEach(ts => {
+                        listings.push({
+                            id: ts.id,
+                            skillId: ts.skillId,
+                            title: ts.skillName,
+                            category: ts.categoryName || "General",
+                            level: ts.levelOrUrgency || "Intermediate",
+                            mode: "Hybrid (Online / Campus)",
+                            verified: ts.verified || false,
+                            status: ts.verificationStatus === 'VERIFIED' ? 'APPROVED' : (ts.verificationStatus === 'PENDING' ? 'PENDING' : 'APPROVED'),
+                            providerId: p.userId,
+                            providerName: p.fullName,
+                            providerEmail: p.email,
+                            rating: p.averageRating,
+                            proofUrl: ts.proofDocumentUrl || null,
+                            createdAt: "2026-08-25T11:00:00Z"
+                        });
+                    });
+                }
+            });
+            return sendJson(res, 200, { success: true, data: listings });
+        }
+
+        if (pathname.match(/^\/api\/admin\/skills\/(\d+)\/status$/) && req.method === 'PUT') {
+            const skillListingId = Number(pathname.split('/')[4]);
+            const body = await parseBody(req);
+            let found = null;
+
+            state.profiles.forEach(p => {
+                if (p.teachingSkills) {
+                    const ts = p.teachingSkills.find(t => t.id === skillListingId);
+                    if (ts) {
+                        ts.verificationStatus = body.status;
+                        ts.verified = body.status === 'APPROVED' || body.status === 'VERIFIED';
+                        found = ts;
+                    }
+                }
+            });
+
+            state.auditLogs.unshift({
+                id: Date.now(),
+                action: "SKILL_STATUS_UPDATED",
+                performedBy: state.currentUser ? state.currentUser.email : "Admin",
+                target: found ? found.skillName : `Listing #${skillListingId}`,
+                timestamp: new Date().toISOString(),
+                details: `Status set to ${body.status}. Note: ${body.reason || 'Audited by admin'}`
+            });
+
+            return sendJson(res, 200, { success: true, message: `Skill status updated to ${body.status}.`, data: found });
+        }
+
+        // 11.4 Categories Management
+        if (pathname === '/api/admin/categories' && req.method === 'GET') {
+            const list = state.categories.map(c => {
+                const skillsInCat = state.skills.filter(s => s.categoryId === c.id).length;
+                return {
+                    ...c,
+                    skillsCount: skillsInCat,
+                    usersCount: state.profiles.length,
+                    status: "ACTIVE"
+                };
+            });
+            return sendJson(res, 200, { success: true, data: list });
         }
 
         if (pathname === '/api/admin/categories' && req.method === 'POST') {
             const body = await parseBody(req);
-            if (!body.name || !body.name.trim()) {
+            if (!body.name) {
                 return sendJson(res, 400, { success: false, message: "Category name is required." });
             }
             const newCat = {
-                id: state.categories.length + 1,
+                id: state.categories.length > 0 ? Math.max(...state.categories.map(c => c.id)) + 1 : 1,
                 name: body.name.trim(),
                 description: (body.description || '').trim(),
-                icon: body.icon || 'bi-bookmark'
+                icon: body.icon ? body.icon.trim() : "tag"
             };
             state.categories.push(newCat);
-
             state.auditLogs.unshift({
                 id: Date.now(),
                 action: "CATEGORY_CREATED",
@@ -1883,33 +2589,320 @@ const server = http.createServer(async (req, res) => {
                 timestamp: new Date().toISOString(),
                 details: `Created new skill category: ${newCat.name}`
             });
-
-            return sendJson(res, 200, { success: true, data: newCat, message: "Category created successfully." });
+            return sendJson(res, 201, {
+                success: true,
+                data: {
+                    ...newCat,
+                    skillsCount: 0,
+                    usersCount: 0,
+                    status: "ACTIVE"
+                },
+                message: "Category created successfully."
+            });
         }
 
+        if (pathname.match(/^\/api\/admin\/categories\/(\d+)$/) && req.method === 'PUT') {
+            const catId = Number(pathname.split('/')[4]);
+            const body = await parseBody(req);
+            const cat = state.categories.find(c => c.id === catId);
+            if (!cat) return sendJson(res, 404, { success: false, message: "Category not found." });
+
+            if (body.name) cat.name = body.name.trim();
+            if (body.description) cat.description = body.description.trim();
+            if (body.icon) cat.icon = body.icon.trim();
+
+            state.auditLogs.unshift({
+                id: Date.now(),
+                action: "CATEGORY_UPDATED",
+                performedBy: state.currentUser ? state.currentUser.email : "Admin",
+                target: cat.name,
+                timestamp: new Date().toISOString(),
+                details: `Updated category details for ${cat.name}`
+            });
+
+            return sendJson(res, 200, { success: true, data: cat, message: "Category updated successfully." });
+        }
+
+        if (pathname.match(/^\/api\/admin\/categories\/(\d+)$/) && req.method === 'DELETE') {
+            const catId = Number(pathname.split('/')[4]);
+            const idx = state.categories.findIndex(c => c.id === catId);
+            if (idx === -1) return sendJson(res, 404, { success: false, message: "Category not found." });
+
+            const deleted = state.categories.splice(idx, 1)[0];
+            state.auditLogs.unshift({
+                id: Date.now(),
+                action: "CATEGORY_DELETED",
+                performedBy: state.currentUser ? state.currentUser.email : "Admin",
+                target: deleted.name,
+                timestamp: new Date().toISOString(),
+                details: `Removed category: ${deleted.name}`
+            });
+
+            return sendJson(res, 200, { success: true, message: "Category deleted." });
+        }
+
+        // 11.5 Exchanges Oversight
+        if (pathname === '/api/admin/exchanges' && req.method === 'GET') {
+            const exchangesList = state.exchanges.map(e => {
+                const p1 = state.profiles.find(p => p.userId === e.student1Id) || { fullName: e.student1Name || "Student 1" };
+                const p2 = state.profiles.find(p => p.userId === e.student2Id) || { fullName: e.student2Name || "Student 2" };
+                return {
+                    id: e.id,
+                    userAId: e.student1Id,
+                    userAName: p1.fullName,
+                    userBId: e.student2Id,
+                    userBName: p2.fullName,
+                    skillA: e.skill1Name || "Java",
+                    skillB: e.skill2Name || "Photoshop",
+                    startedAt: e.startDate || e.createdDate,
+                    completedAt: e.completedDate || null,
+                    status: e.status, // REQUESTED, ACCEPTED, IN_PROGRESS, COMPLETED, CANCELLED, DISPUTED
+                    notes: e.meetingLocation || "Online Meet"
+                };
+            });
+            return sendJson(res, 200, { success: true, data: exchangesList });
+        }
+
+        if (pathname.match(/^\/api\/admin\/exchanges\/(\d+)\/status$/) && req.method === 'PUT') {
+            const exId = Number(pathname.split('/')[4]);
+            const body = await parseBody(req);
+            const ex = state.exchanges.find(e => e.id === exId);
+            if (!ex) return sendJson(res, 404, { success: false, message: "Exchange record not found." });
+
+            ex.status = body.status;
+            state.auditLogs.unshift({
+                id: Date.now(),
+                action: "EXCHANGE_STATUS_OVERRIDE",
+                performedBy: state.currentUser ? state.currentUser.email : "Admin",
+                target: `Exchange #${exId}`,
+                timestamp: new Date().toISOString(),
+                details: `Status set to ${body.status}. Note: ${body.adminNotes || ''}`
+            });
+
+            return sendJson(res, 200, { success: true, message: `Exchange status updated to ${body.status}.`, data: ex });
+        }
+
+        // 11.6 Requests Queue
+        if (pathname === '/api/admin/requests' && req.method === 'GET') {
+            const reqList = state.requests.map(r => {
+                const s1 = state.profiles.find(p => p.userId === r.senderId) || { fullName: r.senderName || "Student" };
+                const s2 = state.profiles.find(p => p.userId === r.receiverId) || { fullName: r.receiverName || "Student" };
+                return {
+                    id: r.id,
+                    requesterId: r.senderId,
+                    requesterName: s1.fullName,
+                    recipientId: r.receiverId,
+                    recipientName: s2.fullName,
+                    requestedSkill: r.requestedSkillName,
+                    offeredSkill: r.offeredSkillName,
+                    status: r.status,
+                    createdAt: r.createdAt || r.requestDate,
+                    message: r.message
+                };
+            });
+            return sendJson(res, 200, { success: true, data: reqList });
+        }
+
+        // 11.7 Reviews & Safety Moderation
+        if (pathname === '/api/admin/reviews' && req.method === 'GET') {
+            const list = state.reviews.map(r => {
+                const reviewer = state.profiles.find(p => p.userId === r.reviewerId);
+                const reviewed = state.profiles.find(p => p.userId === r.reviewedStudentId);
+                return {
+                    ...r,
+                    reviewerName: reviewer ? reviewer.fullName : r.reviewerName,
+                    reviewedStudentName: reviewed ? reviewed.fullName : r.reviewedStudentName,
+                    status: r.status || "VISIBLE"
+                };
+            });
+            return sendJson(res, 200, { success: true, data: list });
+        }
+
+        if (pathname.match(/^\/api\/admin\/reviews\/(\d+)\/visibility$/) && req.method === 'PUT') {
+            const reviewId = Number(pathname.split('/')[4]);
+            const body = await parseBody(req);
+            const review = state.reviews.find(r => r.id === reviewId);
+            if (!review) return sendJson(res, 404, { success: false, message: "Review not found." });
+
+            review.status = body.status || (review.status === 'HIDDEN' ? 'VISIBLE' : 'HIDDEN');
+            state.auditLogs.unshift({
+                id: Date.now(),
+                action: review.status === 'HIDDEN' ? "REVIEW_HIDDEN" : "REVIEW_RESTORED",
+                performedBy: state.currentUser ? state.currentUser.email : "Admin",
+                target: `Review #${reviewId}`,
+                timestamp: new Date().toISOString(),
+                details: `Moderation note: ${body.reason || 'Content standard compliance'}`
+            });
+
+            return sendJson(res, 200, { success: true, data: review, message: `Review is now ${review.status}.` });
+        }
+
+        if (pathname.match(/^\/api\/admin\/reviews\/(\d+)$/) && req.method === 'DELETE') {
+            const reviewId = Number(pathname.split('/')[4]);
+            const idx = state.reviews.findIndex(r => r.id === reviewId);
+            if (idx === -1) return sendJson(res, 404, { success: false, message: "Review not found." });
+
+            state.reviews.splice(idx, 1);
+            state.auditLogs.unshift({
+                id: Date.now(),
+                action: "REVIEW_DELETED",
+                performedBy: state.currentUser ? state.currentUser.email : "Admin",
+                target: `Review #${reviewId}`,
+                timestamp: new Date().toISOString(),
+                details: "Deleted violating review"
+            });
+
+            return sendJson(res, 200, { success: true, message: "Review deleted successfully." });
+        }
+
+        // 11.8 Campus Announcements & Notifications
+        if (pathname === '/api/admin/announcements' && req.method === 'GET') {
+            return sendJson(res, 200, { success: true, data: state.announcements });
+        }
+
+        if (pathname === '/api/admin/announcements' && req.method === 'POST') {
+            const body = await parseBody(req);
+            if (!body.title || !body.message) {
+                return sendJson(res, 400, { success: false, message: "Title and message are required." });
+            }
+
+            const announcement = {
+                id: Date.now(),
+                title: body.title.trim(),
+                message: body.message.trim(),
+                audience: body.audience || "ALL_USERS",
+                priority: body.priority || "NORMAL",
+                sender: state.currentUser ? state.currentUser.email : "admin@mgmmumbai.ac.in",
+                createdAt: new Date().toISOString()
+            };
+            state.announcements.unshift(announcement);
+
+            // Broadcast notification to all student inboxes
+            state.profiles.forEach(p => {
+                state.notifications.unshift({
+                    id: Date.now() + Math.random(),
+                    recipientId: p.userId,
+                    title: `📢 Announcement: ${announcement.title}`,
+                    message: announcement.message,
+                    type: "ANNOUNCEMENT",
+                    isRead: false,
+                    createdAt: announcement.createdAt
+                });
+            });
+
+            state.auditLogs.unshift({
+                id: Date.now(),
+                action: "CAMPUS_ANNOUNCEMENT_BROADCAST",
+                performedBy: announcement.sender,
+                target: announcement.audience,
+                timestamp: announcement.createdAt,
+                details: `Broadcast: ${announcement.title}`
+            });
+
+            return sendJson(res, 200, { success: true, data: announcement, message: "Announcement published and broadcasted to campus students." });
+        }
+
+        // 11.9 Analytics & Reports Data
+        if (pathname === '/api/admin/analytics' && req.method === 'GET') {
+            const daysRange = Number(parsedUrl.query.days) || 30;
+            return sendJson(res, 200, {
+                success: true,
+                data: {
+                    userGrowth: [
+                        { period: "Day 1", count: 2 },
+                        { period: "Day 7", count: 3 },
+                        { period: "Day 14", count: 4 },
+                        { period: "Day 21", count: 5 },
+                        { period: "Day 30", count: state.profiles.length }
+                    ],
+                    exchangeVelocity: [
+                        { label: "Requested", value: state.requests.length + state.exchanges.length },
+                        { label: "In Progress", value: state.exchanges.filter(e => e.status === 'ACCEPTED' || e.status === 'IN_PROGRESS').length },
+                        { label: "Completed", value: state.exchanges.filter(e => e.status === 'COMPLETED').length }
+                    ],
+                    activeEngagement: {
+                        dau: Math.max(3, state.profiles.length - 1),
+                        wau: state.profiles.length,
+                        mau: state.profiles.length
+                    },
+                    topDemandedSkills: [
+                        { name: "Photoshop", requests: 4, barPct: 90 },
+                        { name: "Java", requests: 3, barPct: 75 },
+                        { name: "Python", requests: 2, barPct: 55 },
+                        { name: "Public Speaking", requests: 2, barPct: 50 },
+                        { name: "Excel & Data", requests: 1, barPct: 30 }
+                    ]
+                }
+            });
+        }
+
+        // 11.10 Platform Settings
+        if (pathname === '/api/admin/settings' && req.method === 'GET') {
+            return sendJson(res, 200, { success: true, data: state.settings });
+        }
+
+        if (pathname === '/api/admin/settings' && req.method === 'PUT') {
+            const body = await parseBody(req);
+            Object.assign(state.settings, body);
+            state.auditLogs.unshift({
+                id: Date.now(),
+                action: "PLATFORM_SETTINGS_UPDATED",
+                performedBy: state.currentUser ? state.currentUser.email : "Admin",
+                target: "SYSTEM_SETTINGS",
+                timestamp: new Date().toISOString(),
+                details: "Updated platform settings & policies."
+            });
+            return sendJson(res, 200, { success: true, data: state.settings, message: "Settings saved successfully." });
+        }
+
+        // 11.11 Admin Management
+        if (pathname === '/api/admin/admins' && req.method === 'GET') {
+            return sendJson(res, 200, { success: true, data: state.admins });
+        }
+
+        if (pathname === '/api/admin/admins' && req.method === 'POST') {
+            const body = await parseBody(req);
+            if (!body.email || !body.name) {
+                return sendJson(res, 400, { success: false, message: "Name and email are required." });
+            }
+            const newAdmin = {
+                id: state.admins.length + 1,
+                name: body.name.trim(),
+                email: body.email.trim().toLowerCase(),
+                role: body.role || "MODERATOR",
+                active: true,
+                lastActive: new Date().toISOString(),
+                createdAt: new Date().toISOString()
+            };
+            state.admins.push(newAdmin);
+            state.auditLogs.unshift({
+                id: Date.now(),
+                action: "ADMIN_STAFF_INVITED",
+                performedBy: state.currentUser ? state.currentUser.email : "Admin",
+                target: newAdmin.email,
+                timestamp: new Date().toISOString(),
+                details: `Added new admin role: ${newAdmin.role}`
+            });
+            return sendJson(res, 200, { success: true, data: newAdmin, message: "Staff administrator added." });
+        }
+
+        // 11.12 Audit Logs
+        if (pathname === '/api/admin/audit-logs' && req.method === 'GET') {
+            const actionFilter = (parsedUrl.query.action || '').toUpperCase();
+            let logs = state.auditLogs;
+            if (actionFilter) {
+                logs = logs.filter(l => l.action.toUpperCase().includes(actionFilter));
+            }
+            return sendJson(res, 200, { success: true, data: logs });
+        }
+
+        // 11.13 Verification Queue (Legacy & Enhanced)
         if (pathname === '/api/admin/verifications' && req.method === 'GET') {
             return sendJson(res, 200, { success: true, data: state.verifications });
         }
 
         if (pathname === '/api/admin/students' && req.method === 'GET') {
             return sendJson(res, 200, { success: true, data: state.profiles });
-        }
-
-        if (pathname.match(/^\/api\/admin\/students\/(\d+)\/toggle-block$/) && req.method === 'PUT') {
-            const profId = Number(pathname.split('/')[4]);
-            const prof = state.profiles.find(p => p.id === profId);
-            if (prof) {
-                prof.blocked = !prof.blocked;
-                state.auditLogs.unshift({
-                    id: Date.now(),
-                    action: prof.blocked ? "STUDENT_BLOCKED" : "STUDENT_UNBLOCKED",
-                    performedBy: state.currentUser ? state.currentUser.email : "Admin",
-                    target: prof.email,
-                    timestamp: new Date().toISOString(),
-                    details: `Student account ${prof.fullName} (${prof.email}) ${prof.blocked ? 'suspended' : 'reactivated'}.`
-                });
-            }
-            return sendJson(res, 200, { success: true, data: prof ? prof.blocked : false });
         }
 
         if (pathname === '/api/admin/reports' && req.method === 'GET') {
@@ -1932,7 +2925,7 @@ const server = http.createServer(async (req, res) => {
                     details: `Status set to ${report.status}. Notes: ${report.adminNotes}`
                 });
             }
-            return sendJson(res, 200, { success: true, data: report });
+            return sendJson(res, 200, { success: true, data: report, message: "Report updated." });
         }
 
         return sendJson(res, 404, { success: false, message: "Endpoint not found" });
@@ -1947,8 +2940,10 @@ const server = http.createServer(async (req, res) => {
     // Remove leading slash
     if (filePath.startsWith('/')) filePath = filePath.substring(1);
 
-    // Clean URL routing without extension
-    if (!filePath.includes('.')) {
+    // SaaS Clean URL rewrite: Any /admin route serves the admin dashboard
+    if (filePath.startsWith('admin') && !filePath.includes('.')) {
+        filePath = 'admin-dashboard.html';
+    } else if (!filePath.includes('.')) {
         filePath += '.html';
     }
 
@@ -1978,6 +2973,14 @@ const server = http.createServer(async (req, res) => {
         else if (ext === '.svg') contentType = 'image/svg+xml';
         else if (ext === '.png') contentType = 'image/png';
         else if (ext === '.jpg' || ext === '.jpeg') contentType = 'image/jpeg';
+        else if (ext === '.webp') contentType = 'image/webp';
+        else if (ext === '.gif') contentType = 'image/gif';
+        else if (ext === '.pdf') contentType = 'application/pdf';
+        else if (ext === '.mp4') contentType = 'video/mp4';
+        else if (ext === '.webm') contentType = 'video/webm';
+        else if (ext === '.txt') contentType = 'text/plain';
+        else if (ext === '.zip') contentType = 'application/zip';
+        else if (ext === '.doc' || ext === '.docx') contentType = 'application/msword';
 
         res.writeHead(200, { 'Content-Type': contentType });
         res.end(data);

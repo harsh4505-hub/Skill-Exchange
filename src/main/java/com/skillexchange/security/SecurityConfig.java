@@ -40,6 +40,7 @@ public class SecurityConfig {
                 // Static web pages and assets
                 .requestMatchers(
                     "/", "/index.html", "/login.html", "/register.html",
+                    "/verify-email.html", "/forgot-password.html",
                     "/dashboard.html", "/profile.html", "/skills.html",
                     "/matches.html", "/requests.html", "/chat.html",
                     "/notifications.html", "/verification.html",

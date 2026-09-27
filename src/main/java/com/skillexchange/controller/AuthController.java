@@ -29,7 +29,19 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<AuthResponseDto>> register(@Valid @RequestBody RegisterRequestDto dto) {
         AuthResponseDto response = authService.registerStudent(dto);
-        return ResponseEntity.ok(ApiResponse.ok("Registration successful", response));
+        return ResponseEntity.ok(ApiResponse.ok("Registration initiated! Please verify your official college email.", response));
+    }
+
+    @PostMapping("/verify-email")
+    public ResponseEntity<ApiResponse<AuthResponseDto>> verifyEmail(@Valid @RequestBody com.skillexchange.dto.VerifyEmailRequestDto dto) {
+        AuthResponseDto response = authService.verifyEmail(dto);
+        return ResponseEntity.ok(ApiResponse.ok(response.getMessage(), response));
+    }
+
+    @PostMapping("/resend-otp")
+    public ResponseEntity<ApiResponse<AuthResponseDto>> resendOtp(@Valid @RequestBody com.skillexchange.dto.ResendOtpRequestDto dto) {
+        AuthResponseDto response = authService.resendOtp(dto);
+        return ResponseEntity.ok(ApiResponse.ok(response.getMessage(), response));
     }
 
     @PostMapping("/login")

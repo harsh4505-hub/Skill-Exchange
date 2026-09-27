@@ -79,6 +79,8 @@ function updateNavbarLoggedIn(user) {
 
     const isAdmin = user.role === "ROLE_ADMIN";
 
+    const avatarSrc = user.avatarUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.userId}`;
+
     userControls.innerHTML = `
         <div class="d-flex align-items-center gap-2">
             ${!isAdmin ? `
@@ -90,7 +92,7 @@ function updateNavbarLoggedIn(user) {
 
             <div class="dropdown">
                 <button class="btn btn-outline-custom btn-sm dropdown-toggle d-flex align-items-center gap-2 py-1 px-2" type="button" data-bs-toggle="dropdown">
-                    <img src="https://api.dicebear.com/7.x/bottts/svg?seed=${user.userId}" class="rounded border border-1 border-dark" width="26" height="26" alt="User">
+                    <img src="${avatarSrc}" class="rounded-circle object-fit-cover border border-1" width="28" height="28" style="aspect-ratio:1/1;" alt="User">
                     <span class="fw-bold text-dark small">${user.fullName || user.email}</span>
                     <span class="badge ${isAdmin ? 'bg-danger text-white' : 'bg-primary text-white'} ms-1" style="font-size:0.62rem;">${isAdmin ? 'ADMIN' : 'STUDENT'}</span>
                 </button>
@@ -206,4 +208,12 @@ function renderStars(rating) {
         }
     }
     return `<span class="d-inline-flex align-items-center">${stars} <strong class="ms-1">${(rating || 0).toFixed(1)}</strong></span>`;
+}
+
+// Automatically load and initialize the educational decorations & subtle grid system
+if (typeof window !== 'undefined' && !window.SkillExchangeDecor) {
+    const decorScript = document.createElement('script');
+    decorScript.src = 'js/decorations.js';
+    decorScript.defer = true;
+    document.head.appendChild(decorScript);
 }

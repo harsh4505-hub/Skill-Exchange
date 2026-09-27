@@ -161,13 +161,10 @@
             if (res && res.success) {
                 if (res.requiresVerification) {
                     sessionStorage.setItem('pendingVerificationEmail', email);
-                    if (res.simulatedOtp) {
-                        sessionStorage.setItem('simulatedOtp', res.simulatedOtp);
-                    }
-                    showAlert("Registration initiated! Redirecting to email verification...", "success");
+                    showAlert("Registration initiated! A 6-digit verification code has been dispatched to your email. Redirecting...", "success");
                     setTimeout(() => {
-                        window.location.href = `verify-email.html?email=${encodeURIComponent(email)}&otp=${res.simulatedOtp || ''}`;
-                    }, 1000);
+                        window.location.href = `verify-email.html?email=${encodeURIComponent(email)}`;
+                    }, 1200);
                 } else {
                     showAlert("Account successfully created! Redirecting to your dashboard...", "success");
                     setTimeout(() => {

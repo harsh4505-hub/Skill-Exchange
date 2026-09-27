@@ -28,6 +28,30 @@ public class ChatMessage {
     @Column(name = "sent_at", nullable = false)
     private LocalDateTime sentAt = LocalDateTime.now();
 
+    @Column(name = "delivered_at")
+    private LocalDateTime deliveredAt;
+
+    @Column(name = "seen_at")
+    private LocalDateTime seenAt;
+
+    @Column(name = "status", length = 20)
+    private String status = "DELIVERED"; // SENT, DELIVERED, SEEN
+
+    @Column(name = "attachment_url", length = 500)
+    private String attachmentUrl;
+
+    @Column(name = "attachment_type", length = 50)
+    private String attachmentType;
+
+    @Column(name = "attachment_name", length = 255)
+    private String attachmentName;
+
+    @Column(name = "attachment_size", length = 50)
+    private String attachmentSize;
+
+    @Column(name = "reply_to", columnDefinition = "TEXT")
+    private String replyTo;
+
     @Column(name = "is_read", nullable = false)
     private boolean isRead = false;
 
@@ -40,6 +64,7 @@ public class ChatMessage {
         this.messageText = messageText;
         this.sentAt = LocalDateTime.now();
         this.isRead = false;
+        this.status = "DELIVERED";
     }
 
     public Long getId() {
@@ -88,5 +113,69 @@ public class ChatMessage {
 
     public void setRead(boolean read) {
         isRead = read;
+    }
+
+    public LocalDateTime getDeliveredAt() {
+        return deliveredAt;
+    }
+
+    public void setDeliveredAt(LocalDateTime deliveredAt) {
+        this.deliveredAt = deliveredAt;
+    }
+
+    public LocalDateTime getSeenAt() {
+        return seenAt;
+    }
+
+    public void setSeenAt(LocalDateTime seenAt) {
+        this.seenAt = seenAt;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getAttachmentUrl() {
+        return attachmentUrl;
+    }
+
+    public void setAttachmentUrl(String attachmentUrl) {
+        this.attachmentUrl = attachmentUrl;
+    }
+
+    public String getAttachmentType() {
+        return attachmentType;
+    }
+
+    public void setAttachmentType(String attachmentType) {
+        this.attachmentType = attachmentType;
+    }
+
+    public String getAttachmentName() {
+        return attachmentName;
+    }
+
+    public void setAttachmentName(String attachmentName) {
+        this.attachmentName = attachmentName;
+    }
+
+    public String getAttachmentSize() {
+        return attachmentSize;
+    }
+
+    public void setAttachmentSize(String attachmentSize) {
+        this.attachmentSize = attachmentSize;
+    }
+
+    public String getReplyTo() {
+        return replyTo;
+    }
+
+    public void setReplyTo(String replyTo) {
+        this.replyTo = replyTo;
     }
 }

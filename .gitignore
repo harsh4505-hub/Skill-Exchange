@@ -57,3 +57,12 @@ temp/
 tmp/
 .DS_Store
 Thumbs.db
+
+# Environment variables & secrets
+.env
+.env.local
+.env.*.local
+
+# Uploaded media & documents
+src/main/resources/static/uploads/*
+!src/main/resources/static/uploads/.gitkeep

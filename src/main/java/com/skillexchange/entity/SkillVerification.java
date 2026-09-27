@@ -81,6 +81,26 @@ public class SkillVerification {
     public SkillVerification() {
     }
 
+    public SkillVerification(User student, Skill skill, String certificateName, String certificateUrl, String projectDescription) {
+        this.student = student;
+        this.skill = skill;
+        this.certificateName = certificateName;
+        this.certificateUrl = certificateUrl;
+        this.projectTitle = "Python Problem Solving & Scripting";
+        this.projectDescription = projectDescription != null ? projectDescription : "Python project and problem solving.";
+        this.projectTechnologies = "Python 3, Data Structures";
+        this.projectLink = "https://github.com/raza/python-practice";
+        this.projectProofUrl = certificateUrl;
+        this.experienceTitle = "Python Peer Mentor";
+        this.experienceOrganization = "MGM Coding Club";
+        this.experienceDescription = "Mentored 1st year students in Python programming fundamentals.";
+        this.experienceDuration = "6 Months";
+        this.experienceStartDate = "2025-08-01";
+        this.experienceEndDate = "2026-02-01";
+        this.status = "PENDING";
+        this.submissionDate = LocalDateTime.now();
+    }
+
     public Long getId() {
         return id;
     }
