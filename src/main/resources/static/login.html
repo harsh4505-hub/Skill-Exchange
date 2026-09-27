@@ -51,12 +51,15 @@
 
                         <div class="mb-4">
                             <div class="d-flex justify-content-between align-items-center mb-1">
-                                <label class="form-label mb-0">Password <span class="text-danger">*</span></label>
+                                <label class="form-label mb-0" for="password">Password <span class="text-danger">*</span></label>
                                 <a href="forgot-password.html" class="small text-decoration-none fw-bold text-dark">Forgot Password?</a>
                             </div>
-                            <div class="input-group">
+                            <div class="input-group position-relative">
                                 <span class="input-group-text"><i class="bi bi-key"></i></span>
-                                <input type="password" id="password" class="form-control" placeholder="••••••••" required>
+                                <input type="password" id="password" class="form-control password-field-input" placeholder="••••••••" required autocomplete="current-password">
+                                <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('password', this)" aria-label="Show password" title="Show password" tabindex="0">
+                                    <i class="bi bi-eye" aria-hidden="true"></i>
+                                </button>
                             </div>
                         </div>
 
@@ -142,12 +145,20 @@
             if (res && res.success) {
                 showAlert("Login successful! Redirecting...", "success");
                 setTimeout(() => {
-                    if (res.data.role === 'ROLE_ADMIN') {
-                        const urlParams = new URLSearchParams(window.location.search);
-                        const redirectUrl = urlParams.get('redirect') || 'admin-dashboard.html';
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const redirectUrl = urlParams.get('redirect');
+
+                    if (redirectUrl) {
                         window.location.href = redirectUrl;
+                    } else if (res.data.role === 'ROLE_ADMIN') {
+                        // Admin enters normal SWAP website with Admin Panel available in profile menu
+                        window.location.href = 'index.html';
+                    } else if (res.data.hasSeenLanding === false) {
+                        // First login: show Landing Page once
+                        window.location.href = 'landing.html?firstLogin=true';
                     } else {
-                        window.location.href = 'dashboard.html';
+                        // Subsequent logins: direct to normal Home Page
+                        window.location.href = 'index.html';
                     }
                 }, 700);
             } else {

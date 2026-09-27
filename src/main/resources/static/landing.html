@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to SWAP | Student Skill Exchange Network</title>
+    <meta name="description" content="SWAP is the official student skill exchange network where college peers trade skills, teach what they know, and learn what they need.">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <!-- Google Fonts & Bootstrap 5 & Bootstrap Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Space+Grotesk:wght@600;700;800&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        :root {
+            --swap-pink: #f43f5e;
+            --swap-pink-light: #ffe4e6;
+            --swap-lavender: #ede9fe;
+            --swap-lavender-dark: #6366f1;
+            --swap-dark: #0f172a;
+            --swap-border: 2px solid #0f172a;
+            --swap-shadow: 4px 4px 0px #0f172a;
+            --swap-shadow-lg: 6px 6px 0px #0f172a;
+        }
+
+        body.swap-landing-body {
+            background-color: #faf8ff;
+            color: var(--swap-dark);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .swap-topbar {
+            background: #ffffff;
+            border-bottom: var(--swap-border);
+            padding: 1rem 0;
+        }
+
+        .swap-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.65rem;
+            text-decoration: none;
+            color: var(--swap-dark);
+        }
+
+        .swap-logo-badge {
+            background: var(--swap-pink);
+            color: #ffffff;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 800;
+            font-size: 1.15rem;
+            letter-spacing: -0.04em;
+            padding: 0.3rem 0.65rem;
+            border: var(--swap-border);
+            box-shadow: 2px 2px 0px var(--swap-dark);
+            border-radius: 4px;
+        }
+
+        .swap-brand-text {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 800;
+            font-size: 1.25rem;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+        }
+
+        .swap-brand-sub {
+            display: block;
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #64748b;
+            font-weight: 700;
+        }
+
+        .swap-hero-container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 3.5rem 1.25rem 2.5rem;
+        }
+
+        .swap-intro-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--swap-lavender);
+            color: var(--swap-dark);
+            border: var(--swap-border);
+            box-shadow: 2px 2px 0px var(--swap-dark);
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.35rem 0.85rem;
+            border-radius: 4px;
+            margin-bottom: 1.5rem;
+        }
+
+        .swap-hero-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 800;
+            font-size: clamp(2.4rem, 5vw, 3.8rem);
+            line-height: 1.05;
+            letter-spacing: -0.04em;
+            margin-bottom: 1.25rem;
+            color: var(--swap-dark);
+        }
+
+        .swap-highlight {
+            background: var(--swap-pink-light);
+            color: var(--swap-pink);
+            padding: 0 0.35rem;
+            border-bottom: 3px solid var(--swap-pink);
+            display: inline-block;
+        }
+
+        .swap-hero-lead {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            color: #334155;
+            max-width: 720px;
+            margin-bottom: 2rem;
+        }
+
+        .swap-cta-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.65rem;
+            background: var(--swap-pink);
+            color: #ffffff;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 800;
+            font-size: 1.15rem;
+            text-decoration: none;
+            padding: 0.9rem 2rem;
+            border: var(--swap-border);
+            box-shadow: var(--swap-shadow-lg);
+            border-radius: 4px;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            cursor: pointer;
+        }
+
+        .swap-cta-btn:hover {
+            color: #ffffff;
+            transform: translate(-2px, -2px);
+            box-shadow: 8px 8px 0px var(--swap-dark);
+            background: #e11d48;
+        }
+
+        .swap-cta-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px var(--swap-dark);
+        }
+
+        .swap-secondary-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #ffffff;
+            color: var(--swap-dark);
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            text-decoration: none;
+            padding: 0.85rem 1.6rem;
+            border: var(--swap-border);
+            box-shadow: var(--swap-shadow);
+            border-radius: 4px;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .swap-secondary-btn:hover {
+            color: var(--swap-dark);
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px var(--swap-dark);
+            background: #f8fafc;
+        }
+
+        .swap-section-card {
+            background: #ffffff;
+            border: var(--swap-border);
+            box-shadow: var(--swap-shadow-lg);
+            border-radius: 6px;
+            padding: 2.25rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .swap-section-header {
+            margin-bottom: 1.75rem;
+        }
+
+        .swap-section-tag {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--swap-pink);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 0.35rem;
+            display: block;
+        }
+
+        .swap-section-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 800;
+            font-size: 1.75rem;
+            letter-spacing: -0.03em;
+            margin-bottom: 0.35rem;
+        }
+
+        .swap-step-card {
+            background: #faf8ff;
+            border: var(--swap-border);
+            box-shadow: var(--swap-shadow);
+            border-radius: 4px;
+            padding: 1.5rem;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .swap-step-number {
+            width: 36px;
+            height: 36px;
+            background: var(--swap-dark);
+            color: #ffffff;
+            font-family: 'Space Mono', monospace;
+            font-weight: 700;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 3px;
+            margin-bottom: 1rem;
+        }
+
+        .swap-step-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 800;
+            font-size: 1.15rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .swap-step-desc {
+            font-size: 0.9rem;
+            color: #475569;
+            line-height: 1.5;
+            margin-bottom: 0;
+        }
+
+        .swap-trade-demo-card {
+            background: var(--swap-lavender);
+            border: var(--swap-border);
+            box-shadow: var(--swap-shadow);
+            border-radius: 4px;
+            padding: 1.25rem 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .swap-footer {
+            margin-top: auto;
+            background: #ffffff;
+            border-top: var(--swap-border);
+            padding: 1.5rem 0;
+            font-size: 0.82rem;
+            color: #64748b;
+        }
+    </style>
+</head>
+<body class="swap-landing-body">
+
+    <!-- Top Navigation Header -->
+    <header class="swap-topbar">
+        <div class="container d-flex align-items-center justify-content-between">
+            <a href="landing.html" class="swap-brand">
+                <span class="swap-logo-badge">SWAP</span>
+                <div>
+                    <span class="swap-brand-text">Skill Exchange</span>
+                    <span class="swap-brand-sub">Official MGM Learning Network</span>
+                </div>
+            </a>
+
+            <div class="d-flex align-items-center gap-2" id="swapHeaderNav">
+                <a href="index.html" class="swap-secondary-btn py-2 px-3 small" id="navHomeLink" onclick="recordLandingSeenAndGo(event, 'index.html')">
+                    <i class="bi bi-house-door me-1"></i> Home Page
+                </a>
+                <button type="button" class="swap-cta-btn py-2 px-3 small" onclick="recordLandingSeenAndGo(event, 'index.html')">
+                    Explore SWAP <i class="bi bi-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Canvas -->
+    <main class="flex-grow-1">
+        <div class="swap-hero-container">
+
+            <!-- Welcome Tag -->
+            <div class="swap-intro-badge">
+                <i class="bi bi-mortarboard-fill text-danger"></i> Welcome to the Platform &bull; Peer-to-Peer Learning
+            </div>
+
+            <!-- Hero Headline -->
+            <h1 class="swap-hero-title">
+                Trade Skills. Build Knowledge.<br>
+                <span class="swap-highlight">Zero Money. Pure Learning.</span>
+            </h1>
+
+            <!-- Explanation of What SWAP Does -->
+            <p class="swap-hero-lead">
+                <strong>SWAP</strong> is the dedicated skill exchange network for college students. Instead of paying for tutorials or struggling alone, trade your technical, design, or academic skills directly with peers. You teach what you know, they teach what you need.
+            </p>
+
+            <!-- Main Primary Action -->
+            <div class="d-flex flex-wrap align-items-center gap-3 mb-5">
+                <button type="button" class="swap-cta-btn" id="btnExploreSwapMain" onclick="recordLandingSeenAndGo(event, 'index.html')">
+                    <span>Explore SWAP</span>
+                    <i class="bi bi-arrow-right-short fs-4"></i>
+                </button>
+
+                <a href="index.html" class="swap-secondary-btn" onclick="recordLandingSeenAndGo(event, 'index.html')">
+                    <i class="bi bi-compass"></i> Go to Working Website
+                </a>
+            </div>
+
+            <!-- How Students Exchange Skills Section -->
+            <div class="swap-section-card">
+                <div class="swap-section-header">
+                    <span class="swap-section-tag">01 / HOW IT WORKS</span>
+                    <h2 class="swap-section-title">How Students Exchange Skills on SWAP</h2>
+                    <p class="text-muted small mb-0">Three straightforward steps to start collaborating with classmates across departments.</p>
+                </div>
+
+                <div class="row g-3">
+                    <!-- Step 1 -->
+                    <div class="col-md-4">
+                        <div class="swap-step-card">
+                            <div class="swap-step-number">01</div>
+                            <h3 class="swap-step-title">List Your Skills</h3>
+                            <p class="swap-step-desc">
+                                Add skills you can teach (e.g. Core Java, Python, Photoshop, Public Speaking) and what you want to learn.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="col-md-4">
+                        <div class="swap-step-card">
+                            <div class="swap-step-number">02</div>
+                            <h3 class="swap-step-title">Find Compatible Peers</h3>
+                            <p class="swap-step-desc">
+                                Match with college students whose teaching offerings reciprocate what you need. Propose a balanced barter trade.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="col-md-4">
+                        <div class="swap-step-card">
+                            <div class="swap-step-number">03</div>
+                            <h3 class="swap-step-title">Coordinate & Learn</h3>
+                            <p class="swap-step-desc">
+                                Chat in real time, share photos or notes, meet in campus labs or online, and earn verified skill badges for your profile.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reciprocal Example Barter Demonstration -->
+                <div class="swap-trade-demo-card">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-arrow-left-right text-dark fs-5"></i>
+                            <strong class="text-dark small text-uppercase" style="letter-spacing:0.04em;">Reciprocal Peer Exchange Example:</strong>
+                        </div>
+                        <span class="badge bg-white text-dark border border-dark small fw-bold">100% Cashless Barter</span>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mt-3 pt-2 border-top border-dark border-1">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="bg-white px-2 py-1 border border-1 border-dark rounded small fw-bold">Student A</div>
+                            <span class="small text-dark">Teaches <strong>Core Java & Spring</strong></span>
+                        </div>
+                        <i class="bi bi-shuffle text-dark fs-5"></i>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="bg-white px-2 py-1 border border-1 border-dark rounded small fw-bold">Student B</div>
+                            <span class="small text-dark">Teaches <strong>Photoshop & Figma UI</strong></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Final Direct Entry Card -->
+            <div class="swap-section-card bg-white text-center py-4">
+                <h3 class="fw-bold mb-2" style="font-family: 'Space Grotesk', sans-serif;">Ready to Discover Your Learning Partner?</h3>
+                <p class="text-muted small mb-4">Jump straight into the active skill catalog, search available peers, and start exchanging today.</p>
+                <button type="button" class="swap-cta-btn mx-auto" onclick="recordLandingSeenAndGo(event, 'index.html')">
+                    Explore SWAP Now <i class="bi bi-arrow-right"></i>
+                </button>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="swap-footer">
+        <div class="container text-center">
+            <p class="mb-1 fw-bold text-dark">SWAP &bull; Student Skill Exchange Network</p>
+            <p class="mb-0 text-muted small">Peer-to-Peer Knowledge Sharing &bull; MGM College of Engineering & Technology</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        // Mark landing as seen on the server and transition to Home Page
+        async function recordLandingSeenAndGo(event, targetUrl) {
+            if (event) event.preventDefault();
+            try {
+                // Call backend API to persist landingSeen state
+                await API.post("/api/auth/seen-landing", {});
+            } catch (e) {
+                console.warn("Could not mark landing seen:", e);
+            }
+            // Navigate to working website Home Page
+            window.location.href = targetUrl || "index.html";
+        }
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            // Check session
+            const res = await API.get("/api/auth/current-user");
+            if (res && res.success && res.data && res.data.authenticated) {
+                const headerNav = document.getElementById("swapHeaderNav");
+                if (headerNav) {
+                    const u = res.data;
+                    headerNav.innerHTML = `
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="small text-muted d-none d-sm-inline">Signed in as <strong>${u.fullName || u.email}</strong></span>
+                            <button type="button" class="swap-cta-btn py-2 px-3 small" onclick="recordLandingSeenAndGo(event, 'index.html')">
+                                Enter SWAP <i class="bi bi-arrow-right"></i>
+                            </button>
+                        </div>
+                    `;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -14,8 +14,8 @@
     <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container">
             <a class="navbar-brand" href="index.html">
-                <i class="bi bi-arrow-left-right text-gradient fs-3"></i>
-                <span class="text-gradient">SkillExchange</span>
+                <span class="brand-icon-box"><i class="bi bi-arrow-left-right"></i></span>
+                <span class="brand-title">SkillExchange</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
                 <span class="navbar-toggler-icon"></span>
@@ -43,8 +43,9 @@
         <div class="chat-container">
             <!-- Sidebar: Conversation Contacts List -->
             <div class="chat-sidebar">
-                <div class="p-3 border-bottom bg-white">
-                    <h6 class="fw-bold mb-0"><i class="bi bi-chat-left-dots text-primary-custom me-2"></i>Active Conversations</h6>
+                <div class="p-3 border-bottom bg-white" style="border-color: var(--border-color) !important;">
+                    <div class="text-uppercase fw-bold text-muted small mb-1" style="font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.06em;">Coordination</div>
+                    <h5 class="fw-bold mb-0">Active Peers</h5>
                 </div>
                 <div id="conversationPartnersList" class="flex-grow-1 overflow-auto">
                     <div class="text-center py-4 text-muted small">Loading conversations...</div>
@@ -56,32 +57,177 @@
                 <!-- Chat Header -->
                 <div class="chat-header">
                     <div class="d-flex align-items-center gap-3">
-                        <img id="chatPartnerAvatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=peer" class="avatar-img" alt="Peer">
+                        <div class="position-relative d-inline-block">
+                            <img id="chatPartnerAvatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=peer" class="avatar-img-circle" alt="Peer" style="width: 44px; height: 44px; object-fit: cover;">
+                            <span id="chatPresenceDot" class="presence-dot position-absolute d-none" style="bottom: 2px; right: 2px;" title="Active Now"></span>
+                        </div>
                         <div>
-                            <h6 class="mb-0 fw-bold" id="chatPartnerName">Select a Conversation</h6>
-                            <small class="text-muted" id="chatPartnerDetails">Connect with peers to schedule exchange sessions</small>
+                            <div class="d-flex align-items-center gap-2">
+                                <h5 class="mb-0 fw-bold" id="chatPartnerName">Select a Conversation</h5>
+                                <span id="chatPresenceBadge" class="badge bg-success text-white d-none" style="font-size:0.62rem; padding: 2px 6px;">● Online</span>
+                            </div>
+                            <small class="text-muted" id="chatPartnerDetails" style="font-family: var(--font-mono); font-size: 0.75rem;">Connect with peers to schedule exchange sessions</small>
                         </div>
                     </div>
                     <div id="chatHeaderBadges" class="d-flex align-items-center gap-2">
-                        <span class="badge badge-custom badge-chat"><i class="bi bi-chat-text"></i> In-Built Chat</span>
+                        <span class="badge badge-custom bg-light text-dark"><i class="bi bi-shield-check me-1"></i> Peer Messaging</span>
+                        <div class="dropdown d-none" id="chatPartnerActionsMenu">
+                            <button class="btn btn-sm btn-outline-custom dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-gear-fill me-1"></i> Actions
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end border border-2 border-dark" style="box-shadow: 3px 3px 0 var(--border-color);">
+                                <li><a class="dropdown-item" href="javascript:void(0)" onclick="viewPartnerProfile()"><i class="bi bi-person me-2"></i>View Profile</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="javascript:void(0)" onclick="openReportModal()"><i class="bi bi-flag me-2"></i>Report Student</a></li>
+                                <li><a class="dropdown-item text-dark" href="javascript:void(0)" id="chatBlockActionItem" onclick="toggleBlockCurrentPartner()"><i class="bi bi-slash-circle me-2"></i>Block Student</a></li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Messages Stream -->
                 <div class="chat-messages" id="chatMessagesBox">
-                    <div class="text-center my-auto text-muted">
-                        <i class="bi bi-chat-square-text fs-1 d-block mb-2 text-primary-custom"></i>
-                        <p class="mb-0">Choose a student on the left to start coordinating your skill exchange schedule!</p>
+                    <div class="text-center my-auto py-5">
+                        <div class="stat-icon-box mx-auto mb-3" style="width: 52px; height: 52px;">
+                            <i class="bi bi-chat-square-quote fs-4 text-dark"></i>
+                        </div>
+                        <h5 class="fw-bold mb-1">Pick a Student Conversation</h5>
+                        <p class="text-muted small mb-0">Choose an exchange partner from the left sidebar to coordinate timings or meeting locations.</p>
                     </div>
                 </div>
 
-                <!-- Message Input -->
+                <!-- 10. Refined Message Composer -->
                 <div class="chat-input-area" id="chatInputArea">
-                    <form onsubmit="handleSendMessage(event)" class="d-flex gap-2">
-                        <input type="text" id="chatMessageInput" class="form-control" placeholder="Type a message or discuss meeting timings..." autocomplete="off" disabled>
-                        <button type="submit" id="chatSendBtn" class="btn btn-primary-custom px-4" disabled>
-                            <i class="bi bi-send-fill"></i>
-                        </button>
+                    <div id="chatSendErrorAlert" class="alert alert-danger d-none py-1 px-3 small mb-2 d-flex justify-content-between align-items-center">
+                        <span id="chatSendErrorText">Message failed to send.</span>
+                        <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size:0.75rem;" onclick="retryLastFailedMessage()">Retry</button>
+                    </div>
+
+                    <form onsubmit="handleSendMessage(event)" id="chatMessageForm">
+                        <div class="chat-composer-box">
+                            <!-- Quoted reply preview bar -->
+                            <div id="chatReplyBar" class="chat-reply-bar d-none">
+                                <div class="d-flex align-items-center gap-2 overflow-hidden">
+                                    <i class="bi bi-reply-fill text-primary"></i>
+                                    <div class="text-truncate">
+                                        <strong id="replyAuthor" class="small">Replying to...</strong>: 
+                                        <span id="replyTextSnippet" class="small text-muted">Preview text</span>
+                                    </div>
+                                </div>
+                                <button type="button" class="chat-preview-close" onclick="cancelReply()" title="Cancel reply">&times;</button>
+                            </div>
+
+                            <!-- 7. Attachment preview bar -->
+                            <div id="chatAttachmentPreviewBar" class="chat-preview-bar d-none">
+                                <div class="chat-preview-content">
+                                    <div id="chatPreviewThumbBox"></div>
+                                    <div class="overflow-hidden">
+                                        <div id="chatPreviewFileName" class="chat-attachment-name">photo.png</div>
+                                        <div id="chatPreviewFileSize" class="chat-attachment-sub">0 KB</div>
+                                    </div>
+                                </div>
+                                <button type="button" class="chat-preview-close" onclick="clearSelectedAttachment()" title="Remove attachment">&times;</button>
+                            </div>
+
+                            <!-- 9. Compact Emoji Picker Popover -->
+                            <div id="emojiPicker" class="emoji-picker-container d-none">
+                                <div class="emoji-search-box">
+                                    <input type="text" id="emojiSearchInput" class="form-control form-control-sm" placeholder="Search emojis..." autocomplete="off">
+                                </div>
+                                <div class="emoji-category-tabs">
+                                    <button type="button" class="emoji-tab-btn active" data-cat="smileys" title="Smileys">😀</button>
+                                    <button type="button" class="emoji-tab-btn" data-cat="gestures" title="Gestures">👍</button>
+                                    <button type="button" class="emoji-tab-btn" data-cat="study" title="Study & Campus">🎓</button>
+                                    <button type="button" class="emoji-tab-btn" data-cat="tech" title="Tech & Tools">💻</button>
+                                    <button type="button" class="emoji-tab-btn" data-cat="hearts" title="Hearts & Reactions">❤️</button>
+                                </div>
+                                <div id="emojiGrid" class="emoji-grid-area"></div>
+                            </div>
+
+                            <!-- Main Composer Controls: [ Emoji ] [ Message input ] [ Attachment ] [ Send ] -->
+                            <div class="chat-composer-row">
+                                <!-- 1. Emoji Button -->
+                                <button type="button" class="chat-icon-btn" id="chatEmojiBtn" onclick="toggleEmojiPicker(event)" title="Add emoji" disabled>
+                                    <i class="bi bi-emoji-smile"></i>
+                                </button>
+
+                                <!-- 2. Text Message Input / Textarea -->
+                                <textarea id="chatMessageInput" class="chat-composer-input" placeholder="Type a message or discuss meeting timings..." rows="1" disabled></textarea>
+
+                                <!-- 3. Separate Attachment Button & Dropdown Menu -->
+                                <div class="dropdown">
+                                    <button type="button" class="chat-icon-btn" id="chatAttachBtn" data-bs-toggle="dropdown" aria-expanded="false" title="Attach file" disabled>
+                                        <i class="bi bi-paperclip"></i>
+                                    </button>
+                                    <ul class="dropdown-menu border border-2 border-dark" style="box-shadow: 3px 3px 0 var(--border-color); font-size: 0.85rem;">
+                                        <li><a class="dropdown-item py-2" href="javascript:void(0)" onclick="triggerFileInput('image')"><i class="bi bi-image text-primary me-2"></i>📷 Photo</a></li>
+                                        <li><a class="dropdown-item py-2" href="javascript:void(0)" onclick="triggerFileInput('document')"><i class="bi bi-file-earmark-text text-danger me-2"></i>📄 Document</a></li>
+                                    </ul>
+                                </div>
+
+                                <!-- 4. Send Button -->
+                                <button type="submit" id="chatSendBtn" class="btn btn-primary-custom chat-send-btn" title="Send message (Enter)" disabled>
+                                    <i class="bi bi-send-fill" id="chatSendIcon"></i>
+                                    <span class="spinner-border spinner-border-sm d-none" id="chatSendSpinner" style="width: 14px; height: 14px;"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Hidden File Inputs -->
+                    <input type="file" id="chatImageInput" accept="image/png,image/jpeg,image/webp" class="d-none" onchange="handleChatFileSelect(event, 'image')">
+                    <input type="file" id="chatDocInput" accept=".pdf,.doc,.docx,.txt,.zip" class="d-none" onchange="handleChatFileSelect(event, 'document')">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Lightbox Modal -->
+    <div class="modal fade" id="chatImageLightboxModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border border-2 border-dark" style="box-shadow: 5px 5px 0 var(--border-color); background: #ffffff;">
+                <div class="modal-header py-2 px-3 bg-light">
+                    <span class="fw-bold small text-truncate" id="chatLightboxCaption">Image Preview</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-2 text-center bg-dark">
+                    <img id="chatLightboxImg" src="" class="img-fluid rounded" style="max-height: 75vh; object-fit: contain;" alt="Full image">
+                </div>
+                <div class="modal-footer py-2 px-3">
+                    <a id="chatLightboxDownloadBtn" href="" download="" class="btn btn-sm btn-outline-custom">
+                        <i class="bi bi-download me-1"></i>Download Image
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Student Modal -->
+    <div class="modal fade" id="chatReportModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold text-danger"><i class="bi bi-flag me-2"></i>Report Student Account</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="chatReportForm" onsubmit="submitReport(event)">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-uppercase small" style="font-family: var(--font-mono); font-size: 0.72rem;">Reason Category <span class="text-danger">*</span></label>
+                            <select id="reportReason" class="form-select" required>
+                                <option value="">Select violation...</option>
+                                <option value="Inappropriate content">Inappropriate content</option>
+                                <option value="Fake skill/proof">Fake skill / forged proof</option>
+                                <option value="Harassment">Harassment or unprofessional conduct</option>
+                                <option value="Spam">Spam or unwanted advertising</option>
+                                <option value="Other">Other policy violation</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-uppercase small" style="font-family: var(--font-mono); font-size: 0.72rem;">Details / Explanation <span class="text-danger">*</span></label>
+                            <textarea id="reportDetails" class="form-control" rows="3" placeholder="Provide factual context for campus administrators..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-danger w-100">Submit Confidential Report</button>
                     </form>
                 </div>
             </div>
@@ -94,10 +240,37 @@
     <script>
         let currentPartnerId = null;
         let pollTimer = null;
+        let isPartnerBlocked = false;
+        let selectedAttachment = null; // { file, category, name, size, base64 }
+        let activeReply = null; // { id, senderName, text }
+        let isSending = false;
+        let lastFailedPayload = null;
+
+        // Emoji dataset for compact picker
+        const EMOJI_CATEGORIES = {
+            smileys: [
+                '😀','😃','😄','😁','😆','😅','😂','🤣','😊','😇','🙂','🙃','😉','😌','😍','🥰','😘','😗','😙','😚','😋','😛','😝','😜','🤪','🤨','🧐','🤓','😎','🤩','🥳','😏','😒','😞','😔','😟','😕','🙁','😣','😖','😫','😩','🥺','😢','😭','😤','😠','😡','🤬','🤯','😳','🥵','🥶','😱','😨','😰','😥','😓','🤗','🤔','🤭','🤫','🤥','😶','😐','😑','😬','🙄','😯','😦','😧','😮','😲','🥱','😴','🤤','😪','😵','🤐','🥴','🤢','🤮','🤧','😷','🤒','🤕'
+            ],
+            gestures: [
+                '👋','🤚','🖐️','✋','🖖','👌','🤌','🤏','✌️','🤞','🫰','🤟','🤘','🤙','👈','👉','👆','🖕','👇','☝️','👍','👎','✊','👊','🤛','🤜','👏','🙌','🫶','👐','🤲','🤝','🙏','✍️','💅','🤳','💪','🦾','👂','👃','👀','👁️','👅','👄'
+            ],
+            study: [
+                '🎓','📚','📖','📕','📗','📘','📙','📓','📒','📑','🔖','✏️','✒️','🖊️','🖋️','📝','📄','📃','📊','📈','📉','📋','📌','📍','📎','📏','📐','🔬','🔭','🧪','🧮','🎒','🏫','🧑‍🎓','👨‍🎓','👩‍🎓','💡','🧠','📜','🏆','🥇','🥈','🥉'
+            ],
+            tech: [
+                '💻','🖥️','⌨️','🖱️','🖨️','📱','📲','☎️','📞','🔋','🔌','⚙️','🔧','🔨','🛠️','🔩','🧰','📡','📷','📸','📹','🎥','📽️','💾','💿','📀','🎧','🎙️','📢','📣','⏰','⏱️','⏳','⌛','🌐','🔒','🔑','⚡','🔥'
+            ],
+            hearts: [
+                '❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❣️','💕','💞','💓','💗','💖','💘','💝','💟','💯','✨','⭐','🌟','💥','💢','🎯','🚀','🎉','🎊','🍻','☕','🍕','🍔'
+            ]
+        };
 
         document.addEventListener("DOMContentLoaded", async () => {
             const urlParams = new URLSearchParams(window.location.search);
             const targetPartner = urlParams.get('partnerId');
+
+            setupComposerEvents();
+            setupEmojiPicker();
 
             await loadConversations();
 
@@ -106,11 +279,14 @@
             }
         });
 
+        // -------------------------------------------------------------------
+        // CONVERSATIONS LIST
+        // -------------------------------------------------------------------
+
         async function loadConversations() {
             const container = document.getElementById('conversationPartnersList');
             const res = await API.get('/api/messages/conversations');
 
-            // If empty, let's also fetch active exchange partners
             let partners = (res && res.success) ? res.data : [];
 
             if (partners.length === 0) {
@@ -139,16 +315,30 @@
                 return;
             }
 
-            container.innerHTML = partners.map(p => `
-                <div class="chat-user-item ${currentPartnerId === p.userId ? 'active' : ''}" onclick="selectConversation(${p.userId}, '${p.fullName}', '${p.avatarUrl || ''}', '${p.department}')">
-                    <img src="${p.avatarUrl || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + p.userId}" class="avatar-img" alt="${p.fullName}" style="width:42px;height:42px;">
-                    <div class="overflow-hidden">
-                        <div class="fw-bold text-dark text-truncate">${p.fullName}</div>
-                        <small class="text-muted d-block text-truncate">${p.department || 'Student'}</small>
+            container.innerHTML = partners.map(p => {
+                const avatar = p.avatarUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=${p.userId}`;
+                const previewSnippet = p.lastMessage ? escapeHtml(p.lastMessage) : (p.department || 'Active Peer');
+                return `
+                    <div class="chat-user-item ${currentPartnerId === p.userId ? 'active' : ''}" onclick="selectConversation(${p.userId}, '${escapeHtml(p.fullName)}', '${p.avatarUrl || ''}', '${escapeHtml(p.department || '')}')">
+                        <div class="position-relative">
+                            <img src="${avatar}" class="avatar-img-circle" alt="${escapeHtml(p.fullName)}" style="width:42px;height:42px;">
+                            <span class="presence-dot position-absolute" style="bottom: 0px; right: 0px;" title="Active"></span>
+                        </div>
+                        <div class="overflow-hidden flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="fw-bold text-dark text-truncate small">${escapeHtml(p.fullName)}</span>
+                                ${p.unreadCount > 0 ? `<span class="badge bg-danger text-white rounded-pill" style="font-size:0.6rem;">${p.unreadCount}</span>` : ''}
+                            </div>
+                            <small class="text-muted d-block text-truncate" style="font-size:0.75rem;">${previewSnippet}</small>
+                        </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
+
+        // -------------------------------------------------------------------
+        // CONVERSATION SELECTION
+        // -------------------------------------------------------------------
 
         async function selectConversation(partnerId, name, avatar, dept) {
             currentPartnerId = partnerId;
@@ -165,74 +355,678 @@
                 }
             }
 
+            const avatarUrl = avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${partnerId}`;
             document.getElementById('chatPartnerName').innerText = name || 'Student Partner';
-            document.getElementById('chatPartnerDetails').innerText = dept ? `${dept} &bull; Active Partner` : 'Active Skill Exchange';
-            document.getElementById('chatPartnerAvatar').src = avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${partnerId}`;
+            document.getElementById('chatPartnerDetails').innerText = dept ? `${dept} • Active Skill Partner` : 'Active Skill Exchange';
+            document.getElementById('chatPartnerAvatar').src = avatarUrl;
 
-            document.getElementById('chatMessageInput').disabled = false;
-            document.getElementById('chatSendBtn').disabled = false;
+            // Show online presence indicators
+            const dot = document.getElementById('chatPresenceDot');
+            const badge = document.getElementById('chatPresenceBadge');
+            if (dot) dot.classList.remove('d-none');
+            if (badge) badge.classList.remove('d-none');
+
+            // Show actions dropdown
+            const actionsMenu = document.getElementById('chatPartnerActionsMenu');
+            if (actionsMenu) actionsMenu.classList.remove('d-none');
+
+            await checkPartnerBlockStatus();
+
+            // Enable composer controls if not blocked
+            const msgInput = document.getElementById('chatMessageInput');
+            const attachBtn = document.getElementById('chatAttachBtn');
+            const emojiBtn = document.getElementById('chatEmojiBtn');
+
+            msgInput.disabled = isPartnerBlocked;
+            attachBtn.disabled = isPartnerBlocked;
+            emojiBtn.disabled = isPartnerBlocked;
+
+            updateSendButtonState();
+            hideSendError();
+            cancelReply();
+            clearSelectedAttachment();
 
             // Fetch messages and scroll
-            await fetchMessages();
+            await fetchMessages(true);
 
-            // Clear previous interval if any and start fresh polling
+            // Real-time polling (every 2.5s) for responsive status updates
             if (pollTimer) clearInterval(pollTimer);
-            pollTimer = setInterval(fetchMessages, 4000);
+            pollTimer = setInterval(() => fetchMessages(false), 2500);
+
+            msgInput.focus();
         }
 
-        async function fetchMessages() {
+        async function checkPartnerBlockStatus() {
+            if (!currentPartnerId) return;
+            try {
+                const res = await API.get('/api/students/blocked');
+                if (res && res.success) {
+                    isPartnerBlocked = res.data.some(b => b.blockedUserId == currentPartnerId);
+                    const blockItem = document.getElementById('chatBlockActionItem');
+                    if (blockItem) {
+                        blockItem.innerHTML = isPartnerBlocked 
+                            ? `<i class="bi bi-unlock me-2 text-warning"></i>Unblock Student` 
+                            : `<i class="bi bi-slash-circle me-2"></i>Block Student`;
+                    }
+                }
+            } catch (e) {}
+        }
+
+        // -------------------------------------------------------------------
+        // MESSAGE STREAM & STATUS RENDERING
+        // -------------------------------------------------------------------
+
+        async function fetchMessages(shouldScrollToBottom = false) {
             if (!currentPartnerId) return;
 
-            const res = await API.get(`/api/messages/${currentPartnerId}`);
-            if (res && res.success) {
-                renderMessages(res.data);
+            try {
+                const res = await API.get(`/api/messages/${currentPartnerId}`);
+                if (res && res.success) {
+                    renderMessages(res.data, shouldScrollToBottom);
+                }
+            } catch (err) {
+                console.error("Failed to fetch messages:", err);
             }
         }
 
-        function renderMessages(messages) {
+        function renderMessages(messages, forceScroll = false) {
             const box = document.getElementById('chatMessagesBox');
-            if (messages.length === 0) {
-                box.innerHTML = `<div class="text-center my-auto text-muted small">No messages yet. Say hello and coordinate your session timings!</div>`;
+            if (!messages || messages.length === 0) {
+                box.innerHTML = `
+                    <div class="text-center my-auto py-5 text-muted small">
+                        <div class="stat-icon-box mx-auto mb-3" style="width: 48px; height: 48px;">
+                            <i class="bi bi-chat-heart text-dark fs-4"></i>
+                        </div>
+                        <strong class="d-block text-dark">No messages yet</strong>
+                        Say hello to coordinate your skill exchange timings or meeting spot!
+                    </div>
+                `;
                 return;
             }
 
             const myId = CurrentUser ? CurrentUser.userId : null;
+            const isNearBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 120;
+
             box.innerHTML = messages.map(m => {
                 const isSent = m.senderId === myId;
                 const timeStr = new Date(m.sentAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const safeSenderName = escapeHtml(m.senderName || (isSent ? 'You' : 'Peer'));
+                const safeText = escapeHtml(m.messageText || '');
+
+                // 8. Attachment Card Rendering
+                let attachmentMarkup = '';
+                if (m.attachmentUrl) {
+                    const safeFileName = escapeHtml(m.attachmentName || 'Attachment');
+                    const safeSize = escapeHtml(m.attachmentSize || '');
+                    
+                    if (m.attachmentType === 'image') {
+                        attachmentMarkup = `
+                            <div class="chat-attachment-img-wrap">
+                                <img src="${m.attachmentUrl}" class="chat-attachment-img" alt="${safeFileName}" onclick="viewFullImage('${m.attachmentUrl}', '${safeFileName}')" title="Click to view full image">
+                            </div>
+                        `;
+                    } else if (m.attachmentType === 'video') {
+                        attachmentMarkup = `
+                            <video src="${m.attachmentUrl}" controls class="chat-attachment-video"></video>
+                        `;
+                    } else {
+                        const iconClass = getFileIconClass(m.attachmentName);
+                        attachmentMarkup = `
+                            <a href="${m.attachmentUrl}" target="_blank" download="${safeFileName}" class="chat-attachment-card" title="Download ${safeFileName}">
+                                <div class="chat-attachment-icon text-primary"><i class="${iconClass}"></i></div>
+                                <div class="chat-attachment-meta">
+                                    <div class="chat-attachment-name">${safeFileName}</div>
+                                    <div class="chat-attachment-sub">${safeSize ? safeSize + ' • ' : ''}Download <i class="bi bi-box-arrow-up-right ms-1"></i></div>
+                                </div>
+                            </a>
+                        `;
+                    }
+                }
+
+                // Quoted Reply Context Rendering
+                let replyMarkup = '';
+                if (m.replyTo) {
+                    replyMarkup = `
+                        <div class="chat-quoted-box">
+                            <div class="chat-quoted-author">${escapeHtml(m.replyTo.senderName || 'Peer')}</div>
+                            <div class="text-truncate">${escapeHtml(m.replyTo.text || '')}</div>
+                        </div>
+                    `;
+                }
+
+                // 3, 20. Message Status Indicator (Sent / Delivered / Seen)
+                let statusMarkup = '';
+                if (isSent) {
+                    statusMarkup = renderStatusIndicator(m);
+                }
+
+                // 18. Message Actions Bar (Reply / Copy / Delete own message)
+                const actionsBar = `
+                    <div class="chat-actions-bar">
+                        <button type="button" class="chat-action-btn" onclick="replyToMessage(${m.id}, '${safeSenderName}', '${safeText.replace(/'/g, "\\'")}')" title="Reply">
+                            <i class="bi bi-reply"></i>
+                        </button>
+                        ${safeText ? `
+                        <button type="button" class="chat-action-btn" onclick="copyMessageText('${safeText.replace(/'/g, "\\'")}')" title="Copy text">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                        ` : ''}
+                        ${isSent ? `
+                        <button type="button" class="chat-action-btn delete-btn" onclick="deleteMessage(${m.id})" title="Delete message">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                        ` : ''}
+                    </div>
+                `;
+
                 return `
-                    <div class="chat-bubble ${isSent ? 'sent' : 'received'}">
-                        <div>${escapeHtml(m.messageText)}</div>
-                        <div class="chat-timestamp text-end ${isSent ? 'text-white-50' : 'text-muted'}">
-                            ${timeStr} ${isSent ? (m.read ? '<i class="bi bi-check2-all text-white"></i>' : '<i class="bi bi-check2"></i>') : ''}
+                    <div class="chat-bubble-wrapper ${isSent ? 'sent' : 'received'}" id="msgRow_${m.id}">
+                        ${actionsBar}
+                        <div class="chat-bubble ${isSent ? 'sent' : 'received'}">
+                            ${replyMarkup}
+                            ${attachmentMarkup}
+                            ${safeText ? `<div class="chat-message-text">${safeText}</div>` : ''}
+                            <div class="chat-timestamp">
+                                <span>${timeStr}</span>
+                                ${statusMarkup}
+                            </div>
                         </div>
                     </div>
                 `;
             }).join('');
 
-            box.scrollTop = box.scrollHeight;
+            if (forceScroll || isNearBottom) {
+                box.scrollTop = box.scrollHeight;
+            }
+        }
+
+        // 3, 20. Render Sent / Delivered / Seen Status with Checkmarks & Blue Accent
+        function renderStatusIndicator(msg) {
+            const status = (msg.status || (msg.isRead ? 'SEEN' : 'DELIVERED')).toUpperCase();
+
+            if (status === 'SEEN') {
+                return `
+                    <span class="message-status-tag status-seen" title="Seen: Read by peer">
+                        <i class="bi bi-check-all"></i>
+                        <span class="d-none d-sm-inline">Seen</span>
+                    </span>
+                `;
+            } else if (status === 'DELIVERED') {
+                return `
+                    <span class="message-status-tag status-delivered" title="Delivered: Reached peer">
+                        <i class="bi bi-check-all"></i>
+                        <span class="d-none d-sm-inline">Delivered</span>
+                    </span>
+                `;
+            } else {
+                return `
+                    <span class="message-status-tag status-sent" title="Sent: Stored on server">
+                        <i class="bi bi-check"></i>
+                        <span class="d-none d-sm-inline">Sent</span>
+                    </span>
+                `;
+            }
+        }
+
+        function getFileIconClass(filename) {
+            if (!filename) return 'bi bi-file-earmark';
+            const ext = filename.split('.').pop().toLowerCase();
+            if (ext === 'pdf') return 'bi bi-file-earmark-pdf text-danger';
+            if (['doc', 'docx'].includes(ext)) return 'bi bi-file-earmark-word text-primary';
+            if (['zip', 'rar', '7z'].includes(ext)) return 'bi bi-file-earmark-zip text-warning';
+            if (['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(ext)) return 'bi bi-file-earmark-image text-success';
+            if (['mp4', 'webm', 'mov'].includes(ext)) return 'bi bi-file-earmark-play text-info';
+            return 'bi bi-file-earmark-text text-secondary';
+        }
+
+        // -------------------------------------------------------------------
+        // 10, 11. COMPOSER SETUP & SEND BEHAVIOR
+        // -------------------------------------------------------------------
+
+        function setupComposerEvents() {
+            const input = document.getElementById('chatMessageInput');
+            if (!input) return;
+
+            // Enter sends, Shift+Enter for new line
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendMessage(e);
+                }
+            });
+
+            // Auto-expanding textarea & Send button validation
+            input.addEventListener('input', () => {
+                input.style.height = 'auto';
+                input.style.height = Math.min(input.scrollHeight, 110) + 'px';
+                updateSendButtonState();
+            });
+        }
+
+        function updateSendButtonState() {
+            const input = document.getElementById('chatMessageInput');
+            const sendBtn = document.getElementById('chatSendBtn');
+            if (!input || !sendBtn) return;
+
+            const text = (input.value || '').trim();
+            const hasPayload = text.length > 0 || selectedAttachment !== null;
+            sendBtn.disabled = !hasPayload || isPartnerBlocked || isSending || !currentPartnerId;
         }
 
         async function handleSendMessage(e) {
-            e.preventDefault();
-            const input = document.getElementById('chatMessageInput');
-            const text = input.value.trim();
-            if (!text || !currentPartnerId) return;
+            if (e && e.preventDefault) e.preventDefault();
+            if (!currentPartnerId || isSending || isPartnerBlocked) return;
 
-            input.value = '';
-            const res = await API.post('/api/messages', {
+            const input = document.getElementById('chatMessageInput');
+            const text = (input.value || '').trim();
+
+            if (!text && !selectedAttachment) return;
+
+            isSending = true;
+            hideSendError();
+            setSendingState(true);
+
+            // Construct payload
+            const payload = {
                 receiverId: currentPartnerId,
-                messageText: text
+                messageText: text,
+                attachmentUrl: null,
+                attachmentType: null,
+                attachmentName: null,
+                attachmentSize: null,
+                replyTo: activeReply ? {
+                    id: activeReply.id,
+                    senderName: activeReply.senderName,
+                    text: activeReply.text
+                } : null
+            };
+
+            try {
+                // If attachment selected, upload it first
+                if (selectedAttachment) {
+                    const uploadRes = await API.post('/api/messages/attachment', {
+                        receiverId: currentPartnerId,
+                        fileName: selectedAttachment.name,
+                        fileData: selectedAttachment.base64,
+                        category: selectedAttachment.category === 'image' ? 'image' : 'document'
+                    });
+
+                    if (!uploadRes || !uploadRes.success) {
+                        throw new Error(uploadRes ? uploadRes.message : "Failed to upload file attachment.");
+                    }
+
+                    payload.attachmentUrl = uploadRes.url;
+                    payload.attachmentName = uploadRes.fileName || selectedAttachment.name;
+                    payload.attachmentSize = uploadRes.formattedSize || selectedAttachment.size;
+                    payload.attachmentType = uploadRes.fileType || selectedAttachment.category;
+                }
+
+                // Save last attempted payload for retry capability
+                lastFailedPayload = payload;
+
+                // Send message to server
+                const msgRes = await API.post('/api/messages', payload);
+
+                if (!msgRes || !msgRes.success) {
+                    throw new Error(msgRes ? msgRes.message : "Server error sending message.");
+                }
+
+                // Clear composer state upon successful send
+                input.value = '';
+                input.style.height = 'auto';
+                clearSelectedAttachment();
+                cancelReply();
+                lastFailedPayload = null;
+
+                await fetchMessages(true);
+            } catch (err) {
+                console.error("Message send failure:", err);
+                showSendError(err.message || "Failed to send message. Please retry.");
+            } finally {
+                isSending = false;
+                setSendingState(false);
+                updateSendButtonState();
+            }
+        }
+
+        function setSendingState(sending) {
+            const icon = document.getElementById('chatSendIcon');
+            const spinner = document.getElementById('chatSendSpinner');
+            const sendBtn = document.getElementById('chatSendBtn');
+
+            if (sending) {
+                if (icon) icon.classList.add('d-none');
+                if (spinner) spinner.classList.remove('d-none');
+                if (sendBtn) sendBtn.disabled = true;
+            } else {
+                if (icon) icon.classList.remove('d-none');
+                if (spinner) spinner.classList.add('d-none');
+            }
+        }
+
+        function showSendError(msg) {
+            const alertBox = document.getElementById('chatSendErrorAlert');
+            const errorText = document.getElementById('chatSendErrorText');
+            if (alertBox && errorText) {
+                errorText.innerText = msg;
+                alertBox.classList.remove('d-none');
+            }
+        }
+
+        function hideSendError() {
+            const alertBox = document.getElementById('chatSendErrorAlert');
+            if (alertBox) alertBox.classList.add('d-none');
+        }
+
+        async function retryLastFailedMessage() {
+            if (!lastFailedPayload) return;
+            hideSendError();
+            isSending = true;
+            setSendingState(true);
+
+            try {
+                const msgRes = await API.post('/api/messages', lastFailedPayload);
+                if (!msgRes || !msgRes.success) throw new Error(msgRes.message || "Retry failed.");
+
+                const input = document.getElementById('chatMessageInput');
+                input.value = '';
+                input.style.height = 'auto';
+                clearSelectedAttachment();
+                cancelReply();
+                lastFailedPayload = null;
+
+                await fetchMessages(true);
+            } catch (err) {
+                showSendError(err.message || "Retry failed. Check network connectivity.");
+            } finally {
+                isSending = false;
+                setSendingState(false);
+                updateSendButtonState();
+            }
+        }
+
+        // -------------------------------------------------------------------
+        // 5, 6, 7. ATTACHMENT CONTROLS & PREVIEW
+        // -------------------------------------------------------------------
+
+        function triggerFileInput(category) {
+            if (category === 'image') document.getElementById('chatImageInput').click();
+            else if (category === 'document') document.getElementById('chatDocInput').click();
+        }
+
+        function handleChatFileSelect(e, category) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Enforce 10MB limit
+            if (file.size > 10 * 1024 * 1024) {
+                alert("File size exceeds 10MB limit. Please choose a file smaller than 10MB.");
+                e.target.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                let formattedSize = (file.size / 1024).toFixed(1) + ' KB';
+                if (file.size >= 1024 * 1024) {
+                    formattedSize = (file.size / (1024 * 1024)).toFixed(1) + ' MB';
+                }
+
+                selectedAttachment = {
+                    file: file,
+                    category: category,
+                    name: file.name,
+                    size: formattedSize,
+                    base64: evt.target.result
+                };
+
+                showAttachmentPreview(selectedAttachment);
+                updateSendButtonState();
+                document.getElementById('chatMessageInput').focus();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function showAttachmentPreview(att) {
+            const previewBar = document.getElementById('chatAttachmentPreviewBar');
+            const thumbBox = document.getElementById('chatPreviewThumbBox');
+            const nameEl = document.getElementById('chatPreviewFileName');
+            const sizeEl = document.getElementById('chatPreviewFileSize');
+
+            nameEl.innerText = att.name;
+            sizeEl.innerText = att.size;
+
+            if (att.category === 'image') {
+                thumbBox.innerHTML = `<img src="${att.base64}" class="chat-preview-thumb" alt="Preview">`;
+            } else if (att.category === 'video') {
+                thumbBox.innerHTML = `<div class="stat-icon-box" style="width:40px;height:40px;"><i class="bi bi-camera-video fs-5 text-success"></i></div>`;
+            } else {
+                thumbBox.innerHTML = `<div class="stat-icon-box" style="width:40px;height:40px;"><i class="${getFileIconClass(att.name)} fs-5 text-primary"></i></div>`;
+            }
+
+            previewBar.classList.remove('d-none');
+        }
+
+        function clearSelectedAttachment() {
+            selectedAttachment = null;
+            const previewBar = document.getElementById('chatAttachmentPreviewBar');
+            if (previewBar) previewBar.classList.add('d-none');
+
+            const imgIn = document.getElementById('chatImageInput');
+            const docIn = document.getElementById('chatDocInput');
+            const vidIn = document.getElementById('chatVideoInput');
+            if (imgIn) imgIn.value = '';
+            if (docIn) docIn.value = '';
+            if (vidIn) vidIn.value = '';
+
+            updateSendButtonState();
+        }
+
+        // -------------------------------------------------------------------
+        // 9. EMOJI PICKER IMPLEMENTATION
+        // -------------------------------------------------------------------
+
+        let currentEmojiCat = 'smileys';
+
+        function setupEmojiPicker() {
+            renderEmojiGrid('smileys');
+
+            // Category Tab Buttons
+            document.querySelectorAll('.emoji-tab-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.emoji-tab-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    const cat = btn.getAttribute('data-cat');
+                    currentEmojiCat = cat;
+                    renderEmojiGrid(cat, document.getElementById('emojiSearchInput').value.trim());
+                });
             });
 
-            if (res && res.success) {
-                await fetchMessages();
+            // Search input filter
+            const searchInput = document.getElementById('emojiSearchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    renderEmojiGrid(currentEmojiCat, e.target.value.trim());
+                });
+            }
+
+            // Close on click outside
+            document.addEventListener('click', (e) => {
+                const picker = document.getElementById('emojiPicker');
+                const btn = document.getElementById('chatEmojiBtn');
+                if (picker && !picker.classList.contains('d-none')) {
+                    if (!picker.contains(e.target) && !btn.contains(e.target)) {
+                        picker.classList.add('d-none');
+                    }
+                }
+            });
+        }
+
+        function toggleEmojiPicker(e) {
+            if (e && e.stopPropagation) e.stopPropagation();
+            const picker = document.getElementById('emojiPicker');
+            if (!picker) return;
+            picker.classList.toggle('d-none');
+            if (!picker.classList.contains('d-none')) {
+                document.getElementById('emojiSearchInput').focus();
+            }
+        }
+
+        function renderEmojiGrid(category, query = '') {
+            const grid = document.getElementById('emojiGrid');
+            if (!grid) return;
+
+            let emojis = [];
+            if (query) {
+                // If search query, scan all categories
+                const lower = query.toLowerCase();
+                Object.values(EMOJI_CATEGORIES).forEach(list => {
+                    emojis.push(...list);
+                });
+                emojis = Array.from(new Set(emojis));
             } else {
-                alert(res.message || "Failed to deliver message");
+                emojis = EMOJI_CATEGORIES[category] || EMOJI_CATEGORIES.smileys;
+            }
+
+            grid.innerHTML = emojis.map(em => `
+                <button type="button" class="emoji-item-btn" onclick="insertEmoji('${em}')">${em}</button>
+            `).join('');
+        }
+
+        function insertEmoji(emoji) {
+            const input = document.getElementById('chatMessageInput');
+            if (!input) return;
+
+            const start = input.selectionStart || input.value.length;
+            const end = input.selectionEnd || input.value.length;
+            const currentVal = input.value;
+
+            input.value = currentVal.substring(0, start) + emoji + currentVal.substring(end);
+            input.selectionStart = input.selectionEnd = start + emoji.length;
+            input.focus();
+
+            updateSendButtonState();
+        }
+
+        // -------------------------------------------------------------------
+        // 18. MESSAGE ACTIONS (COPY, REPLY, DELETE)
+        // -------------------------------------------------------------------
+
+        function copyMessageText(text) {
+            if (!text) return;
+            navigator.clipboard.writeText(text).then(() => {
+                showAlert("Message copied to clipboard!", "info");
+            }).catch(() => {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                showAlert("Message copied to clipboard!", "info");
+            });
+        }
+
+        function replyToMessage(msgId, senderName, text) {
+            activeReply = { id: msgId, senderName: senderName, text: text };
+            document.getElementById('replyAuthor').innerText = `Replying to ${senderName}`;
+            document.getElementById('replyTextSnippet').innerText = text.length > 55 ? text.substring(0, 52) + '...' : text;
+            document.getElementById('chatReplyBar').classList.remove('d-none');
+            document.getElementById('chatMessageInput').focus();
+        }
+
+        function cancelReply() {
+            activeReply = null;
+            const bar = document.getElementById('chatReplyBar');
+            if (bar) bar.classList.add('d-none');
+        }
+
+        async function deleteMessage(msgId) {
+            if (!confirm("Delete this message? It will be removed from the conversation.")) return;
+            try {
+                const res = await API.delete(`/api/messages/${msgId}`);
+                if (res && res.success) {
+                    await fetchMessages(false);
+                } else {
+                    alert(res.message || "Failed to delete message");
+                }
+            } catch (err) {
+                alert("Failed to delete message");
+            }
+        }
+
+        // -------------------------------------------------------------------
+        // IMAGE LIGHTBOX PREVIEW
+        // -------------------------------------------------------------------
+
+        function viewFullImage(url, caption) {
+            document.getElementById('chatLightboxImg').src = url;
+            document.getElementById('chatLightboxCaption').innerText = caption || 'Image Preview';
+            const dlBtn = document.getElementById('chatLightboxDownloadBtn');
+            dlBtn.href = url;
+            dlBtn.download = caption || 'download';
+            new bootstrap.Modal(document.getElementById('chatImageLightboxModal')).show();
+        }
+
+        // -------------------------------------------------------------------
+        // PEER ACTIONS: PROFILE, REPORT, BLOCK
+        // -------------------------------------------------------------------
+
+        function viewPartnerProfile() {
+            if (!currentPartnerId) return;
+            window.location.href = `profile.html?id=${currentPartnerId}`;
+        }
+
+        function openReportModal() {
+            if (!currentPartnerId) return;
+            new bootstrap.Modal(document.getElementById('chatReportModal')).show();
+        }
+
+        async function submitReport(e) {
+            e.preventDefault();
+            const payload = {
+                reportedUserId: currentPartnerId,
+                reason: document.getElementById('reportReason').value,
+                details: document.getElementById('reportDetails').value.trim()
+            };
+            const res = await API.post('/api/reports', payload);
+            if (res && res.success) {
+                bootstrap.Modal.getInstance(document.getElementById('chatReportModal')).hide();
+                showAlert("Report submitted to university administration for review.", "info");
+                document.getElementById('chatReportForm').reset();
+            } else {
+                showAlert(res.message || "Failed to submit report.", "danger");
+            }
+        }
+
+        async function toggleBlockCurrentPartner() {
+            if (!currentPartnerId) return;
+            if (!isPartnerBlocked) {
+                if (!confirm("Are you sure you want to block this student? You will no longer receive messages from them.")) return;
+                const res = await API.post('/api/students/block', { blockedUserId: currentPartnerId });
+                if (res && res.success) {
+                    showAlert("Student blocked.", "warning");
+                    await checkPartnerBlockStatus();
+                    document.getElementById('chatMessageInput').disabled = true;
+                    document.getElementById('chatSendBtn').disabled = true;
+                } else {
+                    showAlert(res.message || "Failed to block student.", "danger");
+                }
+            } else {
+                const res = await API.post('/api/students/unblock', { blockedUserId: currentPartnerId });
+                if (res && res.success) {
+                    showAlert("Student unblocked.", "success");
+                    await checkPartnerBlockStatus();
+                    document.getElementById('chatMessageInput').disabled = false;
+                    document.getElementById('chatSendBtn').disabled = false;
+                } else {
+                    showAlert(res.message || "Failed to unblock student.", "danger");
+                }
             }
         }
 
         function escapeHtml(string) {
+            if (!string) return '';
             const div = document.createElement('div');
             div.innerText = string;
             return div.innerHTML;

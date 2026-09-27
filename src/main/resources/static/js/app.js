@@ -78,39 +78,56 @@ function updateNavbarLoggedIn(user) {
     if (!userControls) return;
 
     const isAdmin = user.role === "ROLE_ADMIN";
-
     const avatarSrc = user.avatarUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.userId}`;
 
     userControls.innerHTML = `
         <div class="d-flex align-items-center gap-2">
-            ${!isAdmin ? `
-            <a href="notifications.html" class="btn btn-outline-custom btn-sm position-relative p-2" title="Notifications">
-                <i class="bi bi-bell fs-6"></i>
-                <span id="navNotificationBadge" class="notification-badge d-none">0</span>
-            </a>
-            ` : ''}
+            <!-- Notifications Dropdown -->
+            <div class="dropdown">
+                <button class="btn btn-outline-custom btn-sm position-relative p-2" type="button" id="navNotificationBtn" data-bs-toggle="dropdown" aria-expanded="false" title="Notifications" onclick="loadNavbarNotifications()">
+                    <i class="bi bi-bell fs-6"></i>
+                    <span id="navNotificationBadge" class="notification-badge d-none">0</span>
+                </button>
+                <div class="dropdown-menu dropdown-menu-end p-0 border border-2 border-dark" style="width: 340px; max-width: 90vw; box-shadow: 4px 4px 0 var(--border-color); border-radius: var(--radius-sm);" aria-labelledby="navNotificationBtn">
+                    <div class="p-3 border-bottom border-2 border-dark d-flex align-items-center justify-content-between bg-light">
+                        <div class="d-flex align-items-center gap-2">
+                            <strong class="text-dark small text-uppercase" style="letter-spacing: 0.05em; font-family: var(--font-mono);">Notifications</strong>
+                            <span class="badge bg-danger text-white rounded-pill" id="dropdownUnreadCount" style="font-size: 0.65rem;">0</span>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-link text-decoration-none text-dark p-0 fw-bold small" onclick="markAllNotificationsRead(event)">
+                            Mark all as read
+                        </button>
+                    </div>
+                    <div id="navNotificationList" class="overflow-auto" style="max-height: 320px;">
+                        <div class="text-center py-4 text-muted small">Click to load notifications</div>
+                    </div>
+                    <div class="p-2 border-top border-2 border-dark text-center bg-light">
+                        <a href="notifications.html" class="small fw-bold text-dark text-decoration-underline">View Full Activity Feed &rarr;</a>
+                    </div>
+                </div>
+            </div>
 
+            <!-- Profile & Account Menu -->
             <div class="dropdown">
                 <button class="btn btn-outline-custom btn-sm dropdown-toggle d-flex align-items-center gap-2 py-1 px-2" type="button" data-bs-toggle="dropdown">
-                    <img src="${avatarSrc}" class="rounded-circle object-fit-cover border border-1" width="28" height="28" style="aspect-ratio:1/1;" alt="User">
+                    <img src="${avatarSrc}" id="navUserAvatarImg" class="rounded-circle object-fit-cover border border-1 border-dark" width="28" height="28" style="aspect-ratio:1/1;" alt="User">
                     <span class="fw-bold text-dark small">${user.fullName || user.email}</span>
                     <span class="badge ${isAdmin ? 'bg-danger text-white' : 'bg-primary text-white'} ms-1" style="font-size:0.62rem;">${isAdmin ? 'ADMIN' : 'STUDENT'}</span>
                 </button>
-                <ul class="dropdown-menu dropdown-menu-end mt-2">
-                    ${!isAdmin ? `
+                <ul class="dropdown-menu dropdown-menu-end mt-2 border border-2 border-dark" style="box-shadow: 4px 4px 0 var(--border-color);">
+                    ${isAdmin ? `
+                    <li><a class="dropdown-item py-2 fw-bold text-danger bg-light border-bottom border-1 border-dark" href="admin-dashboard.html"><i class="bi bi-shield-check me-2 text-danger"></i>Admin Panel</a></li>
+                    ` : ''}
                     <li><a class="dropdown-item py-2" href="dashboard.html"><i class="bi bi-speedometer2 me-2 text-primary"></i>Dashboard</a></li>
                     <li><a class="dropdown-item py-2" href="profile.html"><i class="bi bi-person me-2 text-primary"></i>My Profile</a></li>
                     <li><a class="dropdown-item py-2" href="skills.html"><i class="bi bi-mortarboard me-2 text-primary"></i>My Skills</a></li>
                     <li><a class="dropdown-item py-2" href="matches.html"><i class="bi bi-stars me-2 text-danger"></i>Find Matches</a></li>
-                    <li><a class="dropdown-item py-2" href="requests.html"><i class="bi bi-arrow-left-right me-2 text-primary"></i>Exchange Requests</a></li>
+                    <li><a class="dropdown-item py-2" href="requests.html"><i class="bi bi-arrow-left-right me-2 text-primary"></i>Exchange Proposals</a></li>
                     <li><a class="dropdown-item py-2" href="chat.html"><i class="bi bi-chat-dots me-2 text-primary"></i>Messages</a></li>
                     <li><a class="dropdown-item py-2" href="verification.html"><i class="bi bi-patch-check me-2 text-success"></i>Skill Verification</a></li>
                     <li><a class="dropdown-item py-2" href="exchange-history.html"><i class="bi bi-clock-history me-2 text-primary"></i>Exchange History</a></li>
-                    ` : `
-                    <li><a class="dropdown-item py-2" href="admin-dashboard.html"><i class="bi bi-shield-check me-2 text-danger"></i>Admin Control Panel</a></li>
-                    `}
                     <li><hr class="dropdown-divider border-dark"></li>
-                    <li><a class="dropdown-item text-danger py-2" href="javascript:void(0)" onclick="logout()"><i class="bi bi-box-arrow-right me-2"></i>Sign Out</a></li>
+                    <li><a class="dropdown-item text-danger py-2 fw-bold" href="javascript:void(0)" onclick="logout()"><i class="bi bi-box-arrow-right me-2"></i>Sign Out</a></li>
                 </ul>
             </div>
         </div>
@@ -132,8 +149,8 @@ function updateNavbarLoggedOut() {
 
     userControls.innerHTML = `
         <div class="d-flex align-items-center gap-2">
-            <a href="login.html" class="btn btn-outline-custom btn-sm">Sign In</a>
-            <a href="register.html" class="btn btn-primary-custom btn-sm">Get Started</a>
+            <a href="login.html" class="btn btn-outline-custom btn-sm px-3"><i class="bi bi-box-arrow-in-right me-1"></i>Login</a>
+            <a href="register.html" class="btn btn-primary-custom btn-sm px-3"><i class="bi bi-person-plus me-1"></i>Sign Up</a>
         </div>
     `;
 
@@ -157,9 +174,112 @@ function setupNavigationState() {
     });
 }
 
+// Interactive Notification System
+async function loadNavbarNotifications() {
+    const list = document.getElementById("navNotificationList");
+    const countBadge = document.getElementById("dropdownUnreadCount");
+    if (!list) return;
+
+    list.innerHTML = '<div class="text-center py-3 text-muted small"><span class="spinner-border spinner-border-sm me-1"></span> Loading...</div>';
+
+    const res = await API.get("/api/notifications");
+    if (res && res.success && res.data && res.data.length > 0) {
+        const unreadCount = res.data.filter(n => !n.isRead).length;
+        if (countBadge) countBadge.innerText = unreadCount;
+        const mainBadge = document.getElementById("navNotificationBadge");
+        if (mainBadge) {
+            if (unreadCount > 0) {
+                mainBadge.innerText = unreadCount;
+                mainBadge.classList.remove("d-none");
+            } else {
+                mainBadge.classList.add("d-none");
+            }
+        }
+
+        list.innerHTML = res.data.slice(0, 8).map(n => {
+            const isUnread = !n.isRead;
+            const targetUrl = n.linkUrl || (n.type === 'EXCHANGE_REQUEST' ? 'requests.html' : (n.type === 'NEW_MESSAGE' ? 'chat.html' : (n.type && n.type.includes('VERIF') ? 'verification.html' : 'notifications.html')));
+            return `
+                <div class="p-2 px-3 border-bottom border-1 d-flex align-items-start gap-2 ${isUnread ? 'bg-light' : ''}" style="cursor: pointer; transition: background 0.15s;" onclick="handleNotificationClick(${n.id}, '${targetUrl}')" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='${isUnread ? '#f8fafc' : 'transparent'}'">
+                    <div class="mt-1" style="font-size: 1.1rem;">
+                        ${getNotificationIconHtml(n.type)}
+                    </div>
+                    <div class="flex-grow-1 overflow-hidden">
+                        <div class="d-flex align-items-center justify-content-between gap-1">
+                            <strong class="text-dark text-truncate small" style="font-size:0.82rem;">${escapeHtmlSafe(n.title)}</strong>
+                            ${isUnread ? '<span class="badge bg-danger rounded-circle p-1" style="width:6px; height:6px;"></span>' : ''}
+                        </div>
+                        <p class="text-muted mb-0 small text-truncate" style="font-size:0.75rem;">${escapeHtmlSafe(n.message)}</p>
+                        <small class="text-muted" style="font-family: var(--font-mono); font-size:0.68rem;">${formatTimeAgo(n.createdAt)}</small>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    } else {
+        if (countBadge) countBadge.innerText = '0';
+        list.innerHTML = '<div class="text-center py-4 text-muted small"><i class="bi bi-bell-slash d-block fs-4 mb-1"></i>No notifications yet</div>';
+    }
+}
+
+async function handleNotificationClick(id, targetUrl) {
+    try {
+        await API.put(`/api/notifications/${id}/read`);
+    } catch (e) {}
+    window.location.href = targetUrl;
+}
+
+async function markAllNotificationsRead(e) {
+    if (e) e.stopPropagation();
+    try {
+        await API.put("/api/notifications/read-all");
+        await loadNavbarNotifications();
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+function getNotificationIconHtml(type) {
+    switch (type) {
+        case 'EXCHANGE_REQUEST':
+            return '<i class="bi bi-arrow-repeat text-primary"></i>';
+        case 'VERIFICATION_APPROVED':
+            return '<i class="bi bi-patch-check-fill text-success"></i>';
+        case 'VERIFICATION_REJECTED':
+            return '<i class="bi bi-x-circle-fill text-danger"></i>';
+        case 'VERIFICATION_RESUBMISSION':
+            return '<i class="bi bi-exclamation-triangle-fill text-warning"></i>';
+        case 'NEW_MESSAGE':
+            return '<i class="bi bi-chat-dots-fill text-info"></i>';
+        case 'NEW_REVIEW':
+            return '<i class="bi bi-star-fill text-warning"></i>';
+        case 'ANNOUNCEMENT':
+            return '<i class="bi bi-megaphone-fill text-danger"></i>';
+        default:
+            return '<i class="bi bi-info-circle-fill text-secondary"></i>';
+    }
+}
+
+function escapeHtmlSafe(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+function formatTimeAgo(dateString) {
+    if (!dateString) return '';
+    const diff = Math.floor((Date.now() - new Date(dateString).getTime()) / 1000);
+    if (diff < 60) return 'Just now';
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+    return `${Math.floor(diff / 86400)}d ago`;
+}
+
 // Notification Polling
 function startNotificationPolling() {
-    if (!CurrentUser || CurrentUser.role === "ROLE_ADMIN") return;
+    if (!CurrentUser) return;
 
     const poll = async () => {
         const res = await API.get("/api/notifications/unread-count");
@@ -177,7 +297,7 @@ function startNotificationPolling() {
     };
 
     poll();
-    setInterval(poll, 15000); // Poll unread alerts every 15s
+    setInterval(poll, 15000);
 }
 
 // Toast alerts helper
@@ -216,4 +336,30 @@ if (typeof window !== 'undefined' && !window.SkillExchangeDecor) {
     decorScript.src = 'js/decorations.js';
     decorScript.defer = true;
     document.head.appendChild(decorScript);
+}
+
+// Global Password Visibility Toggle Helper (Accessible, Independent, Secure)
+function togglePasswordVisibility(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+
+    const isPassword = input.type === 'password';
+    input.type = isPassword ? 'text' : 'password';
+
+    const icon = btn.querySelector('i');
+    if (icon) {
+        if (isPassword) {
+            icon.classList.remove('bi-eye');
+            icon.classList.add('bi-eye-slash');
+            btn.setAttribute('aria-label', 'Hide password');
+            btn.setAttribute('title', 'Hide password');
+            btn.setAttribute('aria-pressed', 'true');
+        } else {
+            icon.classList.remove('bi-eye-slash');
+            icon.classList.add('bi-eye');
+            btn.setAttribute('aria-label', 'Show password');
+            btn.setAttribute('title', 'Show password');
+            btn.setAttribute('aria-pressed', 'false');
+        }
+    }
 }

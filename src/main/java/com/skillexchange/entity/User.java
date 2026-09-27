@@ -29,6 +29,9 @@ public class User {
     @Column(name = "email_verified", nullable = false)
     private boolean emailVerified = false;
 
+    @Column(name = "has_seen_landing", nullable = false)
+    private boolean hasSeenLanding = false;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
@@ -93,6 +96,14 @@ public class User {
 
     public void setEmailVerified(boolean emailVerified) {
         this.emailVerified = emailVerified;
+    }
+
+    public boolean isHasSeenLanding() {
+        return hasSeenLanding;
+    }
+
+    public void setHasSeenLanding(boolean hasSeenLanding) {
+        this.hasSeenLanding = hasSeenLanding;
     }
 
     public LocalDateTime getCreatedAt() {

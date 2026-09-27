@@ -64,6 +64,16 @@ function generateSecureOtp() {
     return crypto.randomInt(100000, 1000000).toString();
 }
 
+function escapeHtml(str) {
+    if (!str || typeof str !== 'string') return '';
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
 function getMailTransporter() {
     const user = process.env.MAIL_USERNAME;
     const pass = process.env.MAIL_PASSWORD;
@@ -336,11 +346,11 @@ const state = {
     ],
 
     users: [
-        { id: 1, email: "admin@mgmmumbai.ac.in", role: "ROLE_ADMIN", password: "password123", active: true, emailVerified: true },
-        { id: 2, email: "harsh@mgmmumbai.ac.in", role: "ROLE_STUDENT", password: "password123", active: true, emailVerified: true },
-        { id: 3, email: "sejal@mgmmumbai.ac.in", role: "ROLE_STUDENT", password: "password123", active: true, emailVerified: true },
-        { id: 4, email: "raza@mgmmumbai.ac.in", role: "ROLE_STUDENT", password: "password123", active: true, emailVerified: true },
-        { id: 5, email: "udipti@mgmmumbai.ac.in", role: "ROLE_STUDENT", password: "password123", active: true, emailVerified: true }
+        { id: 1, email: "admin@mgmmumbai.ac.in", role: "ROLE_ADMIN", password: "password123", active: true, emailVerified: true, hasSeenLanding: true },
+        { id: 2, email: "harsh@mgmmumbai.ac.in", role: "ROLE_STUDENT", password: "password123", active: true, emailVerified: true, hasSeenLanding: true },
+        { id: 3, email: "sejal@mgmmumbai.ac.in", role: "ROLE_STUDENT", password: "password123", active: true, emailVerified: true, hasSeenLanding: true },
+        { id: 4, email: "raza@mgmmumbai.ac.in", role: "ROLE_STUDENT", password: "password123", active: true, emailVerified: true, hasSeenLanding: true },
+        { id: 5, email: "udipti@mgmmumbai.ac.in", role: "ROLE_STUDENT", password: "password123", active: true, emailVerified: true, hasSeenLanding: true }
     ],
 
     profiles: [
@@ -832,7 +842,8 @@ state.currentUser = {
     userId: 2,
     email: "harsh@mgmmumbai.ac.in",
     role: "ROLE_STUDENT",
-    fullName: "Harsh Vardhan"
+    fullName: "Harsh Vardhan",
+    hasSeenLanding: true
 };
 
 // ===================================================================
@@ -891,8 +902,21 @@ const server = http.createServer(async (req, res) => {
                     state.currentUser.avatarUrl = prof.avatarUrl || null;
                     if (prof.fullName) state.currentUser.fullName = prof.fullName;
                 }
+                const usr = state.users.find(u => u.id === state.currentUser.userId);
+                if (usr) {
+                    state.currentUser.hasSeenLanding = usr.hasSeenLanding !== false;
+                }
             }
             return sendJson(res, 200, { success: true, data: state.currentUser });
+        }
+
+        if (pathname === '/api/auth/seen-landing' && req.method === 'POST') {
+            if (state.currentUser) {
+                state.currentUser.hasSeenLanding = true;
+                const usr = state.users.find(u => u.id === state.currentUser.userId);
+                if (usr) usr.hasSeenLanding = true;
+            }
+            return sendJson(res, 200, { success: true, message: "Landing page marked as seen." });
         }
 
         if (pathname === '/api/auth/login' && req.method === 'POST') {
@@ -940,7 +964,9 @@ const server = http.createServer(async (req, res) => {
                 userId: user.id,
                 email: user.email,
                 role: user.role,
-                fullName: profile ? profile.fullName : (user.role === 'ROLE_ADMIN' ? 'System Administrator' : user.email)
+                avatarUrl: profile ? profile.avatarUrl : null,
+                fullName: profile ? profile.fullName : (user.role === 'ROLE_ADMIN' ? 'System Administrator' : user.email),
+                hasSeenLanding: user.hasSeenLanding !== false
             };
 
             // Audit log
@@ -1014,7 +1040,8 @@ const server = http.createServer(async (req, res) => {
                     role: "ROLE_STUDENT",
                     password: body.password,
                     active: false,
-                    emailVerified: false
+                    emailVerified: false,
+                    hasSeenLanding: false
                 };
                 state.users.push(user);
 
@@ -1375,6 +1402,75 @@ const server = http.createServer(async (req, res) => {
             if (!state.currentUser) return sendJson(res, 401, { success: false, message: "Not logged in" });
             const prof = state.profiles.find(p => p.userId === state.currentUser.userId);
             return sendJson(res, 200, { success: true, data: prof || {} });
+        }
+
+        if (pathname === '/api/students/avatar' && req.method === 'POST') {
+            if (!state.currentUser) return sendJson(res, 401, { success: false, message: "Authentication required." });
+            const body = await parseBody(req);
+            const fileData = body.fileData || body.image || '';
+            const fileName = (body.fileName || body.filename || 'avatar.png').replace(/[^a-zA-Z0-9._-]/g, '_');
+            const ext = path.extname(fileName).toLowerCase() || '.png';
+            const allowedExts = ['.png', '.jpg', '.jpeg', '.webp'];
+
+            if (!allowedExts.includes(ext)) {
+                return sendJson(res, 400, { success: false, message: "Invalid image format. Allowed formats: PNG, JPG, JPEG, WEBP." });
+            }
+
+            try {
+                const buffer = Buffer.from(fileData.replace(/^data:[^;]+;base64,/, ''), 'base64');
+                if (buffer.length === 0) {
+                    return sendJson(res, 400, { success: false, message: "No image data received." });
+                }
+                if (buffer.length > 5 * 1024 * 1024) {
+                    return sendJson(res, 400, { success: false, message: "Image exceeds 5MB maximum file size." });
+                }
+
+                // Verify magic bytes for genuine image header
+                const isPng = buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4E && buffer[3] === 0x47;
+                const isJpg = buffer[0] === 0xFF && buffer[1] === 0xD8 && buffer[2] === 0xFF;
+                const isWebp = buffer.length > 12 && buffer.toString('ascii', 8, 12) === 'WEBP';
+
+                if (!isPng && !isJpg && !isWebp) {
+                    return sendJson(res, 400, { success: false, message: "Security error: File content does not match allowed image formats." });
+                }
+
+                const safeName = `avatar_${state.currentUser.userId}_${Date.now()}${ext}`;
+                const uploadDir = path.join(STATIC_DIR, 'uploads', 'avatars');
+                if (!fs.existsSync(uploadDir)) {
+                    fs.mkdirSync(uploadDir, { recursive: true });
+                }
+                fs.writeFileSync(path.join(uploadDir, safeName), buffer);
+                const avatarUrl = `uploads/avatars/${safeName}`;
+
+                const prof = state.profiles.find(p => p.userId === state.currentUser.userId);
+                if (prof) {
+                    prof.avatarUrl = avatarUrl;
+                }
+                state.currentUser.avatarUrl = avatarUrl;
+
+                return sendJson(res, 200, {
+                    success: true,
+                    avatarUrl: avatarUrl,
+                    message: "Profile photo uploaded and updated successfully."
+                });
+            } catch (err) {
+                return sendJson(res, 500, { success: false, message: "Failed to save profile photo: " + err.message });
+            }
+        }
+
+        if (pathname === '/api/students/avatar' && req.method === 'DELETE') {
+            if (!state.currentUser) return sendJson(res, 401, { success: false, message: "Authentication required." });
+            const defaultAvatar = `https://api.dicebear.com/7.x/bottts/svg?seed=${state.currentUser.userId}`;
+            const prof = state.profiles.find(p => p.userId === state.currentUser.userId);
+            if (prof) {
+                prof.avatarUrl = defaultAvatar;
+            }
+            state.currentUser.avatarUrl = defaultAvatar;
+            return sendJson(res, 200, {
+                success: true,
+                avatarUrl: defaultAvatar,
+                message: "Profile photo removed and restored to default avatar."
+            });
         }
 
         if (pathname.match(/^\/api\/students\/(\d+)$/) && req.method === 'GET') {
@@ -1914,11 +2010,95 @@ const server = http.createServer(async (req, res) => {
             return sendJson(res, 200, { success: true, data: msgs });
         }
 
+        if (pathname === '/api/messages/attachment' && req.method === 'POST') {
+            if (!state.currentUser) return sendJson(res, 401, { success: false, message: "Authentication required." });
+            const body = await parseBody(req);
+            const fileName = (body.fileName || body.filename || 'file.dat').replace(/[^a-zA-Z0-9._-]/g, '_');
+            const fileData = body.fileData || body.file || '';
+
+            const ext = path.extname(fileName).toLowerCase();
+            const allowedImageExts = ['.png', '.jpg', '.jpeg', '.webp'];
+            const allowedDocExts = ['.pdf', '.doc', '.docx', '.txt', '.zip'];
+            const dangerousExts = ['.exe', '.bat', '.cmd', '.sh', '.php', '.js', '.html', '.msi', '.vbs', '.jar', '.scr', '.com'];
+
+            if (dangerousExts.includes(ext)) {
+                return sendJson(res, 400, { success: false, message: "Executable and script files are strictly blocked." });
+            }
+
+            const isPhoto = (body.category === 'photo' || body.category === 'image' || allowedImageExts.includes(ext));
+            const category = isPhoto ? 'image' : 'document';
+
+            if (category === 'image' && !allowedImageExts.includes(ext)) {
+                return sendJson(res, 400, { success: false, message: "Invalid photo format. Allowed: PNG, JPG, JPEG, WEBP." });
+            }
+
+            if (category === 'document' && !allowedDocExts.includes(ext)) {
+                return sendJson(res, 400, { success: false, message: "Invalid document format. Allowed: PDF, DOC, DOCX, TXT, ZIP." });
+            }
+
+            try {
+                const buffer = Buffer.from(fileData.replace(/^data:[^;]+;base64,/, ''), 'base64');
+                if (buffer.length === 0) {
+                    return sendJson(res, 400, { success: false, message: "Empty file attachment received." });
+                }
+                if (buffer.length > 10 * 1024 * 1024) {
+                    return sendJson(res, 400, { success: false, message: "Attachment exceeds 10MB maximum limit." });
+                }
+
+                const safeName = `chat_${state.currentUser.userId}_${Date.now()}_${Math.random().toString(36).substring(2, 7)}${ext}`;
+                const uploadDir = path.join(STATIC_DIR, 'uploads', 'chat');
+                if (!fs.existsSync(uploadDir)) {
+                    fs.mkdirSync(uploadDir, { recursive: true });
+                }
+                fs.writeFileSync(path.join(uploadDir, safeName), buffer);
+                const fileUrl = `uploads/chat/${safeName}`;
+
+                let formattedSize = (buffer.length / 1024).toFixed(1) + ' KB';
+                if (buffer.length >= 1024 * 1024) {
+                    formattedSize = (buffer.length / (1024 * 1024)).toFixed(1) + ' MB';
+                }
+
+                const resultData = {
+                    fileUrl: fileUrl,
+                    url: fileUrl,
+                    fileName: fileName,
+                    fileSize: buffer.length,
+                    formattedSize: formattedSize,
+                    fileType: category,
+                    fileCategory: isPhoto ? 'photo' : 'document'
+                };
+
+                return sendJson(res, 200, {
+                    success: true,
+                    data: resultData,
+                    ...resultData,
+                    message: "Attachment uploaded successfully."
+                });
+            } catch (err) {
+                return sendJson(res, 500, { success: false, message: "Failed to upload attachment: " + err.message });
+            }
+        }
+
         if (pathname === '/api/messages' && req.method === 'POST') {
             const body = await parseBody(req);
             const myId = state.currentUser ? state.currentUser.userId : 2;
             const senderProf = state.profiles.find(p => p.userId === myId);
-            const receiverProf = state.profiles.find(p => p.userId === body.receiverId);
+            const receiverId = Number(body.receiverId);
+            const receiverProf = state.profiles.find(p => p.userId === receiverId);
+
+            if (!receiverId || receiverId === myId) {
+                return sendJson(res, 400, { success: false, message: "Please specify a valid recipient." });
+            }
+
+            const rawText = (body.messageText || body.content || body.text || '').trim();
+            if (rawText.length > 5000) {
+                return sendJson(res, 400, { success: false, message: "Message exceeds 5,000 characters limit." });
+            }
+            const sanitizedText = escapeHtml(rawText);
+
+            if (!sanitizedText && !body.attachmentUrl) {
+                return sendJson(res, 400, { success: false, message: "Cannot send an empty message." });
+            }
 
             const now = new Date().toISOString();
             const nextId = state.messages.length > 0 ? Math.max(...state.messages.map(m => m.id)) + 1 : 1;
@@ -1926,14 +2106,17 @@ const server = http.createServer(async (req, res) => {
                 id: nextId,
                 senderId: myId,
                 senderName: senderProf ? senderProf.fullName : "Student",
-                receiverId: Number(body.receiverId),
+                receiverId: receiverId,
                 receiverName: receiverProf ? receiverProf.fullName : "Student",
-                messageText: (body.messageText || '').trim(),
+                messageText: sanitizedText,
+                content: sanitizedText,
                 attachmentUrl: body.attachmentUrl || null,
                 attachmentType: body.attachmentType || null,
                 attachmentName: body.attachmentName || null,
                 attachmentSize: body.attachmentSize || null,
                 replyTo: body.replyTo || null,
+                isRead: false,
+                timestamp: now,
                 sentAt: now,
                 deliveredAt: now,
                 seenAt: null,
@@ -1948,10 +2131,11 @@ const server = http.createServer(async (req, res) => {
 
             state.notifications.unshift({
                 id: Date.now(),
-                recipientId: Number(body.receiverId),
+                recipientId: receiverId,
                 title: `Message from ${newMsg.senderName}`,
                 message: notifText,
                 type: "NEW_MESSAGE",
+                linkUrl: "chat.html",
                 isRead: false,
                 createdAt: now
             });
@@ -2108,6 +2292,9 @@ const server = http.createServer(async (req, res) => {
         }
 
         if (pathname.match(/^\/api\/verifications\/(\d+)\/approve$/) && req.method === 'PUT') {
+            if (!state.currentUser || state.currentUser.role !== 'ROLE_ADMIN') {
+                return sendJson(res, 403, { success: false, message: "Forbidden: Administrator authorization required." });
+            }
             const id = Number(pathname.split('/')[3]);
             const body = await parseBody(req);
             const ver = state.verifications.find(v => v.id === id);
@@ -2133,6 +2320,7 @@ const server = http.createServer(async (req, res) => {
                 title: "Skill Verification Approved! ✓",
                 message: `Congratulations! Your verification proof for ${ver.skillName} was approved. You now hold the ✓ Verified Skill badge for this skill!`,
                 type: "VERIFICATION_APPROVED",
+                linkUrl: "verification.html",
                 isRead: false,
                 createdAt: new Date().toISOString()
             });
@@ -2141,6 +2329,9 @@ const server = http.createServer(async (req, res) => {
         }
 
         if (pathname.match(/^\/api\/verifications\/(\d+)\/reject$/) && req.method === 'PUT') {
+            if (!state.currentUser || state.currentUser.role !== 'ROLE_ADMIN') {
+                return sendJson(res, 403, { success: false, message: "Forbidden: Administrator authorization required." });
+            }
             const id = Number(pathname.split('/')[3]);
             const body = await parseBody(req);
             const ver = state.verifications.find(v => v.id === id);
@@ -2166,6 +2357,7 @@ const server = http.createServer(async (req, res) => {
                 title: "Skill Verification Rejected",
                 message: `Your verification submission for ${ver.skillName} was rejected: ${ver.adminComment}`,
                 type: "VERIFICATION_REJECTED",
+                linkUrl: "verification.html",
                 isRead: false,
                 createdAt: new Date().toISOString()
             });
@@ -2174,6 +2366,9 @@ const server = http.createServer(async (req, res) => {
         }
 
         if (pathname.match(/^\/api\/verifications\/(\d+)\/request-resubmission$/) && req.method === 'PUT') {
+            if (!state.currentUser || state.currentUser.role !== 'ROLE_ADMIN') {
+                return sendJson(res, 403, { success: false, message: "Forbidden: Administrator authorization required." });
+            }
             const id = Number(pathname.split('/')[3]);
             const body = await parseBody(req);
             const ver = state.verifications.find(v => v.id === id);
@@ -2199,6 +2394,7 @@ const server = http.createServer(async (req, res) => {
                 title: "Skill Verification Needs Resubmission ⚠",
                 message: `The administrator requested updates on your ${ver.skillName} proof: "${ver.adminComment}". Please update and resubmit.`,
                 type: "VERIFICATION_RESUBMISSION",
+                linkUrl: "verification.html",
                 isRead: false,
                 createdAt: new Date().toISOString()
             });
@@ -2337,6 +2533,14 @@ const server = http.createServer(async (req, res) => {
         }
 
         // --- 11. COMPREHENSIVE ADMIN API SUITE ---
+        if (pathname.startsWith('/api/admin')) {
+            if (!state.currentUser || state.currentUser.role !== 'ROLE_ADMIN') {
+                return sendJson(res, 403, {
+                    success: false,
+                    message: "Forbidden: Administrator authorization required to access this endpoint."
+                });
+            }
+        }
 
         // 11.1 Platform Overview KPI Stats
         if (pathname === '/api/admin/stats' && req.method === 'GET') {
@@ -2943,8 +3147,19 @@ const server = http.createServer(async (req, res) => {
     // SaaS Clean URL rewrite: Any /admin route serves the admin dashboard
     if (filePath.startsWith('admin') && !filePath.includes('.')) {
         filePath = 'admin-dashboard.html';
+    } else if (filePath === 'landing' || filePath === 'landing/') {
+        filePath = 'landing.html';
     } else if (!filePath.includes('.')) {
         filePath += '.html';
+    }
+
+    // Backend-enforced Admin Authorization for Admin Dashboard page
+    if (filePath === 'admin-dashboard.html' || filePath.startsWith('admin')) {
+        if (!state.currentUser || state.currentUser.role !== 'ROLE_ADMIN') {
+            res.writeHead(302, { 'Location': '/login.html?unauthorized=admin_required' });
+            res.end();
+            return;
+        }
     }
 
     const fullPath = path.join(STATIC_DIR, filePath);

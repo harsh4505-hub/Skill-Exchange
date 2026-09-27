@@ -86,13 +86,23 @@
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label">Password <span class="text-danger">*</span></label>
-                                <input type="password" id="password" class="form-control" placeholder="At least 6 characters" minlength="6" required>
+                                <label class="form-label" for="password">Password <span class="text-danger">*</span></label>
+                                <div class="password-input-wrapper position-relative">
+                                    <input type="password" id="password" class="form-control password-field-input" placeholder="At least 6 characters" minlength="6" required autocomplete="new-password">
+                                    <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('password', this)" aria-label="Show password" title="Show password" tabindex="0">
+                                        <i class="bi bi-eye" aria-hidden="true"></i>
+                                    </button>
+                                </div>
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label">Confirm Password <span class="text-danger">*</span></label>
-                                <input type="password" id="confirmPassword" class="form-control" placeholder="Repeat password" required>
+                                <label class="form-label" for="confirmPassword">Confirm Password <span class="text-danger">*</span></label>
+                                <div class="password-input-wrapper position-relative">
+                                    <input type="password" id="confirmPassword" class="form-control password-field-input" placeholder="Repeat password" required autocomplete="new-password">
+                                    <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('confirmPassword', this)" aria-label="Show confirm password" title="Show confirm password" tabindex="0">
+                                        <i class="bi bi-eye" aria-hidden="true"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
 

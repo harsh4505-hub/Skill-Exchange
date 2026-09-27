@@ -144,29 +144,28 @@
                                 <div id="emojiGrid" class="emoji-grid-area"></div>
                             </div>
 
-                            <!-- Main Composer Controls -->
+                            <!-- Main Composer Controls: [ Emoji ] [ Message input ] [ Attachment ] [ Send ] -->
                             <div class="chat-composer-row">
-                                <!-- 5, 6. Attachment Button & Dropdown Menu -->
-                                <div class="dropdown">
-                                    <button type="button" class="chat-icon-btn" id="chatAttachBtn" data-bs-toggle="dropdown" aria-expanded="false" title="Attach image or file" disabled>
-                                        <i class="bi bi-paperclip"></i>
-                                    </button>
-                                    <ul class="dropdown-menu border border-2 border-dark" style="box-shadow: 3px 3px 0 var(--border-color); font-size: 0.85rem;">
-                                        <li><a class="dropdown-item py-2" href="javascript:void(0)" onclick="triggerFileInput('image')"><i class="bi bi-image text-primary me-2"></i>📷 Photo / Image</a></li>
-                                        <li><a class="dropdown-item py-2" href="javascript:void(0)" onclick="triggerFileInput('document')"><i class="bi bi-file-earmark-text text-danger me-2"></i>📎 Document / File</a></li>
-                                        <li><a class="dropdown-item py-2" href="javascript:void(0)" onclick="triggerFileInput('video')"><i class="bi bi-camera-video text-success me-2"></i>🎥 Video</a></li>
-                                    </ul>
-                                </div>
-
-                                <!-- Text Message Input / Textarea -->
-                                <textarea id="chatMessageInput" class="chat-composer-input" placeholder="Type a message or discuss meeting timings..." rows="1" disabled></textarea>
-
-                                <!-- Emoji Button -->
+                                <!-- 1. Emoji Button -->
                                 <button type="button" class="chat-icon-btn" id="chatEmojiBtn" onclick="toggleEmojiPicker(event)" title="Add emoji" disabled>
                                     <i class="bi bi-emoji-smile"></i>
                                 </button>
 
-                                <!-- Send Button -->
+                                <!-- 2. Text Message Input / Textarea -->
+                                <textarea id="chatMessageInput" class="chat-composer-input" placeholder="Type a message or discuss meeting timings..." rows="1" disabled></textarea>
+
+                                <!-- 3. Separate Attachment Button & Dropdown Menu -->
+                                <div class="dropdown">
+                                    <button type="button" class="chat-icon-btn" id="chatAttachBtn" data-bs-toggle="dropdown" aria-expanded="false" title="Attach file" disabled>
+                                        <i class="bi bi-paperclip"></i>
+                                    </button>
+                                    <ul class="dropdown-menu border border-2 border-dark" style="box-shadow: 3px 3px 0 var(--border-color); font-size: 0.85rem;">
+                                        <li><a class="dropdown-item py-2" href="javascript:void(0)" onclick="triggerFileInput('image')"><i class="bi bi-image text-primary me-2"></i>📷 Photo</a></li>
+                                        <li><a class="dropdown-item py-2" href="javascript:void(0)" onclick="triggerFileInput('document')"><i class="bi bi-file-earmark-text text-danger me-2"></i>📄 Document</a></li>
+                                    </ul>
+                                </div>
+
+                                <!-- 4. Send Button -->
                                 <button type="submit" id="chatSendBtn" class="btn btn-primary-custom chat-send-btn" title="Send message (Enter)" disabled>
                                     <i class="bi bi-send-fill" id="chatSendIcon"></i>
                                     <span class="spinner-border spinner-border-sm d-none" id="chatSendSpinner" style="width: 14px; height: 14px;"></span>
@@ -176,9 +175,8 @@
                     </form>
 
                     <!-- Hidden File Inputs -->
-                    <input type="file" id="chatImageInput" accept="image/png,image/jpeg,image/jpg,image/webp,image/gif" class="d-none" onchange="handleChatFileSelect(event, 'image')">
-                    <input type="file" id="chatDocInput" accept=".pdf,.doc,.docx,.txt,.zip" class="d-none" onchange="handleChatFileSelect(event, 'file')">
-                    <input type="file" id="chatVideoInput" accept="video/mp4,video/webm" class="d-none" onchange="handleChatFileSelect(event, 'video')">
+                    <input type="file" id="chatImageInput" accept="image/png,image/jpeg,image/webp" class="d-none" onchange="handleChatFileSelect(event, 'image')">
+                    <input type="file" id="chatDocInput" accept=".pdf,.doc,.docx,.txt,.zip" class="d-none" onchange="handleChatFileSelect(event, 'document')">
                 </div>
             </div>
         </div>
@@ -646,10 +644,11 @@
             try {
                 // If attachment selected, upload it first
                 if (selectedAttachment) {
-                    const uploadRes = await API.post('/api/upload', {
+                    const uploadRes = await API.post('/api/messages/attachment', {
+                        receiverId: currentPartnerId,
                         fileName: selectedAttachment.name,
                         fileData: selectedAttachment.base64,
-                        folder: 'chat'
+                        category: selectedAttachment.category === 'image' ? 'image' : 'document'
                     });
 
                     if (!uploadRes || !uploadRes.success) {
@@ -753,16 +752,15 @@
         function triggerFileInput(category) {
             if (category === 'image') document.getElementById('chatImageInput').click();
             else if (category === 'document') document.getElementById('chatDocInput').click();
-            else if (category === 'video') document.getElementById('chatVideoInput').click();
         }
 
         function handleChatFileSelect(e, category) {
             const file = e.target.files[0];
             if (!file) return;
 
-            // Enforce 15MB limit
-            if (file.size > 15 * 1024 * 1024) {
-                alert("File size exceeds 15MB limit. Please choose a smaller file.");
+            // Enforce 10MB limit
+            if (file.size > 10 * 1024 * 1024) {
+                alert("File size exceeds 10MB limit. Please choose a file smaller than 10MB.");
                 e.target.value = '';
                 return;
             }

@@ -2366,3 +2366,671 @@ footer {
         padding: 1.25rem 1rem;
     }
 }
+
+/* ===================================================================
+   REDESIGNED SKILL EXCHANGE PUBLIC LANDING PAGE STYLES
+   Modern, Educational, Student-Focused, SaaS-Quality Design System
+   =================================================================== */
+
+.landing-wrapper {
+    background-color: #F8FAFC;
+    background-image:
+        linear-gradient(rgba(50, 120, 200, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(50, 120, 200, 0.08) 1px, transparent 1px);
+    background-size: 32px 32px;
+    color: #1e293b;
+    position: relative;
+    overflow-x: hidden;
+    min-height: 100vh;
+}
+
+/* Sticky Glassmorphic Navbar */
+.landing-navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1020;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 2px solid #18181b;
+    transition: all 0.2s ease;
+}
+
+.landing-brand-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    text-decoration: none;
+    color: #18181b;
+}
+
+.landing-brand-text {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 1.35rem;
+    letter-spacing: -0.03em;
+    color: #18181b;
+}
+
+.landing-brand-text span {
+    color: #4f46e5;
+}
+
+.landing-nav-link {
+    font-weight: 600;
+    font-size: 0.925rem;
+    color: #334155;
+    padding: 0.5rem 0.85rem !important;
+    border-radius: 6px;
+    transition: all 0.15s ease;
+}
+
+.landing-nav-link:hover {
+    color: #4f46e5;
+    background: rgba(79, 70, 229, 0.06);
+}
+
+/* Hero Section */
+.landing-hero {
+    position: relative;
+    padding-top: 3.5rem;
+    padding-bottom: 4.5rem;
+}
+
+.landing-badge-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #eef2ff;
+    color: #4338ca;
+    border: 1.5px solid #c7d2fe;
+    padding: 0.35rem 0.95rem;
+    border-radius: 9999px;
+    font-size: 0.825rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.landing-hero-headline {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-weight: 800;
+    font-size: clamp(2.5rem, 5.2vw, 4.15rem);
+    line-height: 1.08;
+    letter-spacing: -0.04em;
+    color: #0f172a;
+    margin-bottom: 1.25rem;
+}
+
+.landing-hero-headline .accent-gradient {
+    background: linear-gradient(135deg, #4f46e5 0%, #2563eb 50%, #06b6d4 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.landing-hero-subhead {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #334155;
+    line-height: 1.45;
+    margin-bottom: 0.85rem;
+}
+
+.landing-hero-desc {
+    font-size: 1.025rem;
+    line-height: 1.6;
+    color: #64748b;
+    max-width: 540px;
+    margin-bottom: 2rem;
+}
+
+/* Hero Visual Canvas (Right Side Illustration) */
+.hero-visual-container {
+    position: relative;
+    background: #ffffff;
+    border: 2px solid #18181b;
+    border-radius: 16px;
+    box-shadow: 6px 6px 0px #18181b;
+    padding: 2.25rem 1.75rem;
+    min-height: 440px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.hero-visual-bg-glow {
+    position: absolute;
+    width: 280px;
+    height: 280px;
+    background: radial-gradient(circle, rgba(79, 70, 229, 0.12) 0%, rgba(37, 99, 235, 0.04) 60%, transparent 80%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.central-exchange-hub {
+    position: relative;
+    z-index: 2;
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+    border: 2px solid #18181b;
+    border-radius: 9999px;
+    padding: 1.15rem 1.85rem;
+    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.3), 3px 3px 0 #18181b;
+    color: #ffffff;
+    text-align: center;
+    animation: pulseAura 3s infinite ease-in-out;
+}
+
+.central-exchange-hub .hub-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 0.875rem;
+    letter-spacing: 0.12em;
+    color: #93c5fd;
+    text-transform: uppercase;
+}
+
+.central-exchange-hub .hub-flow {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    font-weight: 800;
+    font-size: 1.05rem;
+    letter-spacing: -0.02em;
+}
+
+.central-exchange-hub .hub-flow i {
+    color: #38bdf8;
+    font-size: 1.15rem;
+}
+
+/* Floating Skill Cards Around Central Hub */
+.floating-skill-chip {
+    position: absolute;
+    z-index: 3;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #ffffff;
+    border: 2px solid #18181b;
+    border-radius: 10px;
+    padding: 0.45rem 0.85rem;
+    box-shadow: 3px 3px 0px #18181b;
+    font-size: 0.825rem;
+    font-weight: 700;
+    color: #0f172a;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    white-space: nowrap;
+}
+
+.floating-skill-chip:hover {
+    transform: scale(1.06) translateY(-2px);
+    box-shadow: 4px 4px 0px #18181b;
+}
+
+.floating-skill-chip .chip-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+}
+
+/* Floating card positions */
+.chip-pos-1 { top: 12%; left: 8%; animation: floatSlow1 4s ease-in-out infinite; }
+.chip-pos-2 { top: 10%; right: 8%; animation: floatSlow2 4.5s ease-in-out infinite; }
+.chip-pos-3 { top: 40%; left: 3%; animation: floatSlow2 3.8s ease-in-out infinite; }
+.chip-pos-4 { top: 42%; right: 3%; animation: floatSlow1 4.2s ease-in-out infinite; }
+.chip-pos-5 { bottom: 12%; left: 10%; animation: floatSlow1 4.7s ease-in-out infinite; }
+.chip-pos-6 { bottom: 10%; right: 10%; animation: floatSlow2 3.9s ease-in-out infinite; }
+
+/* Micro-animations */
+@keyframes floatSlow1 {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-7px); }
+}
+
+@keyframes floatSlow2 {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(7px); }
+}
+
+@keyframes pulseAura {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.3), 3px 3px 0 #18181b; }
+    50% { box-shadow: 0 0 0 12px rgba(79, 70, 229, 0), 3px 3px 0 #18181b; }
+}
+
+/* Connecting arrows orbit canvas */
+.orbit-ring {
+    position: absolute;
+    width: 330px;
+    height: 330px;
+    border: 1.5px dashed #cbd5e1;
+    border-radius: 50%;
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* Subtle Educational Line-Art Background Elements */
+.edu-decor {
+    position: absolute;
+    color: #94a3b8;
+    opacity: 0.35;
+    pointer-events: none;
+    z-index: 0;
+    font-size: 1.5rem;
+    transition: opacity 0.3s ease;
+}
+
+/* Section Header Styles */
+.landing-section-header {
+    text-align: center;
+    max-width: 680px;
+    margin: 0 auto 3rem auto;
+}
+
+.landing-section-tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #4f46e5;
+    background: #eef2ff;
+    border: 1px solid #c7d2fe;
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    margin-bottom: 0.75rem;
+}
+
+.landing-section-title {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-weight: 800;
+    font-size: clamp(1.85rem, 3.2vw, 2.65rem);
+    letter-spacing: -0.03em;
+    color: #0f172a;
+    margin-bottom: 0.75rem;
+}
+
+.landing-section-desc {
+    font-size: 1.05rem;
+    color: #64748b;
+    line-height: 1.6;
+}
+
+/* Clean Feature Cards (What is Skill Exchange?) */
+.landing-feature-card {
+    background: #ffffff;
+    border: 2px solid #18181b;
+    border-radius: 12px;
+    padding: 2rem 1.65rem;
+    box-shadow: 4px 4px 0px #18181b;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.landing-feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 6px 6px 0px #18181b;
+}
+
+.feature-icon-wrapper {
+    width: 52px;
+    height: 52px;
+    border-radius: 10px;
+    border: 2px solid #18181b;
+    box-shadow: 2px 2px 0px #18181b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    margin-bottom: 1.35rem;
+}
+
+.landing-feature-card h3 {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: #0f172a;
+    margin-bottom: 0.65rem;
+}
+
+.landing-feature-card p {
+    font-size: 0.95rem;
+    color: #475569;
+    line-height: 1.55;
+    margin-bottom: 0;
+}
+
+/* How It Works Step Cards */
+.step-card {
+    background: #ffffff;
+    border: 2px solid #18181b;
+    border-radius: 12px;
+    padding: 1.85rem 1.5rem;
+    box-shadow: 4px 4px 0px #18181b;
+    height: 100%;
+    position: relative;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.step-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 6px 6px 0px #18181b;
+}
+
+.step-number-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 800;
+    font-size: 1.5rem;
+    color: #4f46e5;
+    background: #eef2ff;
+    border: 1.5px solid #18181b;
+    border-radius: 8px;
+    padding: 0.2rem 0.65rem;
+    display: inline-block;
+    margin-bottom: 1rem;
+    box-shadow: 2px 2px 0px #18181b;
+}
+
+.step-card h4 {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: #0f172a;
+    margin-bottom: 0.5rem;
+}
+
+.step-card p {
+    font-size: 0.925rem;
+    color: #64748b;
+    line-height: 1.55;
+    margin-bottom: 0;
+}
+
+.step-connector-arrow {
+    display: none;
+}
+
+@media (min-width: 992px) {
+    .step-col {
+        position: relative;
+    }
+    .step-col:not(:last-child)::after {
+        content: '→';
+        position: absolute;
+        right: -14px;
+        top: 40%;
+        transform: translateY(-50%);
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: #4f46e5;
+        z-index: 5;
+    }
+}
+
+/* Category Discover Cards */
+.category-pill-card {
+    background: #ffffff;
+    border: 2px solid #18181b;
+    border-radius: 12px;
+    padding: 1.25rem 1.25rem;
+    box-shadow: 3px 3px 0px #18181b;
+    text-decoration: none;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    height: 100%;
+    transition: all 0.18s ease;
+}
+
+.category-pill-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 5px 5px 0px #18181b;
+    background: #fdfdfd;
+    color: #4f46e5;
+}
+
+.category-pill-card .cat-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    border: 2px solid #18181b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.category-pill-card .cat-info h5 {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 1.05rem;
+    margin-bottom: 0.2rem;
+}
+
+.category-pill-card .cat-info span {
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+/* Why Skill Exchange Cards */
+.why-card {
+    background: #ffffff;
+    border: 2px solid #18181b;
+    border-radius: 12px;
+    padding: 1.75rem 1.5rem;
+    box-shadow: 4px 4px 0px #18181b;
+    height: 100%;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.why-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 6px 6px 0px #18181b;
+}
+
+.why-card .why-icon-box {
+    width: 46px;
+    height: 46px;
+    border-radius: 8px;
+    border: 2px solid #18181b;
+    box-shadow: 2px 2px 0px #18181b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    margin-bottom: 1.15rem;
+}
+
+.why-card h4 {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 1.15rem;
+    color: #0f172a;
+    margin-bottom: 0.5rem;
+}
+
+.why-card p {
+    font-size: 0.925rem;
+    color: #475569;
+    line-height: 1.55;
+    margin-bottom: 0;
+}
+
+/* Two-Way Learning Visual Section */
+.two-way-exchange-card {
+    background: #ffffff;
+    border: 2.5px solid #18181b;
+    border-radius: 16px;
+    box-shadow: 6px 6px 0px #18181b;
+    padding: 3rem 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.exchange-network-diagram {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.diagram-node {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.75rem 1.5rem;
+    border: 2px solid #18181b;
+    border-radius: 10px;
+    box-shadow: 3px 3px 0px #18181b;
+    font-weight: 800;
+    font-size: 1.05rem;
+    background: #ffffff;
+}
+
+.diagram-arrows {
+    font-size: 1.5rem;
+    color: #4f46e5;
+    font-weight: 800;
+}
+
+.reciprocal-badge-banner {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+    border: 2px solid #4338ca;
+    border-radius: 9999px;
+    padding: 0.65rem 1.5rem;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #312e81;
+}
+
+/* Final CTA Section */
+.landing-cta-card {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+    border: 2.5px solid #18181b;
+    border-radius: 16px;
+    box-shadow: 6px 6px 0px #18181b;
+    padding: 3.5rem 2rem;
+    text-align: center;
+    color: #ffffff;
+    position: relative;
+    overflow: hidden;
+}
+
+.landing-cta-card h2 {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-weight: 800;
+    font-size: clamp(2rem, 3.8vw, 3rem);
+    letter-spacing: -0.03em;
+    margin-bottom: 0.85rem;
+}
+
+.landing-cta-card p {
+    font-size: 1.15rem;
+    color: #cbd5e1;
+    max-width: 580px;
+    margin: 0 auto 2rem auto;
+    line-height: 1.6;
+}
+
+/* Minimalist Landing Footer */
+.landing-footer {
+    background: #ffffff;
+    border-top: 2px solid #18181b;
+    padding: 3rem 0 2rem 0;
+    color: #334155;
+}
+
+.landing-footer-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    text-decoration: none;
+    color: #0f172a;
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 1.25rem;
+    margin-bottom: 0.75rem;
+}
+
+.landing-footer-desc {
+    font-size: 0.9rem;
+    color: #64748b;
+    line-height: 1.55;
+    max-width: 360px;
+}
+
+.landing-footer-link {
+    color: #475569;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: color 0.15s ease;
+}
+
+.landing-footer-link:hover {
+    color: #4f46e5;
+}
+
+/* ===================================================================
+   PASSWORD FIELD SHOW / HIDE TOGGLE
+   Accessible, Professional Neo-Brutalist Icon Button
+   =================================================================== */
+
+.password-input-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.password-field-input {
+    padding-right: 2.85rem !important;
+}
+
+.password-toggle-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #64748b;
+    padding: 0.35rem 0.55rem;
+    font-size: 1.15rem;
+    line-height: 1;
+    cursor: pointer;
+    border-radius: 4px;
+    z-index: 5;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.password-toggle-btn:hover {
+    color: #18181b;
+    background-color: rgba(24, 24, 27, 0.06);
+}
+
+.password-toggle-btn:focus-visible {
+    color: #4f46e5;
+    outline: 2px solid #4f46e5;
+    outline-offset: 1px;
+}
+
+
