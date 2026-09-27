@@ -150,14 +150,8 @@
 
                     if (redirectUrl) {
                         window.location.href = redirectUrl;
-                    } else if (res.data.role === 'ROLE_ADMIN') {
-                        // Admin enters normal SWAP website with Admin Panel available in profile menu
-                        window.location.href = 'index.html';
-                    } else if (res.data.hasSeenLanding === false) {
-                        // First login: show Landing Page once
-                        window.location.href = 'landing.html?firstLogin=true';
                     } else {
-                        // Subsequent logins: direct to normal Home Page
+                        // Direct to normal Home Page
                         window.location.href = 'index.html';
                     }
                 }, 700);

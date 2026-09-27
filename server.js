@@ -3144,11 +3144,16 @@ const server = http.createServer(async (req, res) => {
     // Remove leading slash
     if (filePath.startsWith('/')) filePath = filePath.substring(1);
 
+    // Redirect any landing request directly to Home Page index.html
+    if (filePath === 'landing' || filePath === 'landing/' || filePath === 'landing.html') {
+        res.writeHead(302, { 'Location': '/index.html' });
+        res.end();
+        return;
+    }
+
     // SaaS Clean URL rewrite: Any /admin route serves the admin dashboard
     if (filePath.startsWith('admin') && !filePath.includes('.')) {
         filePath = 'admin-dashboard.html';
-    } else if (filePath === 'landing' || filePath === 'landing/') {
-        filePath = 'landing.html';
     } else if (!filePath.includes('.')) {
         filePath += '.html';
     }

@@ -177,15 +177,15 @@ async function runTests() {
     // ----------------------------------------------------
     console.log('\n--- TEST SUITE 4: Landing Page vs Home Page ---');
 
-    // 4a. Check landing.html serves Neo-Brutalist SWAP introduction
+    // 4a. Check landing.html is removed and redirects to /index.html
     const landingRes = await makeRequest({
         hostname: 'localhost',
         port: 8080,
         path: '/landing.html',
         method: 'GET'
     });
-    assert('landing.html serves valid Neo-Brutalist intro page', 
-        landingRes.statusCode === 200 && landingRes.raw.includes('SWAP') && landingRes.raw.includes('Explore SWAP')
+    assert('landing.html is removed and redirects (302) to /index.html', 
+        landingRes.statusCode === 302 && landingRes.headers.location === '/index.html'
     );
 
     // 4b. Check index.html is normal working Home Page

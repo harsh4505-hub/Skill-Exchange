@@ -14,11 +14,6 @@ public class WebPageController {
         return "forward:/index.html";
     }
 
-    @GetMapping("/landing")
-    public String landing() {
-        return "forward:/landing.html";
-    }
-
     @GetMapping("/login")
     public String login() {
         return "forward:/login.html";
