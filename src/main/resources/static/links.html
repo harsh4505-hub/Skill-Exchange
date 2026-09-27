@@ -3,403 +3,369 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>All Pages Directory | Student Skill Exchange Platform</title>
-    <!-- Google Fonts & Bootstrap 5 & Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <title>All Site Links & Navigation Hub | Skill Exchange</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="css/style.css">
     <style>
-        body.directory-body {
-            background-color: #fafafa;
-            color: #0f172a;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            padding-bottom: 3rem;
-        }
-
-        .dir-header {
-            background: #ffffff;
-            border-bottom: 2px solid #0f172a;
-            padding: 1.5rem 0;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .dir-card {
+        .link-hub-card {
             background: #ffffff;
             border: 2px solid #0f172a;
-            border-radius: var(--radius-md);
+            border-radius: 8px;
             box-shadow: 4px 4px 0 #0f172a;
-            padding: 1.25rem 1.5rem;
-            height: 100%;
+            padding: 1.25rem;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            text-decoration: none;
+            color: #0f172a;
             display: flex;
             flex-direction: column;
-            transition: all 0.15s ease;
-            text-decoration: none;
-            color: inherit;
+            height: 100%;
         }
-
-        .dir-card:hover {
+        .link-hub-card:hover {
             transform: translate(-2px, -2px);
             box-shadow: 6px 6px 0 #0f172a;
-            color: inherit;
+            color: #0f172a;
+            background: #fff;
         }
-
-        .dir-icon {
-            width: 42px;
-            height: 42px;
-            min-width: 42px;
+        .link-icon-box {
+            width: 44px;
+            height: 44px;
             border: 2px solid #0f172a;
-            border-radius: var(--radius-sm);
+            border-radius: 6px;
+            box-shadow: 2px 2px 0 #0f172a;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 1.25rem;
-            box-shadow: 2px 2px 0 #0f172a;
+            margin-bottom: 0.75rem;
         }
-
-        .badge-route {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.72rem;
-            background: #f1f5f9;
-            color: #0f172a;
-            border: 1px solid #0f172a;
+        .tag-pill {
+            font-size: 0.68rem;
+            font-family: var(--font-mono, monospace);
+            font-weight: 700;
             padding: 0.2rem 0.5rem;
-            border-radius: var(--radius-sm);
-            display: inline-block;
-        }
-
-        .category-header {
-            font-family: 'Space Grotesk', sans-serif;
-            font-weight: 800;
-            font-size: 1.2rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-top: 2rem;
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid #0f172a;
-        }
-
-        .cred-box {
-            background: #ede9fe;
-            border: 2px solid #0f172a;
-            border-radius: var(--radius-md);
-            box-shadow: 4px 4px 0 #0f172a;
-            padding: 1rem 1.25rem;
+            border: 1px solid #0f172a;
+            border-radius: 4px;
+            text-transform: uppercase;
         }
     </style>
 </head>
-<body class="directory-body">
+<body class="bg-light">
 
     <!-- Top Navigation Header -->
-    <header class="dir-header mb-4">
-        <div class="container d-flex align-items-center justify-content-between flex-wrap gap-2">
-            <a href="index.html" class="d-flex align-items-center gap-2 text-decoration-none">
-                <span class="brand-icon-box" style="width: 38px; height: 38px; font-size: 1.15rem; background: #0f172a; color: #ffffff; border: 2px solid #0f172a; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); box-shadow: 2px 2px 0 #0f172a;">
-                    <i class="bi bi-arrow-left-right"></i>
-                </span>
-                <div>
-                    <strong class="text-dark fs-5" style="font-family: 'Space Grotesk', sans-serif;">SkillExchange</strong>
-                    <span class="badge bg-danger text-white border border-dark ms-1" style="font-size: 0.65rem;">MASTER DIRECTORY</span>
-                </div>
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <span class="brand-icon-box"><i class="bi bi-arrow-left-right"></i></span>
+                <span class="brand-title">Skill<strong>Exchange</strong></span>
             </a>
-
-            <div class="d-flex align-items-center gap-2">
-                <a href="index.html" class="btn btn-sm btn-outline-dark fw-bold border-2">
-                    <i class="bi bi-house-door me-1"></i> Open Website
-                </a>
-                <a href="admin-dashboard.html" class="btn btn-sm btn-danger fw-bold border-2 border-dark text-white">
-                    <i class="bi bi-shield-check me-1"></i> Admin Panel
+            <div class="ms-auto d-flex align-items-center gap-2">
+                <a href="index.html" class="btn btn-sm btn-primary-custom">
+                    <i class="bi bi-house-door me-1"></i> Open Home Page
                 </a>
             </div>
         </div>
-    </header>
+    </nav>
 
-    <main class="container">
-        <!-- Banner -->
-        <div class="p-4 mb-4 border border-2 border-dark rounded bg-white" style="box-shadow: 5px 5px 0 #0f172a;">
-            <div class="row align-items-center g-3">
-                <div class="col-lg-8">
-                    <span class="badge border border-dark px-3 py-1 mb-2" style="background: #ffe4e6; color: #0f172a; font-family: 'JetBrains Mono', monospace;">ONE LINK NAVIGATION</span>
-                    <h1 class="fw-bold mb-1" style="font-family: 'Space Grotesk', sans-serif; font-size: clamp(1.8rem, 3vw, 2.4rem);">Complete Platform Links Directory</h1>
-                    <p class="text-muted mb-0">Every page, user flow, admin panel, and utility in the Student Skill Exchange platform in one place.</p>
+    <!-- Main Container -->
+    <div class="container py-4">
+        <!-- Header Banner -->
+        <div class="p-4 mb-4 border border-2 border-dark rounded-3 bg-white" style="box-shadow: 4px 4px 0 #0f172a;">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div>
+                    <span class="badge bg-danger text-white mb-2" style="font-family: monospace; letter-spacing: 0.05em;">MASTER DIRECTORY</span>
+                    <h2 class="fw-bold mb-1">All Skill Exchange Links in One Hub</h2>
+                    <p class="text-muted small mb-0">Direct access to every functional page, tool, student module, and administrator feature.</p>
                 </div>
-                <div class="col-lg-4">
-                    <div class="cred-box">
-                        <strong class="d-block small text-uppercase mb-1" style="font-family: 'JetBrains Mono', monospace;"><i class="bi bi-key-fill me-1"></i> Demo Credentials</strong>
-                        <div class="small"><strong>Admin:</strong> <code>admin@mgmmumbai.ac.in</code></div>
-                        <div class="small"><strong>Student:</strong> <code>harsh@mgmmumbai.ac.in</code></div>
-                        <div class="small"><strong>Password:</strong> <code>password123</code></div>
-                    </div>
+                <div class="d-flex align-items-center gap-2">
+                    <input type="text" id="linkSearch" class="form-control form-control-sm border border-2 border-dark" placeholder="Quick search links..." onkeyup="filterLinks()" style="max-width: 240px; box-shadow: 2px 2px 0 #0f172a;">
                 </div>
             </div>
         </div>
 
-        <!-- CATEGORY 1: PUBLIC & ONBOARDING -->
-        <div class="category-header">
-            <span class="badge bg-dark text-white rounded-pill px-2 py-1" style="font-size: 0.75rem;">01</span>
-            <span>PUBLIC PAGES & ONBOARDING</span>
-        </div>
-        <div class="row g-3">
-            <!-- 1. Normal Home Page -->
-            <div class="col-md-6 col-lg-4">
-                <a href="index.html" class="dir-card">
-                    <div class="d-flex align-items-center gap-3 mb-2">
-                        <div class="dir-icon bg-light text-primary"><i class="bi bi-house-door-fill"></i></div>
-                        <div>
-                            <h5 class="fw-bold mb-0">Home Page</h5>
-                            <span class="badge-route">/index.html</span>
-                        </div>
-                    </div>
-                    <p class="text-muted small mb-0 flex-grow-1">Main discovery hub, categories grid, keyword search, and reciprocal barter matcher.</p>
-                </a>
-            </div>
-
-            <!-- 2. Landing Page -->
-            <div class="col-md-6 col-lg-4">
-                <a href="landing.html" class="dir-card">
-                    <div class="d-flex align-items-center gap-3 mb-2">
-                        <div class="dir-icon text-white" style="background: #f43f5e;"><i class="bi bi-megaphone-fill"></i></div>
-                        <div>
-                            <h5 class="fw-bold mb-0">Public Landing Page</h5>
-                            <span class="badge-route">/landing.html</span>
-                        </div>
-                    </div>
-                    <p class="text-muted small mb-0 flex-grow-1">Public entry page with platform overview, 4-step guide, teach/learn panels, and verification rules.</p>
-                </a>
-            </div>
-
-            <!-- 3. Skills Catalog -->
-            <div class="col-md-6 col-lg-4">
-                <a href="skills.html" class="dir-card">
-                    <div class="d-flex align-items-center gap-3 mb-2">
-                        <div class="dir-icon bg-light text-success"><i class="bi bi-journal-bookmark-fill"></i></div>
-                        <div>
-                            <h5 class="fw-bold mb-0">Skills Directory</h5>
-                            <span class="badge-route">/skills.html</span>
-                        </div>
-                    </div>
-                    <p class="text-muted small mb-0 flex-grow-1">Complete catalog of student-taught and requested skills filtered by category and proficiency.</p>
-                </a>
-            </div>
-        </div>
-
-        <!-- CATEGORY 2: AUTHENTICATION FLOW -->
-        <div class="category-header">
-            <span class="badge bg-dark text-white rounded-pill px-2 py-1" style="font-size: 0.75rem;">02</span>
-            <span>AUTHENTICATION & ACCOUNT RECOVERY</span>
-        </div>
-        <div class="row g-3">
-            <!-- 4. Login -->
-            <div class="col-md-6 col-lg-3">
-                <a href="login.html" class="dir-card">
-                    <div class="d-flex align-items-center gap-3 mb-2">
-                        <div class="dir-icon bg-light text-dark"><i class="bi bi-box-arrow-in-right"></i></div>
-                        <div>
-                            <h5 class="fw-bold mb-0">Sign In</h5>
-                            <span class="badge-route">/login.html</span>
-                        </div>
-                    </div>
-                    <p class="text-muted small mb-0 flex-grow-1">College email authentication with show/hide password toggle.</p>
-                </a>
-            </div>
-
-            <!-- 5. Register -->
-            <div class="col-md-6 col-lg-3">
-                <a href="register.html" class="dir-card">
-                    <div class="d-flex align-items-center gap-3 mb-2">
-                        <div class="dir-icon bg-light text-primary"><i class="bi bi-person-plus-fill"></i></div>
-                        <div>
-                            <h5 class="fw-bold mb-0">Register</h5>
-                            <span class="badge-route">/register.html</span>
-                        </div>
-                    </div>
-                    <p class="text-muted small mb-0 flex-grow-1">New student signup validated with @mgmmumbai.ac.in restriction.</p>
-                </a>
-            </div>
-
-            <!-- 6. Verify Email OTP -->
-            <div class="col-md-6 col-lg-3">
-                <a href="verify-email.html" class="dir-card">
-                    <div class="d-flex align-items-center gap-3 mb-2">
-                        <div class="dir-icon bg-light text-warning"><i class="bi bi-shield-lock-fill"></i></div>
-                        <div>
-                            <h5 class="fw-bold mb-0">Verify Email</h5>
-                            <span class="badge-route">/verify-email.html</span>
-                        </div>
-                    </div>
-                    <p class="text-muted small mb-0 flex-grow-1">6-digit email confirmation OTP input with resend countdown timer.</p>
-                </a>
-            </div>
-
-            <!-- 7. Forgot Password -->
-            <div class="col-md-6 col-lg-3">
-                <a href="forgot-password.html" class="dir-card">
-                    <div class="d-flex align-items-center gap-3 mb-2">
-                        <div class="dir-icon bg-light text-danger"><i class="bi bi-key-fill"></i></div>
-                        <div>
-                            <h5 class="fw-bold mb-0">Reset Password</h5>
-                            <span class="badge-route">/forgot-password.html</span>
-                        </div>
-                    </div>
-                    <p class="text-muted small mb-0 flex-grow-1">Secure self-service password reset with email OTP code.</p>
-                </a>
-            </div>
-        </div>
-
-        <!-- CATEGORY 3: STUDENT EXCHANGE FEATURES -->
-        <div class="category-header">
-            <span class="badge bg-dark text-white rounded-pill px-2 py-1" style="font-size: 0.75rem;">03</span>
-            <span>STUDENT EXCHANGE MODULES</span>
-        </div>
-        <div class="row g-3">
-            <!-- 8. Dashboard -->
-            <div class="col-md-6 col-lg-4">
-                <a href="dashboard.html" class="dir-card">
-                    <div class="d-flex align-items-center gap-3 mb-2">
-                        <div class="dir-icon bg-light text-primary"><i class="bi bi-speedometer2"></i></div>
-                        <div>
-                            <h5 class="fw-bold mb-0">Student Dashboard</h5>
-                            <span class="badge-route">/dashboard.html</span>
-                        </div>
-                    </div>
-                    <p class="text-muted small mb-0 flex-grow-1">Overview of your active exchanges, teaching skills, proposals, and learning goals.</p>
-                </a>
-            </div>
-
-            <!-- 9. Matches -->
-            <div class="col-md-6 col-lg-4">
-                <a href="matches.html" class="dir-card">
-                    <div class="d-flex align-items-center gap-3 mb-2">
-                        <div class="dir-icon bg-light text-danger"><i class="bi bi-people-fill"></i></div>
-                        <div>
-                            <h5 class="fw-bold mb-0">Find Matches</h5>
-                            <span class="badge-route">/matches.html</span>
-                        </div>
-                    </div>
-                    <p class="text-muted small mb-0 flex-grow-1">Discover campus peers with reciprocal skill compatibility ready to trade knowledge.</p>
-                </a>
-            </div>
-
-            <!-- 10. Proposals / Requests -->
-            <div class="col-md-6 col-lg-4">
-                <a href="requests.html" class="dir-card">
-                    <div class="d-flex align-items-center gap-3 mb-2">
-                        <div class="dir-icon bg-light text-info"><i class="bi bi-inbox-fill"></i></div>
-                        <div>
-                            <h5 class="fw-bold mb-0">Exchange Proposals</h5>
-                            <span class="badge-route">/requests.html</span>
-                        </div>
-                    </div>
-                    <p class="text-muted small mb-0 flex-grow-1">Manage incoming and sent exchange proposals, accept/reject requests, and start sessions.</p>
-                </a>
-            </div>
-
-            <!-- 11. Chat & Messaging -->
-            <div class="col-md-6 col-lg-4">
-                <a href="chat.html" class="dir-card">
-                    <div class="d-flex align-items-center gap-3 mb-2">
-                        <div class="dir-icon bg-light text-success"><i class="bi bi-chat-dots-fill"></i></div>
-                        <div>
-                            <h5 class="fw-bold mb-0">Chat Messenger</h5>
-                            <span class="badge-route">/chat.html</span>
-                        </div>
-                    </div>
-                    <p class="text-muted small mb-0 flex-grow-1">Real-time peer chat with independent emoji picker and photo/document file attachments.</p>
-                </a>
-            </div>
-
-            <!-- 12. Skill Verification -->
-            <div class="col-md-6 col-lg-4">
-                <a href="verification.html" class="dir-card">
-                    <div class="d-flex align-items-center gap-3 mb-2">
-                        <div class="dir-icon bg-light text-warning"><i class="bi bi-patch-check-fill"></i></div>
-                        <div>
-                            <h5 class="fw-bold mb-0">Skill Verification</h5>
-                            <span class="badge-route">/verification.html</span>
-                        </div>
-                    </div>
-                    <p class="text-muted small mb-0 flex-grow-1">Submit mandatory project URLs and experience proof for administrative verification review.</p>
-                </a>
-            </div>
-
-            <!-- 13. Profile & Avatar -->
-            <div class="col-md-6 col-lg-4">
-                <a href="profile.html" class="dir-card">
-                    <div class="d-flex align-items-center gap-3 mb-2">
-                        <div class="dir-icon bg-light text-dark"><i class="bi bi-person-circle"></i></div>
-                        <div>
-                            <h5 class="fw-bold mb-0">Student Profile</h5>
-                            <span class="badge-route">/profile.html</span>
-                        </div>
-                    </div>
-                    <p class="text-muted small mb-0 flex-grow-1">Edit bio, manage skills taught/learned, upload custom profile photo, and view ratings.</p>
-                </a>
-            </div>
-
-            <!-- 14. Exchange History & Reviews -->
-            <div class="col-md-6 col-lg-6">
-                <a href="exchange-history.html" class="dir-card">
-                    <div class="d-flex align-items-center gap-3 mb-2">
-                        <div class="dir-icon bg-light text-primary"><i class="bi bi-clock-history"></i></div>
-                        <div>
-                            <h5 class="fw-bold mb-0">Exchange History & Reviews</h5>
-                            <span class="badge-route">/exchange-history.html</span>
-                        </div>
-                    </div>
-                    <p class="text-muted small mb-0 flex-grow-1">View completed barters, track learning hours, and leave 5-star peer reviews.</p>
-                </a>
-            </div>
-
-            <!-- 15. Notifications Activity Feed -->
-            <div class="col-md-6 col-lg-6">
-                <a href="notifications.html" class="dir-card">
-                    <div class="d-flex align-items-center gap-3 mb-2">
-                        <div class="dir-icon bg-light text-danger"><i class="bi bi-bell-fill"></i></div>
-                        <div>
-                            <h5 class="fw-bold mb-0">Notifications Feed</h5>
-                            <span class="badge-route">/notifications.html</span>
-                        </div>
-                    </div>
-                    <p class="text-muted small mb-0 flex-grow-1">System activity feed, proposal alerts, verification decisions, and unread notifications.</p>
-                </a>
-            </div>
-        </div>
-
-        <!-- CATEGORY 4: ADMINISTRATIVE CONSOLE -->
-        <div class="category-header">
-            <span class="badge bg-danger text-white rounded-pill px-2 py-1" style="font-size: 0.75rem;">04</span>
-            <span>ADMINISTRATIVE GOVERNANCE (STAFF ONLY)</span>
-        </div>
-        <div class="row g-3">
-            <div class="col-12">
-                <a href="admin-dashboard.html" class="dir-card border-danger" style="background: #fff5f5;">
-                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="dir-icon bg-danger text-white"><i class="bi bi-shield-check"></i></div>
-                            <div>
-                                <h4 class="fw-bold text-danger mb-0">Administrator Control Center</h4>
-                                <span class="badge-route">/admin-dashboard.html</span>
+        <!-- SECTION 1: PUBLIC & AUTHENTICATION -->
+        <div class="mb-4">
+            <h5 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                <i class="bi bi-globe2 text-primary"></i> 1. Public & Account Access
+            </h5>
+            <div class="row g-3 link-grid">
+                <div class="col-md-6 col-lg-3 link-item">
+                    <a href="index.html" class="link-hub-card">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="link-icon-box bg-white text-primary">
+                                <i class="bi bi-house-door-fill"></i>
                             </div>
+                            <span class="tag-pill bg-primary-subtle text-primary">Core Hub</span>
                         </div>
-                        <span class="badge bg-danger text-white border border-dark px-3 py-2 fw-bold" style="font-family: 'JetBrains Mono', monospace;">ROLE_ADMIN ACCESS</span>
-                    </div>
-                    <p class="text-dark small mb-0">
-                        Unified governance console: student account status control, verification audits (Approve / Reject / Request Resubmission), safety report resolution, audit log monitoring, platform analytics, and seamless "Back to Website" toggle in the same session.
-                    </p>
-                </a>
+                        <h6 class="fw-bold mb-1">Home Page</h6>
+                        <p class="text-muted small mb-2 flex-grow-1">Main discovery interface with search, categories, and live barter showcase.</p>
+                        <span class="small fw-bold text-primary">Visit index.html &rarr;</span>
+                    </a>
+                </div>
+
+                <div class="col-md-6 col-lg-3 link-item">
+                    <a href="login.html" class="link-hub-card">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="link-icon-box bg-white text-dark">
+                                <i class="bi bi-box-arrow-in-right"></i>
+                            </div>
+                            <span class="tag-pill bg-light text-dark">Auth</span>
+                        </div>
+                        <h6 class="fw-bold mb-1">Login Page</h6>
+                        <p class="text-muted small mb-2 flex-grow-1">Account sign-in with show/hide password and college domain validator.</p>
+                        <span class="small fw-bold text-dark">Visit login.html &rarr;</span>
+                    </a>
+                </div>
+
+                <div class="col-md-6 col-lg-3 link-item">
+                    <a href="register.html" class="link-hub-card">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="link-icon-box bg-white text-success">
+                                <i class="bi bi-person-plus-fill"></i>
+                            </div>
+                            <span class="tag-pill bg-success-subtle text-success">Register</span>
+                        </div>
+                        <h6 class="fw-bold mb-1">Sign Up</h6>
+                        <p class="text-muted small mb-2 flex-grow-1">Student registration restricted strictly to @mgmmumbai.ac.in emails.</p>
+                        <span class="small fw-bold text-success">Visit register.html &rarr;</span>
+                    </a>
+                </div>
+
+                <div class="col-md-6 col-lg-3 link-item">
+                    <a href="verify-email.html" class="link-hub-card">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="link-icon-box bg-white text-warning">
+                                <i class="bi bi-envelope-check-fill"></i>
+                            </div>
+                            <span class="tag-pill bg-warning-subtle text-dark">Security</span>
+                        </div>
+                        <h6 class="fw-bold mb-1">Verify College Email</h6>
+                        <p class="text-muted small mb-2 flex-grow-1">6-digit email OTP verification portal with resend rate-limiting.</p>
+                        <span class="small fw-bold text-warning">Visit verify-email.html &rarr;</span>
+                    </a>
+                </div>
+
+                <div class="col-md-6 col-lg-3 link-item">
+                    <a href="forgot-password.html" class="link-hub-card">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="link-icon-box bg-white text-secondary">
+                                <i class="bi bi-key-fill"></i>
+                            </div>
+                            <span class="tag-pill bg-secondary-subtle text-secondary">Recovery</span>
+                        </div>
+                        <h6 class="fw-bold mb-1">Forgot Password</h6>
+                        <p class="text-muted small mb-2 flex-grow-1">Self-service student password reset via secure OTP dispatch.</p>
+                        <span class="small fw-bold text-secondary">Visit forgot-password.html &rarr;</span>
+                    </a>
+                </div>
             </div>
         </div>
-    </main>
 
-    <!-- Footer -->
-    <footer class="mt-5 py-4 border-top border-2 border-dark bg-white">
-        <div class="container text-center">
-            <p class="text-muted small mb-0">&copy; 2026 Student Skill Exchange &bull; Official MGM Campus Network &bull; All Modules Live</p>
+        <!-- SECTION 2: STUDENT PORTAL & LEARNING MODULES -->
+        <div class="mb-4">
+            <h5 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                <i class="bi bi-mortarboard text-success"></i> 2. Student Learning & Exchange Modules
+            </h5>
+            <div class="row g-3 link-grid">
+                <div class="col-md-6 col-lg-3 link-item">
+                    <a href="dashboard.html" class="link-hub-card">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="link-icon-box bg-white text-primary">
+                                <i class="bi bi-speedometer2"></i>
+                            </div>
+                            <span class="tag-pill bg-primary-subtle text-primary">Portal</span>
+                        </div>
+                        <h6 class="fw-bold mb-1">Student Dashboard</h6>
+                        <p class="text-muted small mb-2 flex-grow-1">Overview of active swaps, barter hours, rating, and incoming trades.</p>
+                        <span class="small fw-bold text-primary">Visit dashboard.html &rarr;</span>
+                    </a>
+                </div>
+
+                <div class="col-md-6 col-lg-3 link-item">
+                    <a href="matches.html" class="link-hub-card">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="link-icon-box bg-white text-danger">
+                                <i class="bi bi-stars"></i>
+                            </div>
+                            <span class="tag-pill bg-danger-subtle text-danger">Matcher</span>
+                        </div>
+                        <h6 class="fw-bold mb-1">Find Matches</h6>
+                        <p class="text-muted small mb-2 flex-grow-1">Heuristic 2-way barter matchmaking algorithm scoring peer compatibility.</p>
+                        <span class="small fw-bold text-danger">Visit matches.html &rarr;</span>
+                    </a>
+                </div>
+
+                <div class="col-md-6 col-lg-3 link-item">
+                    <a href="skills.html" class="link-hub-card">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="link-icon-box bg-white text-info">
+                                <i class="bi bi-card-checklist"></i>
+                            </div>
+                            <span class="tag-pill bg-info-subtle text-info">Catalog</span>
+                        </div>
+                        <h6 class="fw-bold mb-1">Skill Directory</h6>
+                        <p class="text-muted small mb-2 flex-grow-1">Browse campus skills and manage the skills you teach or want to learn.</p>
+                        <span class="small fw-bold text-info">Visit skills.html &rarr;</span>
+                    </a>
+                </div>
+
+                <div class="col-md-6 col-lg-3 link-item">
+                    <a href="requests.html" class="link-hub-card">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="link-icon-box bg-white text-warning">
+                                <i class="bi bi-arrow-left-right"></i>
+                            </div>
+                            <span class="tag-pill bg-warning-subtle text-dark">Trades</span>
+                        </div>
+                        <h6 class="fw-bold mb-1">Exchange Proposals</h6>
+                        <p class="text-muted small mb-2 flex-grow-1">Review received exchange requests, accept/reject proposals, and track status.</p>
+                        <span class="small fw-bold text-warning">Visit requests.html &rarr;</span>
+                    </a>
+                </div>
+
+                <div class="col-md-6 col-lg-3 link-item">
+                    <a href="chat.html" class="link-hub-card">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="link-icon-box bg-white text-success">
+                                <i class="bi bi-chat-dots-fill"></i>
+                            </div>
+                            <span class="tag-pill bg-success-subtle text-success">Messenger</span>
+                        </div>
+                        <h6 class="fw-bold mb-1">Chat & File Sharing</h6>
+                        <p class="text-muted small mb-2 flex-grow-1">Direct messaging with separate emoji picker and safe photo/doc attachments.</p>
+                        <span class="small fw-bold text-success">Visit chat.html &rarr;</span>
+                    </a>
+                </div>
+
+                <div class="col-md-6 col-lg-3 link-item">
+                    <a href="profile.html" class="link-hub-card">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="link-icon-box bg-white text-dark">
+                                <i class="bi bi-person-bounding-box"></i>
+                            </div>
+                            <span class="tag-pill bg-light text-dark">Profile</span>
+                        </div>
+                        <h6 class="fw-bold mb-1">Student Profile</h6>
+                        <p class="text-muted small mb-2 flex-grow-1">Manage avatar photo, bio, project portfolio links, and learning goals.</p>
+                        <span class="small fw-bold text-dark">Visit profile.html &rarr;</span>
+                    </a>
+                </div>
+
+                <div class="col-md-6 col-lg-3 link-item">
+                    <a href="verification.html" class="link-hub-card">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="link-icon-box bg-white text-primary">
+                                <i class="bi bi-patch-check-fill"></i>
+                            </div>
+                            <span class="tag-pill bg-primary-subtle text-primary">Trust</span>
+                        </div>
+                        <h6 class="fw-bold mb-1">Skill Verification</h6>
+                        <p class="text-muted small mb-2 flex-grow-1">Submit certificates and project proofs to earn verified student badges.</p>
+                        <span class="small fw-bold text-primary">Visit verification.html &rarr;</span>
+                    </a>
+                </div>
+
+                <div class="col-md-6 col-lg-3 link-item">
+                    <a href="exchange-history.html" class="link-hub-card">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="link-icon-box bg-white text-secondary">
+                                <i class="bi bi-clock-history"></i>
+                            </div>
+                            <span class="tag-pill bg-secondary-subtle text-secondary">Archive</span>
+                        </div>
+                        <h6 class="fw-bold mb-1">Exchange History</h6>
+                        <p class="text-muted small mb-2 flex-grow-1">Log of completed exchanges, review ratings, and barter feedback.</p>
+                        <span class="small fw-bold text-secondary">Visit exchange-history.html &rarr;</span>
+                    </a>
+                </div>
+
+                <div class="col-md-6 col-lg-3 link-item">
+                    <a href="notifications.html" class="link-hub-card">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="link-icon-box bg-white text-danger">
+                                <i class="bi bi-bell-fill"></i>
+                            </div>
+                            <span class="tag-pill bg-danger-subtle text-danger">Alerts</span>
+                        </div>
+                        <h6 class="fw-bold mb-1">Notifications Feed</h6>
+                        <p class="text-muted small mb-2 flex-grow-1">Full activity stream for requests, messages, and admin verification status.</p>
+                        <span class="small fw-bold text-danger">Visit notifications.html &rarr;</span>
+                    </a>
+                </div>
+            </div>
         </div>
-    </footer>
 
+        <!-- SECTION 3: PLATFORM GOVERNANCE & ADMIN -->
+        <div class="mb-4">
+            <h5 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                <i class="bi bi-shield-lock-fill text-danger"></i> 3. Administrative Governance (Role-Protected)
+            </h5>
+            <div class="row g-3 link-grid">
+                <div class="col-md-12 col-lg-6 link-item">
+                    <a href="admin-dashboard.html" class="link-hub-card border-danger">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="link-icon-box bg-danger text-white">
+                                <i class="bi bi-shield-check"></i>
+                            </div>
+                            <span class="tag-pill bg-danger text-white">Staff / Admin Only</span>
+                        </div>
+                        <h5 class="fw-bold mb-1 text-danger">Admin Dashboard & Control Center</h5>
+                        <p class="text-muted small mb-3">
+                            Comprehensive administrative console: User status management, skill verification audit, safety report resolution, platform analytics, and announcement broadcasting. Features instant "Back to Website" navigation.
+                        </p>
+                        <div class="d-flex align-items-center gap-2 pt-2 border-top border-1">
+                            <span class="fw-bold small text-danger">Open Admin Panel (admin-dashboard.html) &rarr;</span>
+                            <small class="text-muted ms-auto">(Requires admin@mgmmumbai.ac.in)</small>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- QUICK LOGIN SHORTCUTS -->
+        <div class="p-4 border border-2 border-dark rounded-3 bg-white" style="box-shadow: 4px 4px 0 #0f172a;">
+            <h6 class="fw-bold text-uppercase mb-3" style="letter-spacing: 0.05em;">Quick Test Credentials</h6>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="p-3 border border-dark rounded bg-light">
+                        <span class="badge bg-danger text-white mb-2">ADMIN</span>
+                        <div class="fw-bold small">admin@mgmmumbai.ac.in</div>
+                        <div class="text-muted small font-monospace">Password: password123</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 border border-dark rounded bg-light">
+                        <span class="badge bg-primary text-white mb-2">STUDENT (Java)</span>
+                        <div class="fw-bold small">harsh@mgmmumbai.ac.in</div>
+                        <div class="text-muted small font-monospace">Password: password123</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 border border-dark rounded bg-light">
+                        <span class="badge bg-success text-white mb-2">STUDENT (Photoshop)</span>
+                        <div class="fw-bold small">sejal@mgmmumbai.ac.in</div>
+                        <div class="text-muted small font-monospace">Password: password123</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Search Script -->
+    <script>
+        function filterLinks() {
+            const query = document.getElementById('linkSearch').value.toLowerCase();
+            const items = document.querySelectorAll('.link-item');
+            items.forEach(item => {
+                const text = item.innerText.toLowerCase();
+                if (text.includes(query)) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+    </script>
 </body>
 </html>
