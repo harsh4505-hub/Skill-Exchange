@@ -130,44 +130,37 @@
              2. MAIN AREA (TOPBAR + CONTENT CANVAS)
              =================================================================== -->
         <main class="admin-main">
-            <!-- Top Navbar -->
+            <!-- Professional Admin Header -->
             <header class="admin-topbar">
-                <div class="d-flex align-items-center gap-3">
-                    <button class="btn btn-outline-custom btn-sm d-lg-none" onclick="toggleMobileSidebar(true)">
+                <div class="admin-topbar-left">
+                    <button class="btn btn-sm btn-outline-custom d-lg-none" onclick="toggleMobileSidebar(true)" aria-label="Open Navigation Drawer" title="Open Navigation Menu">
                         <i class="bi bi-list fs-5"></i>
                     </button>
-                    <!-- Breadcrumbs -->
-                    <nav aria-label="breadcrumb" class="d-flex align-items-center gap-2">
-                        <a href="/admin" class="text-muted text-decoration-none small fw-bold text-uppercase" style="letter-spacing: 0.05em; font-size: 0.72rem;" onclick="navigateToAdminRoute('dashboard', event)">Admin</a>
-                        <span class="text-muted small">/</span>
-                        <span class="fw-bold text-dark small text-capitalize" id="topbarBreadcrumb">Dashboard Overview</span>
+                    <!-- Administrative Hierarchy Breadcrumb -->
+                    <nav aria-label="breadcrumb" class="admin-breadcrumb">
+                        <a href="/admin" class="admin-breadcrumb-root" onclick="navigateToAdminRoute('dashboard', event)">ADMIN</a>
+                        <span class="admin-breadcrumb-divider" aria-hidden="true">/</span>
+                        <span class="admin-breadcrumb-current" id="topbarBreadcrumb">Dashboard Overview</span>
                     </nav>
                 </div>
 
-                <div class="d-flex align-items-center gap-3">
-                    <!-- Global Search -->
-                    <div class="d-none d-md-block position-relative" style="width: 260px;">
-                        <input type="text" id="globalAdminSearch" class="form-control form-control-sm neo-search-input py-1 ps-4" placeholder="Search platform... (Ctrl+K)" onkeyup="handleGlobalSearch(event)">
-                        <i class="bi bi-search position-absolute top-50 translate-middle-y text-muted" style="left: 10px; font-size: 0.8rem;"></i>
+                <div class="admin-topbar-actions">
+                    <!-- Global Platform Search -->
+                    <div class="admin-search-wrapper">
+                        <i class="bi bi-search admin-search-icon" aria-hidden="true"></i>
+                        <input type="text" id="globalAdminSearch" class="form-control form-control-sm admin-search-input" placeholder="Search platform..." onkeyup="handleGlobalSearch(event)" autocomplete="off">
                     </div>
 
-                    <!-- Platform Live Operational Dot -->
-                    <div class="d-none d-sm-flex align-items-center gap-2 px-2 py-1 bg-light border border-1 border-dark rounded">
-                        <span class="presence-dot"></span>
-                        <span class="small fw-bold text-dark" style="font-size: 0.75rem;">System Live</span>
-                    </div>
-
-                    <!-- Quick Action: Announcement -->
-                    <button class="btn btn-sm btn-outline-custom d-none d-sm-inline-flex" onclick="openAnnouncementModal()">
-                        <i class="bi bi-megaphone me-1"></i> Announce
+                    <!-- Announcement Action -->
+                    <button type="button" class="btn btn-sm btn-admin-action btn-admin-announce" onclick="openAnnouncementModal()" title="Broadcast Platform Announcement">
+                        <i class="bi bi-megaphone me-1" aria-hidden="true"></i>
+                        <span>Announce</span>
                     </button>
 
-                    <!-- Return to SWAP Website -->
-                    <a href="index.html" class="btn btn-sm btn-primary-custom" title="Return to SWAP Website">
-                        <i class="bi bi-arrow-left me-1"></i> Back to Website
-                    </a>
-                    <a href="dashboard.html" class="btn btn-sm btn-outline-custom d-none d-md-inline-flex" title="Open Student Dashboard">
-                        <i class="bi bi-mortarboard me-1"></i> Student View
+                    <!-- Return to Main Website -->
+                    <a href="index.html" class="btn btn-sm btn-admin-action btn-admin-back" title="Return to Student Skill Exchange Website">
+                        <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>
+                        <span>Back to Website</span>
                     </a>
                 </div>
             </header>
@@ -2770,15 +2763,6 @@
                 filterUsersTable();
             }
         }
-
-        // Keyboard shortcut Ctrl+K
-        document.addEventListener('keydown', (e) => {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-                e.preventDefault();
-                const search = document.getElementById('globalAdminSearch');
-                if (search) search.focus();
-            }
-        });
 
         function renderStatusPill(status) {
             if (!status) return `<span class="badge bg-light text-muted border">Unknown</span>`;

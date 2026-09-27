@@ -2121,8 +2121,13 @@ footer {
     background-position: -1px -1px;
 }
 
+/* ===================================================================
+   ADMIN TOPBAR & PROFESSIONAL HEADER
+   Neo-Brutalist, High-Contrast, Balanced & Fully Responsive
+   =================================================================== */
+
 .admin-topbar {
-    height: 64px;
+    min-height: 64px;
     background: #FFFFFF;
     border-bottom: 2px solid var(--border-color);
     flex-shrink: 0;
@@ -2130,8 +2135,236 @@ footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 1.5rem;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+    padding: 0.75rem 1.5rem;
+    gap: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+}
+
+.admin-topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+    flex-shrink: 1;
+}
+
+.admin-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+}
+
+.admin-breadcrumb-root {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--muted-text);
+    text-transform: uppercase;
+    line-height: 1;
+    padding: 0.25rem 0.5rem;
+    background-color: var(--light-bg);
+    border: 1.5px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    box-shadow: 1px 1px 0px var(--border-color);
+    transition: all 0.12s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+}
+
+.admin-breadcrumb-root:hover {
+    color: var(--dark-text);
+    background-color: #e4e4e7;
+    transform: translate(-0.5px, -0.5px);
+    box-shadow: 2px 2px 0px var(--border-color);
+}
+
+.admin-breadcrumb-divider {
+    color: #9ca3af;
+    font-size: 0.9rem;
+    font-weight: 600;
+    user-select: none;
+    line-height: 1;
+}
+
+.admin-breadcrumb-current {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--dark-text);
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.admin-topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+}
+
+/* Admin Search Field */
+.admin-search-wrapper {
+    position: relative;
+    width: 250px;
+}
+
+.admin-search-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #71717a;
+    font-size: 0.8125rem;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.admin-search-input {
+    height: 36px !important;
+    border: 2px solid var(--border-color) !important;
+    border-radius: var(--radius-sm) !important;
+    background-color: #fafafa !important;
+    padding: 0.35rem 0.75rem 0.35rem 2.1rem !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: 0.8125rem !important;
+    font-weight: 500 !important;
+    color: var(--dark-text) !important;
+    box-shadow: none !important;
+    transition: all 0.12s ease !important;
+}
+
+.admin-search-input::placeholder {
+    color: #71717a !important;
+    font-weight: 500 !important;
+}
+
+.admin-search-input:focus {
+    background-color: #ffffff !important;
+    border-color: var(--border-color) !important;
+    box-shadow: 2px 2px 0px var(--border-color) !important;
+    outline: none !important;
+}
+
+/* Action Buttons */
+.btn-admin-action {
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 0 0.85rem;
+    white-space: nowrap;
+    box-shadow: 2px 2px 0px var(--border-color);
+    transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.12s ease;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.btn-admin-action:hover, .btn-admin-action:focus-visible {
+    transform: translate(-1px, -1px);
+    box-shadow: 3px 3px 0px var(--border-color);
+    outline: none;
+}
+
+.btn-admin-action:active {
+    transform: translate(1px, 1px);
+    box-shadow: 1px 1px 0px var(--border-color);
+}
+
+/* Announce Button */
+.btn-admin-announce {
+    background-color: #ffffff;
+    color: var(--dark-text);
+}
+
+.btn-admin-announce:hover {
+    background-color: #f4f4f5;
+    color: var(--dark-text);
+}
+
+/* Back to Website Button */
+.btn-admin-back {
+    background-color: var(--primary);
+    color: #ffffff;
+}
+
+.btn-admin-back:hover {
+    background-color: var(--primary-hover);
+    color: #ffffff;
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 991.98px) {
+    .admin-topbar {
+        padding: 0.65rem 1rem;
+    }
+    .admin-search-wrapper {
+        width: 190px;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .admin-topbar {
+        padding: 0.55rem 0.85rem;
+        gap: 0.5rem;
+    }
+    .admin-topbar-actions {
+        gap: 0.5rem;
+    }
+    .admin-search-wrapper {
+        width: 150px;
+    }
+    .btn-admin-action {
+        padding: 0 0.65rem;
+        font-size: 0.775rem;
+    }
+    .admin-breadcrumb-current {
+        font-size: 0.875rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .admin-topbar {
+        flex-wrap: wrap;
+        min-height: auto;
+        padding: 0.5rem 0.75rem;
+        gap: 0.5rem;
+    }
+    .admin-topbar-left {
+        width: 100%;
+        justify-content: flex-start;
+    }
+    .admin-topbar-actions {
+        width: 100%;
+        justify-content: space-between;
+        gap: 0.4rem;
+    }
+    .admin-search-wrapper {
+        flex: 1 1 auto;
+        min-width: 110px;
+        width: auto;
+    }
+    .btn-admin-action {
+        flex-shrink: 0;
+        padding: 0 0.55rem;
+        font-size: 0.75rem;
+    }
+    .admin-breadcrumb-current {
+        max-width: 220px;
+    }
 }
 
 .admin-content-body {
