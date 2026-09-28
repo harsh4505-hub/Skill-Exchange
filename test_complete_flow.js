@@ -47,38 +47,39 @@ async function runTests() {
     }
 
     // ----------------------------------------------------
-    // TEST 1: College Email Validation (@mgmmumbai.ac.in)
     // ----------------------------------------------------
-    console.log('\n--- TEST SUITE 1: College Email Validation ---');
-    const invalidReg = await makeRequest({
+    // TEST 1: Open Email Validation & Firebase Auth
+    // ----------------------------------------------------
+    console.log('\n--- TEST SUITE 1: Open Email Validation & Firebase Auth ---');
+    const invalidSyntaxReg = await makeRequest({
         hostname: 'localhost',
         port: 8080,
         path: '/api/auth/register',
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
     }, {
-        name: 'Imposter User',
-        email: 'imposter@gmail.com',
+        name: 'Invalid User',
+        email: 'invalid-email-format',
         password: 'password123',
         department: 'Computer Engineering',
         yearOfStudy: 'Third Year'
     });
-    assert('Reject non-college email (gmail.com)', invalidReg.statusCode === 400 && !invalidReg.data.success);
+    assert('Reject invalid email syntax', invalidSyntaxReg.statusCode === 400 && !invalidSyntaxReg.data.success);
 
-    const yahooReg = await makeRequest({
+    // Test Firebase Login
+    const fbLogin = await makeRequest({
         hostname: 'localhost',
         port: 8080,
-        path: '/api/auth/register',
+        path: '/api/auth/firebase-login',
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
     }, {
-        name: 'Yahoo User',
-        email: 'student@yahoo.com',
-        password: 'password123',
-        department: 'Computer Engineering',
-        yearOfStudy: 'Third Year'
+        email: 'firebase.student@gmail.com',
+        fullName: 'Firebase Student',
+        uid: 'fb-user-12345',
+        photoURL: 'https://api.dicebear.com/7.x/bottts/svg?seed=firebase'
     });
-    assert('Reject non-college email (yahoo.com)', yahooReg.statusCode === 400 && !yahooReg.data.success);
+    assert('Firebase Google Auth login succeeds for any Gmail', fbLogin.statusCode === 200 && fbLogin.data.success && fbLogin.data.data.email === 'firebase.student@gmail.com');
 
     // ----------------------------------------------------
     // TEST 2: Email Registration Flow & Error Handling

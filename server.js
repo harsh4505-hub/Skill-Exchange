@@ -40,16 +40,31 @@ if (fs.existsSync(envPath)) {
     }
 }
 
+const supabaseService = require('./supabaseService');
+
+function syncSupabase(operation, ...args) {
+    if (supabaseService && typeof supabaseService[operation] === 'function') {
+        supabaseService[operation](...args).catch(err => {
+            console.error(`[SupabaseSync] Error running ${operation}:`, err.message);
+        });
+    }
+}
+
 // ===================================================================
-// COLLEGE EMAIL DOMAIN RESTRICTION VALIDATOR (@mgmmumbai.ac.in)
+// EMAIL VALIDATOR (Allows any valid Gmail / College / Personal email)
 // ===================================================================
 
-const COLLEGE_EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@mgmmumbai\.ac\.in$/i;
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/i;
+
+function isValidEmail(email) {
+    if (!email || typeof email !== 'string') return false;
+    return EMAIL_REGEX.test(email.trim());
+}
 
 function isValidCollegeEmail(email) {
-    if (!email || typeof email !== 'string') return false;
-    return COLLEGE_EMAIL_REGEX.test(email.trim());
+    return isValidEmail(email);
 }
+
 
 // ===================================================================
 // CRYPTOGRAPHIC OTP & GMAIL SMTP EMAIL SERVICE
@@ -914,7 +929,10 @@ const server = http.createServer(async (req, res) => {
             if (state.currentUser) {
                 state.currentUser.hasSeenLanding = true;
                 const usr = state.users.find(u => u.id === state.currentUser.userId);
-                if (usr) usr.hasSeenLanding = true;
+                if (usr) {
+                    usr.hasSeenLanding = true;
+                    syncSupabase('saveUser', usr);
+                }
             }
             return sendJson(res, 200, { success: true, message: "Landing page marked as seen." });
         }
@@ -923,11 +941,11 @@ const server = http.createServer(async (req, res) => {
             const body = await parseBody(req);
             const normalizedEmail = (body.email || '').trim().toLowerCase();
 
-            // Backend validation: Official college email address ending with @mgmmumbai.ac.in
-            if (!isValidCollegeEmail(normalizedEmail)) {
+            // Backend validation: Accept any valid email
+            if (!isValidEmail(normalizedEmail)) {
                 return sendJson(res, 400, {
                     success: false,
-                    message: "Please use your official college email address ending with @mgmmumbai.ac.in."
+                    message: "Please enter a valid email address."
                 });
             }
 
@@ -936,21 +954,13 @@ const server = http.createServer(async (req, res) => {
                 return sendJson(res, 401, { success: false, message: "Invalid email or password" });
             }
 
-            // Existing accounts must adhere to official college domain rule
-            if (!isValidCollegeEmail(user.email)) {
-                return sendJson(res, 403, {
-                    success: false,
-                    message: "Please use your official college email address ending with @mgmmumbai.ac.in."
-                });
-            }
-
             // Email verification check
             if (user.emailVerified === false) {
                 return sendJson(res, 403, {
                     success: false,
                     unverified: true,
                     email: user.email,
-                    message: "Your college email address has not been verified yet. Please complete email verification."
+                    message: "Your email address has not been verified yet. Please complete email verification."
                 });
             }
 
@@ -982,6 +992,113 @@ const server = http.createServer(async (req, res) => {
             return sendJson(res, 200, { success: true, message: "Login successful", data: state.currentUser });
         }
 
+        // --- FIREBASE AUTHENTICATION (GOOGLE & FIREBASE EMAIL/PASS) ---
+        if (pathname === '/api/auth/firebase-login' && req.method === 'POST') {
+            const body = await parseBody(req);
+            const normalizedEmail = (body.email || '').trim().toLowerCase();
+
+            if (!isValidEmail(normalizedEmail)) {
+                return sendJson(res, 400, { success: false, message: "Invalid email from Firebase Auth." });
+            }
+
+            let user = state.users.find(u => u.email.toLowerCase() === normalizedEmail);
+            let profile = user ? state.profiles.find(p => p.userId === user.id) : null;
+
+            if (!user) {
+                const newId = state.users.length > 0 ? Math.max(...state.users.map(u => u.id)) + 1 : 1;
+                const studentName = (body.fullName || body.displayName || normalizedEmail.split('@')[0]).trim();
+                const avatar = body.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${newId}`;
+
+                user = {
+                    id: newId,
+                    email: normalizedEmail,
+                    role: "ROLE_STUDENT",
+                    password: body.uid || crypto.randomBytes(16).toString('hex'),
+                    active: true,
+                    emailVerified: true,
+                    hasSeenLanding: true
+                };
+                state.users.push(user);
+
+                profile = {
+                    id: newId,
+                    userId: newId,
+                    fullName: studentName,
+                    email: normalizedEmail,
+                    college: (body.college || 'College of Engineering & Technology').trim(),
+                    department: body.department || 'Information Technology',
+                    yearOfStudy: body.yearOfStudy || '2nd Year',
+                    phone: (body.phone || '').trim(),
+                    bio: `Hello! I am ${studentName} trading skills on the exchange.`,
+                    avatarUrl: avatar,
+                    verified: false,
+                    averageRating: 0.0,
+                    completedExchangesCount: 0,
+                    blocked: false,
+                    teachingSkills: [],
+                    learningSkills: []
+                };
+                state.profiles.push(profile);
+
+                syncSupabase('saveUser', user);
+                syncSupabase('saveProfile', profile);
+            } else {
+                user.active = true;
+                user.emailVerified = true;
+                if (!profile) {
+                    profile = {
+                        id: user.id,
+                        userId: user.id,
+                        fullName: body.fullName || body.displayName || user.email.split('@')[0],
+                        email: user.email,
+                        college: 'College of Engineering & Technology',
+                        department: 'Information Technology',
+                        yearOfStudy: '2nd Year',
+                        phone: '',
+                        bio: `Hello! I am a student trading skills.`,
+                        avatarUrl: body.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.id}`,
+                        verified: false,
+                        averageRating: 0.0,
+                        completedExchangesCount: 0,
+                        blocked: false,
+                        teachingSkills: [],
+                        learningSkills: []
+                    };
+                    state.profiles.push(profile);
+                    syncSupabase('saveProfile', profile);
+                } else if (body.photoURL && profile.avatarUrl && profile.avatarUrl.includes('dicebear')) {
+                    profile.avatarUrl = body.photoURL;
+                    syncSupabase('saveProfile', profile);
+                }
+                syncSupabase('saveUser', user);
+            }
+
+            state.currentUser = {
+                authenticated: true,
+                userId: user.id,
+                email: user.email,
+                role: user.role,
+                avatarUrl: profile ? profile.avatarUrl : null,
+                fullName: profile ? profile.fullName : user.email,
+                hasSeenLanding: true
+            };
+
+            state.auditLogs.unshift({
+                id: Date.now(),
+                action: "FIREBASE_AUTH_LOGIN",
+                performedBy: user.email,
+                target: user.email,
+                timestamp: new Date().toISOString(),
+                details: "Firebase authenticated session established."
+            });
+
+            return sendJson(res, 200, {
+                success: true,
+                message: "Firebase login successful",
+                data: state.currentUser
+            });
+        }
+
         if (pathname === '/api/auth/logout' && req.method === 'POST') {
             if (state.currentUser) {
                 state.auditLogs.unshift({
@@ -1001,11 +1118,11 @@ const server = http.createServer(async (req, res) => {
             const body = await parseBody(req);
             const normalizedEmail = (body.email || '').trim().toLowerCase();
 
-            // Strict Backend validation: Reject any domain not ending in @mgmmumbai.ac.in
-            if (!isValidCollegeEmail(normalizedEmail)) {
+            // Backend validation: Accept any valid email
+            if (!isValidEmail(normalizedEmail)) {
                 return sendJson(res, 400, {
                     success: false,
-                    message: "Only college email addresses ending with @mgmmumbai.ac.in are authorized to register."
+                    message: "Please enter a valid email address."
                 });
             }
 
@@ -1013,7 +1130,7 @@ const server = http.createServer(async (req, res) => {
             if (existingUser && existingUser.emailVerified && existingUser.active) {
                 return sendJson(res, 409, {
                     success: false,
-                    message: "An active account with this college email already exists. Please login."
+                    message: "An active account with this email already exists. Please login."
                 });
             }
 
@@ -1080,6 +1197,12 @@ const server = http.createServer(async (req, res) => {
                 lastSentAt: Date.now()
             };
 
+            syncSupabase('saveUser', user);
+            const savedProf = state.profiles.find(p => p.userId === user.id);
+            if (savedProf) syncSupabase('saveProfile', savedProf);
+            syncSupabase('saveOtp', normalizedEmail, state.otps[normalizedEmail].otpHash, state.otps[normalizedEmail].expiresAt, 'EMAIL_VERIFICATION');
+
+
             // Audit log without secret or OTP
             state.auditLogs.unshift({
                 id: Date.now(),
@@ -1143,7 +1266,9 @@ const server = http.createServer(async (req, res) => {
             if (user) {
                 user.emailVerified = true;
                 user.active = true;
+                syncSupabase('saveUser', user);
             }
+
 
             state.auditLogs.unshift({
                 id: Date.now(),
@@ -1529,6 +1654,7 @@ const server = http.createServer(async (req, res) => {
                 createdAt: new Date().toISOString()
             };
             state.projects.unshift(newProject);
+            syncSupabase('saveProject', newProject);
             return sendJson(res, 200, { success: true, data: newProject, message: "Project added to portfolio." });
         }
 
@@ -1540,6 +1666,7 @@ const server = http.createServer(async (req, res) => {
                 return sendJson(res, 403, { success: false, message: "Cannot delete another student's project." });
             }
             state.projects = state.projects.filter(pr => pr.id !== projectId);
+            syncSupabase('deleteProject', projectId);
             return sendJson(res, 200, { success: true, message: "Project deleted." });
         }
 
@@ -1576,6 +1703,7 @@ const server = http.createServer(async (req, res) => {
                 createdAt: new Date().toISOString()
             };
             state.experiences.unshift(newExp);
+            syncSupabase('saveExperience', newExp);
             return sendJson(res, 200, { success: true, data: newExp, message: "Experience added to profile." });
         }
 
@@ -1587,6 +1715,7 @@ const server = http.createServer(async (req, res) => {
                 return sendJson(res, 403, { success: false, message: "Cannot delete another student's experience record." });
             }
             state.experiences = state.experiences.filter(e => e.id !== expId);
+            syncSupabase('deleteExperience', expId);
             return sendJson(res, 200, { success: true, message: "Experience record deleted." });
         }
 
@@ -1634,7 +1763,7 @@ const server = http.createServer(async (req, res) => {
             const skill = state.skills.find(s => s.id === skillId);
             if (prof && skill) {
                 if (!prof.teachingSkills.some(t => t.skillId === skillId)) {
-                    prof.teachingSkills.push({
+                    const newTeach = {
                         id: Date.now(),
                         skillId: skill.id,
                         skillName: skill.name,
@@ -1643,7 +1772,9 @@ const server = http.createServer(async (req, res) => {
                         levelOrUrgency: level,
                         verified: false,
                         verificationStatus: 'NOT_VERIFIED'
-                    });
+                    };
+                    prof.teachingSkills.push(newTeach);
+                    syncSupabase('saveTeachingSkill', state.currentUser.userId, newTeach);
                 }
             }
             return sendJson(res, 200, { success: true, message: "Skill added to teaching list" });
@@ -1654,6 +1785,7 @@ const server = http.createServer(async (req, res) => {
             const prof = state.profiles.find(p => p.userId === state.currentUser.userId);
             if (prof) {
                 prof.teachingSkills = prof.teachingSkills.filter(t => t.skillId !== skillId);
+                syncSupabase('deleteTeachingSkill', state.currentUser.userId, skillId);
             }
             return sendJson(res, 200, { success: true, message: "Skill removed" });
         }
@@ -1666,14 +1798,16 @@ const server = http.createServer(async (req, res) => {
             const skill = state.skills.find(s => s.id === skillId);
             if (prof && skill) {
                 if (!prof.learningSkills.some(l => l.skillId === skillId)) {
-                    prof.learningSkills.push({
+                    const newLearn = {
                         id: Date.now(),
                         skillId: skill.id,
                         skillName: skill.name,
                         categoryId: skill.categoryId,
                         categoryName: skill.categoryName,
                         levelOrUrgency: urgency
-                    });
+                    };
+                    prof.learningSkills.push(newLearn);
+                    syncSupabase('saveLearningSkill', state.currentUser.userId, newLearn);
                 }
             }
             return sendJson(res, 200, { success: true, message: "Skill added to learning wishlist" });
@@ -1684,6 +1818,7 @@ const server = http.createServer(async (req, res) => {
             const prof = state.profiles.find(p => p.userId === state.currentUser.userId);
             if (prof) {
                 prof.learningSkills = prof.learningSkills.filter(l => l.skillId !== skillId);
+                syncSupabase('deleteLearningSkill', state.currentUser.userId, skillId);
             }
             return sendJson(res, 200, { success: true, message: "Skill removed" });
         }
@@ -1881,19 +2016,22 @@ const server = http.createServer(async (req, res) => {
                 createdAt: new Date().toISOString()
             };
             state.requests.unshift(newReq);
+            syncSupabase('saveExchangeRequest', newReq);
 
             // Audit log
-            state.auditLogs.unshift({
+            const auditSent = {
                 id: Date.now(),
                 action: "EXCHANGE_PROPOSAL_SENT",
                 performedBy: newReq.senderEmail,
                 target: receiverProf ? receiverProf.email : "Student",
                 timestamp: new Date().toISOString(),
                 details: `Proposed ${newReq.skillOfferedName} for ${newReq.skillRequestedName}`
-            });
+            };
+            state.auditLogs.unshift(auditSent);
+            syncSupabase('saveAuditLog', auditSent);
 
             // Add notification for receiver
-            state.notifications.unshift({
+            const notifSent = {
                 id: Date.now(),
                 recipientId: body.receiverId,
                 title: "New Exchange Proposal",
@@ -1901,7 +2039,9 @@ const server = http.createServer(async (req, res) => {
                 type: "EXCHANGE_REQUEST",
                 isRead: false,
                 createdAt: new Date().toISOString()
-            });
+            };
+            state.notifications.unshift(notifSent);
+            syncSupabase('saveNotification', notifSent);
 
             return sendJson(res, 200, { success: true, data: newReq });
         }
@@ -1911,7 +2051,8 @@ const server = http.createServer(async (req, res) => {
             const r = state.requests.find(req => req.id === id);
             if (r) {
                 r.status = 'ACCEPTED';
-                state.exchanges.unshift({
+                syncSupabase('saveExchangeRequest', r);
+                const newEx = {
                     id: state.exchanges.length + 1,
                     requestId: r.id,
                     student1Id: r.senderId,
@@ -1931,9 +2072,11 @@ const server = http.createServer(async (req, res) => {
                     learningMode: r.learningMode,
                     status: "ACTIVE",
                     startDate: new Date().toISOString()
-                });
+                };
+                state.exchanges.unshift(newEx);
+                syncSupabase('saveExchange', newEx);
 
-                state.notifications.unshift({
+                const notifAcc = {
                     id: Date.now(),
                     recipientId: r.senderId,
                     title: "Proposal Accepted!",
@@ -1941,7 +2084,9 @@ const server = http.createServer(async (req, res) => {
                     type: "REQUEST_ACCEPTED",
                     isRead: false,
                     createdAt: new Date().toISOString()
-                });
+                };
+                state.notifications.unshift(notifAcc);
+                syncSupabase('saveNotification', notifAcc);
             }
             return sendJson(res, 200, { success: true, data: r });
         }
@@ -1949,7 +2094,10 @@ const server = http.createServer(async (req, res) => {
         if (pathname.match(/^\/api\/exchange-requests\/(\d+)\/reject$/) && req.method === 'PUT') {
             const id = Number(pathname.split('/')[3]);
             const r = state.requests.find(req => req.id === id);
-            if (r) r.status = 'REJECTED';
+            if (r) {
+                r.status = 'REJECTED';
+                syncSupabase('saveExchangeRequest', r);
+            }
             return sendJson(res, 200, { success: true, data: r });
         }
 
@@ -1958,16 +2106,24 @@ const server = http.createServer(async (req, res) => {
             const r = state.requests.find(req => req.id === id);
             if (r) {
                 r.status = 'COMPLETED';
+                syncSupabase('saveExchangeRequest', r);
                 const ex = state.exchanges.find(e => e.requestId === r.id);
                 if (ex) {
                     ex.status = 'COMPLETED';
                     ex.completionDate = new Date().toISOString();
+                    syncSupabase('saveExchange', ex);
                 }
 
                 const p1 = state.profiles.find(p => p.userId === r.senderId);
-                if (p1) p1.completedExchangesCount++;
+                if (p1) {
+                    p1.completedExchangesCount++;
+                    syncSupabase('saveProfile', p1);
+                }
                 const p2 = state.profiles.find(p => p.userId === r.receiverId);
-                if (p2) p2.completedExchangesCount++;
+                if (p2) {
+                    p2.completedExchangesCount++;
+                    syncSupabase('saveProfile', p2);
+                }
             }
             return sendJson(res, 200, { success: true, data: r });
         }
@@ -2124,12 +2280,13 @@ const server = http.createServer(async (req, res) => {
                 isRead: false
             };
             state.messages.push(newMsg);
+            syncSupabase('saveMessage', newMsg);
 
             const notifText = newMsg.messageText 
                 ? (newMsg.messageText.length > 50 ? newMsg.messageText.substring(0, 47) + "..." : newMsg.messageText)
                 : `Sent an attachment: ${newMsg.attachmentName || 'file'}`;
 
-            state.notifications.unshift({
+            const notifMsg = {
                 id: Date.now(),
                 recipientId: receiverId,
                 title: `Message from ${newMsg.senderName}`,
@@ -2138,7 +2295,9 @@ const server = http.createServer(async (req, res) => {
                 linkUrl: "chat.html",
                 isRead: false,
                 createdAt: now
-            });
+            };
+            state.notifications.unshift(notifMsg);
+            syncSupabase('saveNotification', notifMsg);
 
             return sendJson(res, 200, { success: true, data: newMsg });
         }
@@ -2443,25 +2602,29 @@ const server = http.createServer(async (req, res) => {
                 createdAt: new Date().toISOString()
             };
             state.reviews.push(newRev);
+            syncSupabase('saveReview', newRev);
 
             // Recalculate average rating
             const studentReviews = state.reviews.filter(r => r.reviewedStudentId === body.reviewedStudentId);
             const avg = studentReviews.reduce((sum, r) => sum + r.rating, 0) / studentReviews.length;
             if (targetProf) {
                 targetProf.averageRating = Math.round(avg * 10) / 10;
+                syncSupabase('saveProfile', targetProf);
             }
 
             // Audit log
-            state.auditLogs.unshift({
+            const auditRev = {
                 id: Date.now(),
                 action: "EXCHANGE_REVIEW_SUBMITTED",
                 performedBy: reviewerProf ? reviewerProf.email : "Student",
                 target: targetProf ? targetProf.email : "Student",
                 timestamp: new Date().toISOString(),
                 details: `Rating: ${body.rating}★, Comment: ${newRev.comment.substring(0, 30)}...`
-            });
+            };
+            state.auditLogs.unshift(auditRev);
+            syncSupabase('saveAuditLog', auditRev);
 
-            state.notifications.unshift({
+            const notifRev = {
                 id: Date.now(),
                 recipientId: body.reviewedStudentId,
                 title: `New Peer Review (${body.rating}★)`,
@@ -2469,7 +2632,9 @@ const server = http.createServer(async (req, res) => {
                 type: "NEW_REVIEW",
                 isRead: false,
                 createdAt: new Date().toISOString()
-            });
+            };
+            state.notifications.unshift(notifRev);
+            syncSupabase('saveNotification', notifRev);
 
             return sendJson(res, 200, { success: true, data: newRev });
         }
@@ -2519,15 +2684,18 @@ const server = http.createServer(async (req, res) => {
                 createdAt: new Date().toISOString()
             };
             state.reports.push(newReport);
+            syncSupabase('saveReport', newReport);
 
-            state.auditLogs.unshift({
+            const auditReport = {
                 id: Date.now(),
                 action: "ABUSE_REPORT_FILED",
                 performedBy: reporter ? reporter.email : "Student",
                 target: reported ? reported.email : "Student",
                 timestamp: new Date().toISOString(),
                 details: `Reason: ${body.reason}, Details: ${body.description}`
-            });
+            };
+            state.auditLogs.unshift(auditReport);
+            syncSupabase('saveAuditLog', auditReport);
 
             return sendJson(res, 200, { success: true, data: newReport, message: "Report submitted to administration for safety audit." });
         }
@@ -3207,10 +3375,18 @@ const server = http.createServer(async (req, res) => {
     });
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, async () => {
     console.log("===================================================================");
     console.log("  STUDENT SKILL EXCHANGE PLATFORM - SERVER ACTIVE                  ");
     console.log(`  Live URL: http://localhost:${PORT}                                `);
     console.log("  All 14 Modules, REST APIs & Heuristic Matcher fully operational  ");
+    if (supabaseService.isConfigured()) {
+        console.log(`  Supabase Database: CONNECTED (${process.env.SUPABASE_URL || 'https://qfokonidfrpkunkuivwo.supabase.co'})`);
+        await supabaseService.syncFromSupabase(state);
+    } else {
+        console.log("  Supabase Database: WAITING FOR API KEY IN .env                   ");
+        console.log("  Target Supabase URL: https://qfokonidfrpkunkuivwo.supabase.co    ");
+    }
     console.log("===================================================================");
 });
+
