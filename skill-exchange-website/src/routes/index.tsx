@@ -135,19 +135,12 @@ function Nav() {
             SKILL<span className="text-brand">EXCHANGE</span>
           </span>
         </a>
-        <div className="hidden items-center gap-7 font-medium lg:flex">
-          <a href="#how-it-works" className="hover:text-brand">How It Works</a>
-          <a href="#modes" className="hover:text-brand">Learning Modes</a>
-          <a href="#verification" className="hover:text-brand">Verification</a>
-          <a href="#kitab-bhandar" className="hover:text-brand">Kitab Bhandar</a>
-          <a href="#pricing" className="hover:text-brand">Pricing</a>
-        </div>
         <div className="flex items-center gap-3">
-          <a href="#pricing" className="hidden rounded-lg border-2 border-ink bg-paper px-4 py-2 font-bold shadow-brutal-sm press sm:inline-block">
-            Sign In
+          <a href="http://localhost:8080/login.html" className="rounded-lg border-2 border-ink bg-paper px-4 py-2 font-bold shadow-brutal-sm press text-ink uppercase text-sm">
+            LOGIN
           </a>
-          <a href="#pricing" className={`${btn} bg-brand px-4 py-2 text-paper shadow-brutal-sm`}>
-            Join Free
+          <a href="http://localhost:8080/register.html" className={`${btn} bg-brand px-4 py-2 text-paper shadow-brutal-sm uppercase text-sm`}>
+            SIGN UP
           </a>
         </div>
       </nav>

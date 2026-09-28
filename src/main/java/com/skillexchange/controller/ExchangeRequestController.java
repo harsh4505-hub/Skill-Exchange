@@ -71,6 +71,13 @@ public class ExchangeRequestController {
         return ResponseEntity.ok(ApiResponse.ok("Exchange marked as completed!", completed));
     }
 
+    @GetMapping("/{id}/details")
+    public ResponseEntity<ApiResponse<java.util.Map<String, Object>>> getRequestDetails(@PathVariable Long id) {
+        Long currentUserId = authService.getCurrentUserId();
+        java.util.Map<String, Object> details = requestService.getRequestDetails(id, currentUserId);
+        return ResponseEntity.ok(ApiResponse.ok("Exchange request details retrieved", details));
+    }
+
     @GetMapping("/history")
     public ResponseEntity<ApiResponse<List<ExchangeDto>>> getExchangeHistory(@RequestParam(required = false) String status) {
         Long currentUserId = authService.getCurrentUserId();

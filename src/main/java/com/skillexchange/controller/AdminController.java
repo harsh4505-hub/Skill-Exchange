@@ -38,6 +38,15 @@ public class AdminController {
         return ResponseEntity.ok(ApiResponse.ok("All registered students", adminService.getAllStudents()));
     }
 
+    @PutMapping("/users/{userId}/role")
+    public ResponseEntity<ApiResponse<String>> updateUserRole(
+            @PathVariable Long userId,
+            @RequestBody Map<String, String> body) {
+        String role = body.getOrDefault("role", "ROLE_STUDENT");
+        String updatedRole = adminService.updateUserRole(userId, role);
+        return ResponseEntity.ok(ApiResponse.ok("User role updated successfully to " + updatedRole, updatedRole));
+    }
+
     @PutMapping("/users/{userId}/toggle-status")
     public ResponseEntity<ApiResponse<Boolean>> toggleUserActiveStatus(@PathVariable Long userId) {
         boolean active = adminService.toggleUserStatus(userId);

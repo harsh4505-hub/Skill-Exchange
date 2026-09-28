@@ -10,6 +10,7 @@ const path = require('path');
 const url = require('url');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
+const https = require('https');
 
 const PORT = 8080;
 const STATIC_DIR = path.join(__dirname, 'src', 'main', 'resources', 'static');
@@ -51,18 +52,47 @@ function syncSupabase(operation, ...args) {
 }
 
 // ===================================================================
-// EMAIL VALIDATOR (Allows any valid Gmail / College / Personal email)
+// EMAIL VALIDATORS & ROLE-BASED ACCESS CONTROL (RBAC) HELPERS
 // ===================================================================
 
 const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/i;
+const COLLEGE_EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@mgmmumbai\.ac\.in$/i;
 
 function isValidEmail(email) {
     if (!email || typeof email !== 'string') return false;
     return EMAIL_REGEX.test(email.trim());
 }
 
+/**
+ * Validates student college email domain.
+ * Enforces @mgmmumbai.ac.in for regular student registrations.
+ * harshtukaram45@gmail.com is the permanent Super Admin administrative exception.
+ */
 function isValidCollegeEmail(email) {
-    return isValidEmail(email);
+    if (!email || typeof email !== 'string') return false;
+    const trimmed = email.trim().toLowerCase();
+    if (trimmed === 'harshtukaram45@gmail.com') return true;
+    return COLLEGE_EMAIL_REGEX.test(trimmed);
+}
+
+/**
+ * Server-side RBAC check for Super Admin.
+ * Identifies the permanent Super Admin account and ROLE_SUPER_ADMIN.
+ */
+function isSuperAdmin(user) {
+    if (!user) return false;
+    const email = (user.email || '').trim().toLowerCase();
+    const role = (user.role || '').toUpperCase();
+    return email === 'harshtukaram45@gmail.com' || role === 'ROLE_SUPER_ADMIN' || role === 'SUPER_ADMIN';
+}
+
+/**
+ * Server-side RBAC check for any administrative role (Super Admin or Admin).
+ */
+function isAdmin(user) {
+    if (!user) return false;
+    const role = (user.role || '').toUpperCase();
+    return role === 'ROLE_ADMIN' || role === 'ADMIN' || isSuperAdmin(user);
 }
 
 
@@ -312,6 +342,24 @@ const state = {
             technologies: "Adobe Photoshop 2024, Lightroom, Figma",
             link: "https://behance.net/sejal_photoshop_portfolio",
             proofUrl: ""
+        },
+        {
+            id: 4,
+            studentId: 4,
+            title: "Automated Data Scraping & Analysis Pipeline",
+            description: "Built a Python-based asynchronous web scraper and pandas analysis pipeline processing 10,000+ records daily with data cleaning and CSV export.",
+            technologies: "Python 3.11, BeautifulSoup4, Pandas, SQLite, Requests",
+            link: "https://github.com/raza-khan/python-data-pipeline",
+            proofUrl: "uploads/proofs/raza_pipeline_screenshot.png"
+        },
+        {
+            id: 5,
+            studentId: 5,
+            title: "Inter-College Debate Championship Organizer",
+            description: "Organized and competed in 3-day inter-college parliamentary debate tournament hosting 24 regional collegiate teams.",
+            technologies: "Public Speaking, Parliamentary Procedure, Rhetoric",
+            link: "https://mgmmumbai.ac.in/debate-championship",
+            proofUrl: "uploads/certificates/debate.pdf"
         }
     ],
 
@@ -335,6 +383,28 @@ const state = {
             description: "Designed front-cover layouts, retouched photography, and coordinated print publishing for 1,500+ physical magazine copies.",
             duration: "1.5 Years",
             startDate: "2024-09-01",
+            endDate: "Present",
+            isCurrent: true
+        },
+        {
+            id: 3,
+            studentId: 4,
+            title: "Lead Python Developer & Workshop Trainer",
+            organization: "MGM Coding Club & Techfest Committee",
+            description: "Conducted hands-on Python workshops for 80+ engineering students, built the campus competition scoring system, and reviewed peer code.",
+            duration: "8 Months",
+            startDate: "2025-08-01",
+            endDate: "Present",
+            isCurrent: true
+        },
+        {
+            id: 4,
+            studentId: 5,
+            title: "President & Chief Debater",
+            organization: "MGM College Debate Society",
+            description: "Led weekly speech training sessions, adjudicated junior debates, and represented college in state forensics invitationals.",
+            duration: "2 Years",
+            startDate: "2024-06-01",
             endDate: "Present",
             isCurrent: true
         }
@@ -365,10 +435,47 @@ const state = {
         { id: 2, email: "harsh@mgmmumbai.ac.in", role: "ROLE_STUDENT", password: "password123", active: true, emailVerified: true, hasSeenLanding: true },
         { id: 3, email: "sejal@mgmmumbai.ac.in", role: "ROLE_STUDENT", password: "password123", active: true, emailVerified: true, hasSeenLanding: true },
         { id: 4, email: "raza@mgmmumbai.ac.in", role: "ROLE_STUDENT", password: "password123", active: true, emailVerified: true, hasSeenLanding: true },
-        { id: 5, email: "udipti@mgmmumbai.ac.in", role: "ROLE_STUDENT", password: "password123", active: true, emailVerified: true, hasSeenLanding: true }
+        { id: 5, email: "udipti@mgmmumbai.ac.in", role: "ROLE_STUDENT", password: "password123", active: true, emailVerified: true, hasSeenLanding: true },
+        { id: 6, email: "harshtukaram45@gmail.com", role: "ROLE_SUPER_ADMIN", password: "password123", active: true, emailVerified: true, hasSeenLanding: true }
     ],
 
     profiles: [
+        {
+            id: 1,
+            userId: 1,
+            fullName: "System Administrator",
+            email: "admin@mgmmumbai.ac.in",
+            college: "MGM College of Engineering & Technology",
+            department: "System Administration",
+            yearOfStudy: "Staff Admin",
+            phone: "9876543200",
+            bio: "Student Skill Exchange Platform Administrator and campus moderation coordinator.",
+            avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=AdminStaff",
+            verified: true,
+            averageRating: 5.0,
+            completedExchangesCount: 0,
+            blocked: false,
+            teachingSkills: [],
+            learningSkills: []
+        },
+        {
+            id: 6,
+            userId: 6,
+            fullName: "Harsh Tukaram",
+            email: "harshtukaram45@gmail.com",
+            college: "MGM College of Engineering & Technology",
+            department: "Central Administration",
+            yearOfStudy: "Super Admin",
+            phone: "9876543299",
+            bio: "Permanent Super Administrator of Student Skill Exchange Platform.",
+            avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=HarshSuperAdmin",
+            verified: true,
+            averageRating: 5.0,
+            completedExchangesCount: 0,
+            blocked: false,
+            teachingSkills: [],
+            learningSkills: []
+        },
         {
             id: 2,
             userId: 2,
@@ -513,6 +620,22 @@ const state = {
             message: "Hi Harsh! Want to explore Figma design while teaching me modern CSS layouts?",
             status: "PENDING",
             createdAt: new Date().toISOString()
+        },
+        {
+            id: 4,
+            senderId: 4,
+            senderName: "Raza Khan",
+            senderEmail: "raza@mgmmumbai.ac.in",
+            receiverId: 2,
+            receiverName: "Harsh Vardhan",
+            skillOfferedId: 2,
+            skillOfferedName: "Python",
+            skillRequestedId: 1,
+            skillRequestedName: "Java",
+            learningMode: "ONLINE",
+            message: "Hi Harsh! Would love to exchange Python data skills for your Java backend expertise.",
+            status: "PENDING",
+            createdAt: new Date(Date.now() - 2 * 3600000).toISOString()
         }
     ],
 
@@ -719,6 +842,31 @@ const state = {
             adminComment: "Please provide a complete Figma design system link with component variants and detailed design role responsibilities.",
             submissionDate: new Date(Date.now() - 2 * 86400000).toISOString(),
             reviewedDate: new Date(Date.now() - 1 * 86400000).toISOString()
+        },
+        {
+            id: 5,
+            studentId: 5,
+            studentName: "Udipti Sen",
+            studentEmail: "udipti@mgmmumbai.ac.in",
+            skillId: 7,
+            skillName: "Public Speaking",
+            certificateName: "National Forensics & Debate Society Distinction",
+            certificateUrl: "uploads/certificates/debate.pdf",
+            projectTitle: "Inter-College Debate Championship Organizer",
+            projectDescription: "Organized and competed in 3-day inter-college parliamentary debate tournament hosting 24 regional collegiate teams.",
+            projectTechnologies: "Public Speaking, Parliamentary Procedure, Rhetoric",
+            projectLink: "https://mgmmumbai.ac.in/debate-championship",
+            projectProofUrl: "uploads/certificates/debate.pdf",
+            experienceTitle: "President & Chief Debater",
+            experienceOrganization: "MGM College Debate Society",
+            experienceDescription: "Led weekly speech training sessions, adjudicated junior debates, and represented college in state forensics invitationals.",
+            experienceDuration: "2 years",
+            experienceStartDate: "2024-06-01",
+            experienceEndDate: "Present",
+            status: "VERIFIED",
+            adminComment: "Demonstrated exemplary leadership and public debate credentials.",
+            submissionDate: new Date(Date.now() - 5 * 86400000).toISOString(),
+            reviewedDate: new Date(Date.now() - 4 * 86400000).toISOString()
         }
     ],
 
@@ -822,9 +970,10 @@ const state = {
     ],
 
     admins: [
-        { id: 1, email: "admin@mgmmumbai.ac.in", name: "System Administrator", role: "SUPER_ADMIN", active: true, lastActive: new Date().toISOString(), createdAt: "2026-08-15T09:00:00Z" },
-        { id: 2, email: "moderator@mgmmumbai.ac.in", name: "Prof. S. Kulkarni (Staff Auditor)", role: "MODERATOR", active: true, lastActive: new Date(Date.now() - 3600000).toISOString(), createdAt: "2026-09-01T10:00:00Z" },
-        { id: 3, email: "support@mgmmumbai.ac.in", name: "Ananya Deshmukh (Student Council)", role: "SUPPORT_ADMIN", active: true, lastActive: new Date(Date.now() - 86400000).toISOString(), createdAt: "2026-09-10T14:30:00Z" }
+        { id: 1, email: "harshtukaram45@gmail.com", name: "Harsh Tukaram", role: "SUPER_ADMIN", active: true, lastActive: new Date().toISOString(), createdAt: "2026-08-01T00:00:00Z" },
+        { id: 2, email: "admin@mgmmumbai.ac.in", name: "System Administrator", role: "ADMIN", active: true, lastActive: new Date().toISOString(), createdAt: "2026-08-15T09:00:00Z" },
+        { id: 3, email: "moderator@mgmmumbai.ac.in", name: "Prof. S. Kulkarni (Staff Auditor)", role: "MODERATOR", active: true, lastActive: new Date(Date.now() - 3600000).toISOString(), createdAt: "2026-09-01T10:00:00Z" },
+        { id: 4, email: "support@mgmmumbai.ac.in", name: "Ananya Deshmukh (Student Council)", role: "SUPPORT_ADMIN", active: true, lastActive: new Date(Date.now() - 86400000).toISOString(), createdAt: "2026-09-10T14:30:00Z" }
     ],
 
     announcements: [
@@ -848,7 +997,213 @@ const state = {
         maxActiveExchangesPerStudent: 3,
         twoFactorEnforced: false,
         maintenanceMode: false
-    }
+    },
+
+    offlineProgress: [
+        {
+            id: 1,
+            exchangeRequestId: 101,
+            exchangeId: 101,
+            teacherId: 2,
+            teacherName: "Harsh Vardhan",
+            teacherEmail: "harsh@mgmmumbai.ac.in",
+            learnerId: 3,
+            learnerName: "Sejal Sharma",
+            learnerEmail: "sejal@mgmmumbai.ac.in",
+            skillOfferedTitle: "Python for Data Science",
+            skillRequestedTitle: "UI/UX Design",
+            learningMode: "OFFLINE",
+            location: "College Library — Room 204",
+            startDate: new Date(Date.now() - 14 * 86400000).toISOString(),
+            expectedCompletionDate: new Date(Date.now() + 7 * 86400000).toISOString(),
+            progressPercentage: 60,
+            currentStage: "Learning in Progress",
+            status: "ACTIVE",
+            lastActivityAt: new Date(Date.now() - 2 * 86400000).toISOString(),
+            nextActivity: "Exception Handling and Mini Practice Task",
+            createdAt: new Date(Date.now() - 14 * 86400000).toISOString(),
+            updatedAt: new Date(Date.now() - 2 * 86400000).toISOString()
+        },
+        {
+            id: 2,
+            exchangeRequestId: 102,
+            exchangeId: 102,
+            teacherId: 4,
+            teacherName: "Raza Khan",
+            teacherEmail: "raza@mgmmumbai.ac.in",
+            learnerId: 5,
+            learnerName: "Udipti Sen",
+            learnerEmail: "udipti@mgmmumbai.ac.in",
+            skillOfferedTitle: "Java OOP",
+            skillRequestedTitle: "Public Speaking",
+            learningMode: "OFFLINE",
+            location: "Computer Center Lab 3",
+            startDate: new Date(Date.now() - 22 * 86400000).toISOString(),
+            expectedCompletionDate: new Date(Date.now() - 5 * 86400000).toISOString(),
+            progressPercentage: 25,
+            currentStage: "First Session Completed",
+            status: "ACTIVE",
+            lastActivityAt: new Date(Date.now() - 15 * 86400000).toISOString(), // 15 days ago -> Inactive/Overdue
+            nextActivity: "Classes & Inheritance walkthrough",
+            createdAt: new Date(Date.now() - 22 * 86400000).toISOString(),
+            updatedAt: new Date(Date.now() - 15 * 86400000).toISOString()
+        },
+        {
+            id: 3,
+            exchangeRequestId: 103,
+            exchangeId: 103,
+            teacherId: 3,
+            teacherName: "Sejal Sharma",
+            teacherEmail: "sejal@mgmmumbai.ac.in",
+            learnerId: 2,
+            learnerName: "Harsh Vardhan",
+            learnerEmail: "harsh@mgmmumbai.ac.in",
+            skillOfferedTitle: "Adobe Photoshop Design",
+            skillRequestedTitle: "Java Backend",
+            learningMode: "OFFLINE",
+            location: "Design Studio A",
+            startDate: new Date(Date.now() - 30 * 86400000).toISOString(),
+            expectedCompletionDate: new Date(Date.now() - 8 * 86400000).toISOString(),
+            progressPercentage: 100,
+            currentStage: "Exchange Completed",
+            status: "COMPLETED",
+            completionDate: new Date(Date.now() - 8 * 86400000).toISOString(),
+            lastActivityAt: new Date(Date.now() - 8 * 86400000).toISOString(),
+            nextActivity: "Exchange Completed & Portfolio Published",
+            createdAt: new Date(Date.now() - 30 * 86400000).toISOString(),
+            updatedAt: new Date(Date.now() - 8 * 86400000).toISOString()
+        }
+    ],
+
+    offlineUpdates: [
+        {
+            id: 1,
+            offlineExchangeProgressId: 1,
+            submittedById: 3,
+            submittedByName: "Sejal Sharma",
+            sessionDate: new Date(Date.now() - 14 * 86400000).toISOString().split('T')[0],
+            stage: "Exchange Accepted",
+            topicsCovered: "Offline exchange accepted; mutual learning milestones and meeting dates scheduled.",
+            description: "Agreed to meet twice weekly in College Library Room 204. Target curriculum: Python fundamentals to data visualization.",
+            progressPercentage: 10,
+            nextActivity: "Session 1: Environment setup and Python syntax",
+            attachmentUrl: null,
+            createdAt: new Date(Date.now() - 14 * 86400000).toISOString()
+        },
+        {
+            id: 2,
+            offlineExchangeProgressId: 1,
+            submittedById: 2,
+            submittedByName: "Harsh Vardhan",
+            sessionDate: new Date(Date.now() - 11 * 86400000).toISOString().split('T')[0],
+            stage: "First Session Completed",
+            topicsCovered: "Python environment setup, VS Code, variables, operators, and control flow.",
+            description: "Completed first 90-minute in-person session at Library Room 204. Configured Python 3.11 and Jupyter notebook environment.",
+            progressPercentage: 25,
+            nextActivity: "Session 2: Collections, Functions, and Scope",
+            attachmentUrl: null,
+            createdAt: new Date(Date.now() - 11 * 86400000).toISOString()
+        },
+        {
+            id: 3,
+            offlineExchangeProgressId: 1,
+            submittedById: 2,
+            submittedByName: "Harsh Vardhan",
+            sessionDate: new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0],
+            stage: "Learning in Progress",
+            topicsCovered: "Lists, Tuples, Dictionaries, Sets, and Custom Functions.",
+            description: "Reviewed practical data manipulation exercises. Solved 4 campus data extraction tasks together in the lab.",
+            progressPercentage: 45,
+            nextActivity: "Session 3: OOP Basics (Classes & Inheritance)",
+            attachmentUrl: null,
+            createdAt: new Date(Date.now() - 7 * 86400000).toISOString()
+        },
+        {
+            id: 4,
+            offlineExchangeProgressId: 1,
+            submittedById: 2,
+            submittedByName: "Harsh Vardhan",
+            sessionDate: new Date(Date.now() - 2 * 86400000).toISOString().split('T')[0],
+            stage: "Learning in Progress",
+            topicsCovered: "Python OOP: Classes, Objects, Inheritance, and Polymorphism.",
+            description: "Constructed class hierarchies for student record management. Verified assignment code and debugged constructors.",
+            progressPercentage: 60,
+            nextActivity: "Exception Handling and Mini Practice Task",
+            attachmentUrl: null,
+            createdAt: new Date(Date.now() - 2 * 86400000).toISOString()
+        },
+        {
+            id: 5,
+            offlineExchangeProgressId: 2,
+            submittedById: 4,
+            submittedByName: "Raza Khan",
+            sessionDate: new Date(Date.now() - 15 * 86400000).toISOString().split('T')[0],
+            stage: "First Session Completed",
+            topicsCovered: "JDK installation and HelloWorld Java program.",
+            description: "Completed initial session at Computer Lab 3. Walked through javac and java command line execution.",
+            progressPercentage: 25,
+            nextActivity: "Classes & Inheritance walkthrough",
+            attachmentUrl: null,
+            createdAt: new Date(Date.now() - 15 * 86400000).toISOString()
+        },
+        {
+            id: 6,
+            offlineExchangeProgressId: 3,
+            submittedById: 3,
+            submittedByName: "Sejal Sharma",
+            sessionDate: new Date(Date.now() - 8 * 86400000).toISOString().split('T')[0],
+            stage: "Exchange Completed",
+            topicsCovered: "Photoshop layer composites, color grading, pen tool vector masks, and production export.",
+            description: "Final session completed successfully! Reviewed final student event poster artwork. Both learning objectives met.",
+            progressPercentage: 100,
+            nextActivity: "Exchange Completed & Portfolio Published",
+            attachmentUrl: null,
+            createdAt: new Date(Date.now() - 8 * 86400000).toISOString()
+        }
+    ],
+
+    onlineSessions: [
+        {
+            id: 1,
+            exchangeRequestId: 1,
+            exchangeId: 1,
+            title: "Java OOP & Design Patterns Masterclass",
+            skillId: 1,
+            skillName: "Java",
+            teacherId: 2,
+            teacherName: "Harsh Vardhan",
+            teacherEmail: "harsh@mgmmumbai.ac.in",
+            learnerId: 3,
+            learnerName: "Sejal Sharma",
+            learnerEmail: "sejal@mgmmumbai.ac.in",
+            scheduledDate: "2026-09-30",
+            scheduledTime: "19:00",
+            scheduledAt: new Date(Date.now() + 86400000).toISOString(),
+            durationMinutes: 60,
+            description: "Deep dive into OOP Polymorphism, abstract classes vs interfaces, and design patterns.",
+            zoomMeetingId: "84920194821",
+            zoomJoinUrl: "https://zoom.us/j/84920194821?pwd=skilltrade2026",
+            zoomPassword: "skilltrade2026",
+            status: "Scheduled",
+            createdAt: new Date(Date.now() - 86400000).toISOString(),
+            updatedAt: new Date(Date.now() - 86400000).toISOString()
+        }
+    ],
+
+    exchangeNotes: [
+        {
+            id: 1,
+            studentId: 2,
+            studentName: "Harsh Vardhan",
+            partnerId: 3,
+            partnerName: "Sejal Sharma",
+            exchangeRequestId: 1,
+            topic: "Java OOP Essentials",
+            content: "1. Classes and objects\n2. Inheritance and super keyword\n3. Dynamic method dispatch\n4. Interface vs abstract classes",
+            createdAt: new Date(Date.now() - 86400000).toISOString(),
+            updatedAt: new Date(Date.now() - 86400000).toISOString()
+        }
+    ]
 };
 
 // Default authenticated user to Harsh (student ID 2) for immediate exploration
@@ -888,6 +1243,173 @@ function sendJson(res, statusCode, payload) {
     });
     res.end(JSON.stringify(payload));
 }
+
+// ===================================================================
+// ZOOM SERVER-TO-SERVER OAUTH 2.0 & MEETING SERVICE
+// ===================================================================
+
+function getZoomConfig() {
+    const accountId = (process.env.ZOOM_ACCOUNT_ID || '').trim();
+    const clientId = (process.env.ZOOM_CLIENT_ID || '').trim();
+    const clientSecret = (process.env.ZOOM_CLIENT_SECRET || '').trim();
+    return {
+        accountId,
+        clientId,
+        clientSecret,
+        isConfigured: Boolean(accountId && clientId && clientSecret)
+    };
+}
+
+function fetchZoomOAuthToken() {
+    return new Promise((resolve) => {
+        const config = getZoomConfig();
+        if (!config.isConfigured) return resolve(null);
+
+        const authHeader = 'Basic ' + Buffer.from(`${config.clientId}:${config.clientSecret}`).toString('base64');
+        const tokenUrl = `https://zoom.us/oauth/token?grant_type=account_credentials&account_id=${encodeURIComponent(config.accountId)}`;
+
+        const req = https.request(tokenUrl, {
+            method: 'POST',
+            headers: {
+                'Authorization': authHeader,
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            timeout: 5000
+        }, (res) => {
+            let data = '';
+            res.on('data', chunk => { data += chunk; });
+            res.on('end', () => {
+                try {
+                    const parsed = JSON.parse(data);
+                    if (res.statusCode >= 200 && res.statusCode < 300 && parsed.access_token) {
+                        resolve(parsed.access_token);
+                    } else {
+                        console.warn("[Zoom Service] Token generation returned status", res.statusCode);
+                        resolve(null);
+                    }
+                } catch (e) {
+                    console.warn("[Zoom Service] Failed parsing token response:", e.message);
+                    resolve(null);
+                }
+            });
+        });
+
+        req.on('error', (err) => {
+            console.warn("[Zoom Service] OAuth token request failed:", err.message);
+            resolve(null);
+        });
+        req.on('timeout', () => {
+            req.destroy();
+            resolve(null);
+        });
+        req.end();
+    });
+}
+
+async function createZoomMeeting({ topic, startTime, durationMinutes, agenda }) {
+    const config = getZoomConfig();
+    if (config.isConfigured) {
+        try {
+            const token = await fetchZoomOAuthToken();
+            if (token) {
+                const meeting = await new Promise((resolve) => {
+                    const postData = JSON.stringify({
+                        topic: topic || "Student Skill Exchange Session",
+                        type: 2,
+                        start_time: startTime || new Date().toISOString(),
+                        duration: durationMinutes || 60,
+                        timezone: "Asia/Kolkata",
+                        agenda: agenda || "Peer-to-peer student skill learning exchange session",
+                        settings: {
+                            host_video: true,
+                            participant_video: true,
+                            join_before_host: true,
+                            mute_upon_entry: false,
+                            watermark: false
+                        }
+                    });
+
+                    const req = https.request('https://api.zoom.us/v2/users/me/meetings', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json',
+                            'Content-Length': Buffer.byteLength(postData)
+                        },
+                        timeout: 6000
+                    }, (res) => {
+                        let data = '';
+                        res.on('data', chunk => { data += chunk; });
+                        res.on('end', () => {
+                            try {
+                                const parsed = JSON.parse(data);
+                                if (res.statusCode >= 200 && res.statusCode < 300 && parsed.join_url) {
+                                    resolve({
+                                        meetingId: String(parsed.id),
+                                        joinUrl: parsed.join_url,
+                                        password: parsed.password || 'zoom123'
+                                    });
+                                } else {
+                                    console.warn("[Zoom Service] Zoom API create meeting status:", res.statusCode);
+                                    resolve(null);
+                                }
+                            } catch (e) {
+                                resolve(null);
+                            }
+                        });
+                    });
+
+                    req.on('error', (e) => {
+                        console.warn("[Zoom Service] Create meeting error:", e.message);
+                        resolve(null);
+                    });
+                    req.on('timeout', () => {
+                        req.destroy();
+                        resolve(null);
+                    });
+                    req.write(postData);
+                    req.end();
+                });
+
+                if (meeting) return meeting;
+            }
+        } catch (e) {
+            console.warn("[Zoom Service] Live Zoom API execution failed:", e.message);
+        }
+    } else {
+        console.log("[Zoom Service] Safe backend notice: Zoom credentials (ZOOM_ACCOUNT_ID, ZOOM_CLIENT_ID, ZOOM_CLIENT_SECRET) not set in environment. Generating standard Zoom meeting URL for skill session demonstration.");
+    }
+
+    // Graceful fallback meeting link (Never crashes application)
+    const randomMeetingId = String(Math.floor(80000000000 + Math.random() * 19000000000));
+    const randomPassword = 'zoom' + Math.floor(100000 + Math.random() * 900000);
+    const joinUrl = `https://zoom.us/j/${randomMeetingId}?pwd=${randomPassword}`;
+
+    return {
+        meetingId: randomMeetingId,
+        joinUrl: joinUrl,
+        password: randomPassword
+    };
+}
+
+function enrichOnlineSession(s) {
+    if (!s) return null;
+    const session = { ...s };
+    // Dynamic status determination if scheduled
+    if (session.status !== 'Completed') {
+        const start = new Date(session.scheduledAt).getTime();
+        const durationMs = (session.durationMinutes || 60) * 60000;
+        const end = start + durationMs;
+        const now = Date.now();
+        if (now > end) {
+            session.status = 'Completed';
+        } else if (now >= start && now <= end) {
+            session.status = 'Live';
+        }
+    }
+    return session;
+}
+
 
 const server = http.createServer(async (req, res) => {
     const parsedUrl = url.parse(req.url, true);
@@ -975,7 +1497,7 @@ const server = http.createServer(async (req, res) => {
                 email: user.email,
                 role: user.role,
                 avatarUrl: profile ? profile.avatarUrl : null,
-                fullName: profile ? profile.fullName : (user.role === 'ROLE_ADMIN' ? 'System Administrator' : user.email),
+                fullName: profile ? profile.fullName : (user.role === 'ROLE_SUPER_ADMIN' ? 'Harsh Tukaram (Super Admin)' : (user.role === 'ROLE_ADMIN' ? 'System Administrator' : user.email)),
                 hasSeenLanding: user.hasSeenLanding !== false
             };
 
@@ -1118,11 +1640,11 @@ const server = http.createServer(async (req, res) => {
             const body = await parseBody(req);
             const normalizedEmail = (body.email || '').trim().toLowerCase();
 
-            // Backend validation: Accept any valid email
-            if (!isValidEmail(normalizedEmail)) {
+            // Backend validation: Student accounts must use @mgmmumbai.ac.in (Super Admin is a deliberate exception)
+            if (!isValidCollegeEmail(normalizedEmail)) {
                 return sendJson(res, 400, {
                     success: false,
-                    message: "Please enter a valid email address."
+                    message: "Registration is restricted to official college email addresses ending with @mgmmumbai.ac.in."
                 });
             }
 
@@ -1662,7 +2184,7 @@ const server = http.createServer(async (req, res) => {
             const projectId = Number(pathname.split('/')[4]);
             const myId = state.currentUser ? state.currentUser.userId : 2;
             const project = state.projects.find(pr => pr.id === projectId);
-            if (project && project.studentId !== myId && state.currentUser.role !== 'ROLE_ADMIN') {
+            if (project && project.studentId !== myId && !isAdmin(state.currentUser)) {
                 return sendJson(res, 403, { success: false, message: "Cannot delete another student's project." });
             }
             state.projects = state.projects.filter(pr => pr.id !== projectId);
@@ -1711,7 +2233,7 @@ const server = http.createServer(async (req, res) => {
             const expId = Number(pathname.split('/')[4]);
             const myId = state.currentUser ? state.currentUser.userId : 2;
             const exp = state.experiences.find(e => e.id === expId);
-            if (exp && exp.studentId !== myId && state.currentUser.role !== 'ROLE_ADMIN') {
+            if (exp && exp.studentId !== myId && !isAdmin(state.currentUser)) {
                 return sendJson(res, 403, { success: false, message: "Cannot delete another student's experience record." });
             }
             state.experiences = state.experiences.filter(e => e.id !== expId);
@@ -1957,12 +2479,243 @@ const server = http.createServer(async (req, res) => {
             const reqs = state.requests.filter(r => r.senderId === myId || r.receiverId === myId).map(r => {
                 const senderProf = state.profiles.find(p => p.userId === r.senderId);
                 const ts = senderProf ? senderProf.teachingSkills.find(t => t.skillId === r.skillOfferedId) : null;
+                const offProg = (r.learningMode === 'OFFLINE') ? (state.offlineProgress || []).find(op => op.exchangeRequestId === r.id) : null;
+                const onlineSess = (r.learningMode === 'ONLINE') ? (state.onlineSessions || []).find(s => s.exchangeRequestId === r.id) : null;
                 return {
                     ...r,
-                    skillOfferedVerified: ts ? (ts.verified || ts.verificationStatus === 'VERIFIED') : false
+                    skillOfferedVerified: ts ? (ts.verified || ts.verificationStatus === 'VERIFIED') : false,
+                    progressPercentage: offProg ? offProg.progressPercentage : 0,
+                    currentStage: offProg ? offProg.currentStage : 'Exchange Accepted',
+                    offlineProgressId: offProg ? offProg.id : null,
+                    onlineSession: onlineSess ? enrichOnlineSession(onlineSess) : null
                 };
             });
             return sendJson(res, 200, { success: true, data: reqs });
+        }
+
+        // Fetch complete details of a specific exchange request including sender's full profile, skills, projects, experience, certificates, and verification
+        if (pathname.match(/^\/api\/exchange-requests\/(\d+)(\/details)?$/) && req.method === 'GET') {
+            const reqId = Number(pathname.split('/')[3]);
+            const r = state.requests.find(req => req.id === reqId);
+            if (!r) {
+                return sendJson(res, 404, { success: false, message: "Exchange proposal not found." });
+            }
+
+            const myId = state.currentUser ? state.currentUser.userId : 2;
+            const isAdmin = state.currentUser && state.currentUser.role === 'ROLE_ADMIN';
+            const isParticipant = (r.senderId === myId || r.receiverId === myId);
+
+            if (!isParticipant && !isAdmin) {
+                return sendJson(res, 403, {
+                    success: false,
+                    message: "Access Denied: You are not authorized to view the details of this exchange request."
+                });
+            }
+
+            // Helper to build complete student qualifications (profile, projects, experiences, certificates, verification)
+            function buildStudentQualificationDetails(studentId, focusSkillId) {
+                const prof = state.profiles.find(p => p.userId === studentId);
+                const user = state.users.find(u => u.id === studentId);
+                const studentProjects = state.projects.filter(p => p.studentId === studentId);
+                const studentExperiences = state.experiences.filter(e => e.studentId === studentId);
+                const studentVerifications = state.verifications.filter(v => v.studentId === studentId);
+
+                const focusVer = studentVerifications.find(v => v.skillId === focusSkillId);
+                const focusTeachingSkill = prof && Array.isArray(prof.teachingSkills)
+                    ? prof.teachingSkills.find(t => t.skillId === focusSkillId) : null;
+                const focusLearningSkill = prof && Array.isArray(prof.learningSkills)
+                    ? prof.learningSkills.find(l => l.skillId === focusSkillId) : null;
+
+                // Synthesize certificates for this student
+                const certificates = [];
+                studentVerifications.forEach(v => {
+                    if (v.certificateName || v.certificateUrl) {
+                        certificates.push({
+                            title: v.certificateName || `${v.skillName} Certificate`,
+                            issuingOrganization: v.experienceOrganization || "Accredited Certification Authority",
+                            skillId: v.skillId,
+                            skillName: v.skillName,
+                            documentUrl: v.certificateUrl || "",
+                            verificationStatus: v.status || "VERIFIED",
+                            reviewedDate: v.reviewedDate || v.submissionDate || null,
+                            isOfferedSkill: v.skillId === focusSkillId
+                        });
+                    }
+                });
+
+                if (prof && Array.isArray(prof.teachingSkills)) {
+                    prof.teachingSkills.forEach(ts => {
+                        if (ts.proofDocumentUrl && !certificates.some(c => c.documentUrl === ts.proofDocumentUrl)) {
+                            certificates.push({
+                                title: `${ts.skillName} Verification Certificate`,
+                                issuingOrganization: "Recognized Certification / Academic Review",
+                                skillId: ts.skillId,
+                                skillName: ts.skillName,
+                                documentUrl: ts.proofDocumentUrl,
+                                verificationStatus: ts.verificationStatus || (ts.verified ? "VERIFIED" : "PENDING"),
+                                reviewedDate: null,
+                                isOfferedSkill: ts.skillId === focusSkillId
+                            });
+                        }
+                    });
+                }
+
+                // Projects with review status
+                const projectsWithStatus = studentProjects.map(proj => {
+                    const matchingVer = studentVerifications.find(v => 
+                        v.projectTitle && (v.projectTitle.toLowerCase().includes(proj.title.toLowerCase()) || proj.title.toLowerCase().includes(v.projectTitle.toLowerCase()))
+                    );
+                    return {
+                        ...proj,
+                        reviewStatus: matchingVer ? matchingVer.status : (prof && prof.verified ? "VERIFIED" : "UNAUDITED"),
+                        isOfferedSkillProject: focusVer ? (focusVer.projectTitle && focusVer.projectTitle.toLowerCase().includes(proj.title.toLowerCase())) : false
+                    };
+                });
+
+                // Experiences with review status
+                const experiencesWithStatus = studentExperiences.map(exp => {
+                    const expTitle = (exp.title || exp.role || '').toLowerCase();
+                    const matchingVer = studentVerifications.find(v => 
+                        v.experienceTitle && (v.experienceTitle.toLowerCase().includes(expTitle) || expTitle.includes(v.experienceTitle.toLowerCase()))
+                    );
+                    return {
+                        ...exp,
+                        reviewStatus: matchingVer ? matchingVer.status : (prof && prof.verified ? "VERIFIED" : "UNAUDITED"),
+                        isOfferedSkillExperience: focusVer ? (focusVer.experienceTitle && focusVer.experienceTitle.toLowerCase().includes(expTitle)) : false
+                    };
+                });
+
+                // Verification summary
+                const verificationSummary = {
+                    isStudentVerified: !!(prof && prof.verified),
+                    offeredSkillVerified: focusTeachingSkill ? (focusTeachingSkill.verified || focusTeachingSkill.verificationStatus === 'VERIFIED') : false,
+                    offeredSkillStatus: focusTeachingSkill ? (focusTeachingSkill.verificationStatus || (focusTeachingSkill.verified ? 'VERIFIED' : 'NOT_VERIFIED')) : 'NOT_VERIFIED',
+                    hasReviewedProjects: projectsWithStatus.some(p => p.reviewStatus === 'VERIFIED'),
+                    hasReviewedExperience: experiencesWithStatus.some(e => e.reviewStatus === 'VERIFIED'),
+                    hasVerifiedCertificate: certificates.some(c => c.verificationStatus === 'VERIFIED'),
+                    adminComment: focusVer ? (focusVer.adminComment || '') : ''
+                };
+
+                const sanitizedProfile = prof ? {
+                    userId: prof.userId,
+                    fullName: prof.fullName,
+                    email: prof.email,
+                    college: prof.college || "College of Engineering & Technology",
+                    department: prof.department || "Information Technology",
+                    yearOfStudy: prof.yearOfStudy || "Student",
+                    bio: prof.bio || "",
+                    avatarUrl: prof.avatarUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(prof.fullName)}`,
+                    verified: !!prof.verified,
+                    averageRating: prof.averageRating || 5.0,
+                    completedExchangesCount: prof.completedExchangesCount || 0,
+                    teachingSkills: prof.teachingSkills || [],
+                    learningSkills: prof.learningSkills || []
+                } : {
+                    userId: studentId,
+                    fullName: user ? (user.name || user.email) : `Student #${studentId}`,
+                    email: user ? user.email : "",
+                    college: "College of Engineering & Technology",
+                    department: "Information Technology",
+                    yearOfStudy: "Student",
+                    bio: "",
+                    avatarUrl: `https://api.dicebear.com/7.x/bottts/svg?seed=Student${studentId}`,
+                    verified: false,
+                    averageRating: 5.0,
+                    completedExchangesCount: 0,
+                    teachingSkills: [],
+                    learningSkills: []
+                };
+
+                return {
+                    profile: sanitizedProfile,
+                    projects: projectsWithStatus,
+                    experiences: experiencesWithStatus,
+                    certificates,
+                    verification: verificationSummary,
+                    focusTeachingSkill,
+                    focusLearningSkill
+                };
+            }
+
+            const senderDetails = buildStudentQualificationDetails(r.senderId, r.skillOfferedId);
+            const receiverDetails = buildStudentQualificationDetails(r.receiverId, r.skillRequestedId);
+
+            const isIncoming = r.receiverId === myId;
+            const isSender = r.senderId === myId;
+
+            return sendJson(res, 200, {
+                success: true,
+                data: {
+                    request: {
+                        id: r.id,
+                        senderId: r.senderId,
+                        senderName: r.senderName,
+                        senderEmail: r.senderEmail,
+                        receiverId: r.receiverId,
+                        receiverName: r.receiverName,
+                        skillOfferedId: r.skillOfferedId,
+                        skillOfferedName: r.skillOfferedName,
+                        skillRequestedId: r.skillRequestedId,
+                        skillRequestedName: r.skillRequestedName,
+                        learningMode: r.learningMode,
+                        message: r.message,
+                        status: r.status,
+                        createdAt: r.createdAt,
+                        isIncoming,
+                        isSender
+                    },
+                    sender: senderDetails.profile,
+                    receiver: receiverDetails.profile,
+                    projects: senderDetails.projects,
+                    experiences: senderDetails.experiences,
+                    certificates: senderDetails.certificates,
+                    verification: senderDetails.verification,
+                    senderDetails: senderDetails,
+                    receiverDetails: receiverDetails,
+                    receiverProjects: receiverDetails.projects,
+                    receiverExperiences: receiverDetails.experiences,
+                    receiverCertificates: receiverDetails.certificates,
+                    receiverVerification: receiverDetails.verification,
+                    offeredSkillDetails: {
+                        skillId: r.skillOfferedId,
+                        skillName: r.skillOfferedName,
+                        categoryName: senderDetails.focusTeachingSkill ? senderDetails.focusTeachingSkill.categoryName : "",
+                        proficiencyLevel: senderDetails.focusTeachingSkill ? senderDetails.focusTeachingSkill.levelOrUrgency : "Competent",
+                        isVerified: senderDetails.verification.offeredSkillVerified,
+                        verificationStatus: senderDetails.verification.offeredSkillStatus,
+                        adminComment: senderDetails.verification.adminComment
+                    },
+                    requestedSkillDetails: {
+                        skillId: r.skillRequestedId,
+                        skillName: r.skillRequestedName,
+                        categoryName: receiverDetails.focusTeachingSkill ? receiverDetails.focusTeachingSkill.categoryName : (senderDetails.focusLearningSkill ? senderDetails.focusLearningSkill.categoryName : ""),
+                        urgencyLevel: senderDetails.focusLearningSkill ? senderDetails.focusLearningSkill.levelOrUrgency : "Standard"
+                    },
+                    viewer: {
+                        userId: myId,
+                        role: state.currentUser ? state.currentUser.role : 'ROLE_STUDENT',
+                        isParticipant,
+                        isSender,
+                        isIncoming,
+                        canAcceptOrReject: isIncoming && r.status === 'PENDING',
+                        canChat: r.status === 'ACCEPTED',
+                        canComplete: isParticipant && r.status === 'ACCEPTED',
+                        canRate: isParticipant && r.status === 'COMPLETED'
+                    },
+                    offlineProgress: (() => {
+                        if (r.learningMode !== 'OFFLINE') return null;
+                        const op = (state.offlineProgress || []).find(p => p.exchangeRequestId === r.id);
+                        if (!op) return null;
+                        const updates = (state.offlineUpdates || []).filter(u => u.offlineExchangeId === op.id);
+                        return { ...op, updates };
+                    })(),
+                    onlineSession: (() => {
+                        if (r.learningMode !== 'ONLINE') return null;
+                        const os = (state.onlineSessions || []).find(s => s.exchangeRequestId === r.id);
+                        return os ? enrichOnlineSession(os) : null;
+                    })()
+                }
+            });
         }
 
         if (pathname === '/api/exchange-requests/pending' && req.method === 'GET') {
@@ -2087,6 +2840,38 @@ const server = http.createServer(async (req, res) => {
                 };
                 state.notifications.unshift(notifAcc);
                 syncSupabase('saveNotification', notifAcc);
+
+                // Auto-create Offline Exchange Progress record if learningMode is OFFLINE
+                if (r.learningMode && r.learningMode.toUpperCase() === 'OFFLINE') {
+                    const existingOff = state.offlineProgress.find(op => op.exchangeRequestId === r.id);
+                    if (!existingOff) {
+                        const newOff = {
+                            id: state.offlineProgress.length + 1,
+                            exchangeRequestId: r.id,
+                            exchangeId: newEx.id,
+                            teacherId: r.senderId,
+                            teacherName: r.senderName,
+                            teacherEmail: r.senderEmail || "student@mgmmumbai.ac.in",
+                            learnerId: r.receiverId,
+                            learnerName: r.receiverName,
+                            learnerEmail: (state.users.find(u => u.id === r.receiverId) || {}).email || "student@mgmmumbai.ac.in",
+                            skillOfferedTitle: r.skillOfferedName,
+                            skillRequestedTitle: r.skillRequestedName,
+                            learningMode: "OFFLINE",
+                            location: r.location || "Campus Central Library / Study Hall",
+                            startDate: new Date().toISOString(),
+                            expectedCompletionDate: new Date(Date.now() + 21 * 86400000).toISOString(),
+                            progressPercentage: 0,
+                            currentStage: "Exchange Accepted",
+                            status: "ACTIVE",
+                            lastActivityAt: new Date().toISOString(),
+                            nextActivity: "Offline Session Planned",
+                            createdAt: new Date().toISOString(),
+                            updatedAt: new Date().toISOString()
+                        };
+                        state.offlineProgress.unshift(newOff);
+                    }
+                }
             }
             return sendJson(res, 200, { success: true, data: r });
         }
@@ -2145,6 +2930,554 @@ const server = http.createServer(async (req, res) => {
                 reviewedByCurrentStudent: state.reviews.some(rev => rev.exchangeId === e.id && rev.reviewerId === myId)
             }));
             return sendJson(res, 200, { success: true, data });
+        }
+
+        // ===================================================================
+        // OFFLINE EXCHANGE PROGRESS TRACKING (MODULE 15 - REST API)
+        // ===================================================================
+
+        // Helper to compute overdue status and enrich offline exchange object
+        function enrichOfflineProgress(op) {
+            const lastActivityTime = op.lastActivityAt ? new Date(op.lastActivityAt).getTime() : new Date(op.startDate).getTime();
+            const daysSinceLastActivity = Math.max(0, Math.floor((Date.now() - lastActivityTime) / 86400000));
+            const isCompleted = op.status === 'COMPLETED' || op.progressPercentage >= 100;
+            // Overdue if active and inactive for 7 or more days
+            const isOverdue = !isCompleted && daysSinceLastActivity >= 7;
+            const statusLabel = isCompleted ? 'Completed' : (isOverdue ? 'Progress update overdue' : 'Active');
+            const totalUpdates = state.offlineUpdates.filter(u => u.offlineExchangeProgressId === op.id).length;
+            const skillTaughtName = op.skillTaughtName || op.skillOfferedTitle || "Skill Taught";
+            const skillLearnedName = op.skillLearnedName || op.skillRequestedTitle || "Skill Learned";
+
+            return {
+                ...op,
+                skillTaughtName,
+                skillLearnedName,
+                daysSinceLastActivity,
+                isOverdue,
+                statusLabel,
+                totalUpdates
+            };
+        }
+
+        // 1. GET /api/offline-exchanges — List all offline exchanges (Admin oversight)
+        if (pathname === '/api/offline-exchanges' && req.method === 'GET') {
+            const statusFilter = parsedUrl.query.status;
+            let list = state.offlineProgress.map(enrichOfflineProgress);
+
+            if (statusFilter) {
+                const s = statusFilter.toUpperCase();
+                if (s === 'OVERDUE' || s === 'NEEDS_ATTENTION') {
+                    list = list.filter(op => op.isOverdue);
+                } else {
+                    list = list.filter(op => op.status.toUpperCase() === s);
+                }
+            }
+
+            return sendJson(res, 200, { success: true, data: list });
+        }
+
+        // 2. GET /api/offline-exchanges/metrics — Overview metrics for Admin Dashboard
+        if (pathname === '/api/offline-exchanges/metrics' && req.method === 'GET') {
+            const list = state.offlineProgress.map(enrichOfflineProgress);
+            const activeCount = list.filter(op => op.status === 'ACTIVE' && !op.isOverdue).length;
+            const completedCount = list.filter(op => op.status === 'COMPLETED' || op.progressPercentage >= 100).length;
+            const overdueCount = list.filter(op => op.isOverdue).length;
+            const totalUpdates = state.offlineUpdates.length;
+
+            return sendJson(res, 200, {
+                success: true,
+                data: {
+                    activeCount: activeCount + overdueCount,
+                    pureActiveCount: activeCount,
+                    completedCount: completedCount,
+                    overdueCount: overdueCount,
+                    totalUpdates: totalUpdates,
+                    totalOfflineExchanges: list.length,
+                    activeOfflineExchanges: activeCount + overdueCount,
+                    completedOfflineExchanges: completedCount,
+                    overdueExchanges: overdueCount,
+                    totalSessionUpdates: totalUpdates
+                }
+            });
+        }
+
+        // 3. GET /api/offline-exchanges/:id — Detailed progress view & full session timeline
+        if (pathname.match(/^\/api\/offline-exchanges\/(\d+)$/) && req.method === 'GET') {
+            const id = Number(pathname.split('/')[3]);
+            const op = state.offlineProgress.find(p => p.id === id);
+            if (!op) {
+                return sendJson(res, 404, { success: false, message: "Offline exchange progress record not found." });
+            }
+
+            const currentUserId = state.currentUser ? state.currentUser.userId : 2;
+            const isAdmin = state.currentUser && state.currentUser.role === 'ROLE_ADMIN';
+            const isParticipant = op.teacherId === currentUserId || op.learnerId === currentUserId;
+
+            if (!isAdmin && !isParticipant) {
+                return sendJson(res, 403, { success: false, message: "Unauthorized: You are not a participant in this exchange." });
+            }
+
+            const updates = state.offlineUpdates
+                .filter(u => u.offlineExchangeProgressId === op.id)
+                .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+            const enriched = {
+                ...enrichOfflineProgress(op),
+                updates
+            };
+
+            return sendJson(res, 200, { success: true, data: enriched });
+        }
+
+        // 4. POST /api/offline-exchanges/:id/updates — Student logs session progress update
+        if (pathname.match(/^\/api\/offline-exchanges\/(\d+)\/updates$/) && req.method === 'POST') {
+            const id = Number(pathname.split('/')[3]);
+            const op = state.offlineProgress.find(p => p.id === id);
+            if (!op) {
+                return sendJson(res, 404, { success: false, message: "Offline exchange record not found." });
+            }
+
+            const currentUserId = state.currentUser ? state.currentUser.userId : 2;
+            const isParticipant = op.teacherId === currentUserId || op.learnerId === currentUserId;
+
+            if (!isParticipant) {
+                return sendJson(res, 403, { success: false, message: "Only registered participants can log session progress." });
+            }
+
+            const body = await parseBody(req);
+
+            // Validation: topicsCovered is required
+            if (!body.topicsCovered || !body.topicsCovered.trim()) {
+                return sendJson(res, 400, { success: false, message: "Topics covered is required to log progress." });
+            }
+
+            // Validation: progressPercentage between 0 and 100
+            let percentage = op.progressPercentage;
+            if (body.progressPercentage !== undefined && body.progressPercentage !== null && body.progressPercentage !== '') {
+                percentage = Number(body.progressPercentage);
+                if (isNaN(percentage) || percentage < 0 || percentage > 100) {
+                    return sendJson(res, 400, { success: false, message: "Progress percentage must be an integer between 0 and 100." });
+                }
+            }
+
+            const stage = body.stage || op.currentStage;
+            const now = new Date().toISOString();
+            const sessionDate = body.sessionDate || now.split('T')[0];
+
+            const newUpdate = {
+                id: state.offlineUpdates.length + 1,
+                offlineExchangeProgressId: op.id,
+                submittedById: currentUserId,
+                submittedByName: state.currentUser ? (state.currentUser.fullName || state.currentUser.email) : "Student",
+                sessionDate: sessionDate,
+                stage: stage,
+                topicsCovered: body.topicsCovered.trim(),
+                description: body.description ? body.description.trim() : "",
+                progressPercentage: percentage,
+                nextActivity: body.nextActivity ? body.nextActivity.trim() : op.nextActivity,
+                attachmentUrl: body.attachmentUrl || null,
+                createdAt: now
+            };
+
+            state.offlineUpdates.unshift(newUpdate);
+
+            // Update main progress record
+            op.progressPercentage = percentage;
+            op.currentStage = stage;
+            if (body.nextActivity) op.nextActivity = body.nextActivity.trim();
+            op.lastActivityAt = now;
+            op.updatedAt = now;
+
+            if (percentage >= 100 || stage === "Exchange Completed") {
+                op.status = "COMPLETED";
+                op.progressPercentage = 100;
+                op.currentStage = "Exchange Completed";
+                op.completionDate = now;
+
+                // Sync with exchange if linked
+                const ex = state.exchanges.find(e => e.id === op.exchangeId || e.requestId === op.exchangeRequestId);
+                if (ex) {
+                    ex.status = "COMPLETED";
+                    ex.completionDate = now;
+                }
+            } else {
+                op.status = "ACTIVE";
+            }
+
+            return sendJson(res, 200, {
+                success: true,
+                data: enrichOfflineProgress(op),
+                message: "Offline session progress recorded successfully."
+            });
+        }
+
+        // 5. GET /api/exchange-requests/:id/offline-progress — Fetch offline progress by exchange request ID
+        if (pathname.match(/^\/api\/exchange-requests\/(\d+)\/offline-progress$/) && req.method === 'GET') {
+            const reqId = Number(pathname.split('/')[3]);
+            const op = state.offlineProgress.find(p => p.exchangeRequestId === reqId);
+            if (!op) {
+                return sendJson(res, 200, { success: true, data: null, message: "No offline progress record for this request." });
+            }
+
+            const currentUserId = state.currentUser ? state.currentUser.userId : 2;
+            const isAdmin = state.currentUser && state.currentUser.role === 'ROLE_ADMIN';
+            const isParticipant = op.teacherId === currentUserId || op.learnerId === currentUserId;
+
+            if (!isAdmin && !isParticipant) {
+                return sendJson(res, 403, { success: false, message: "Unauthorized to inspect this offline progress." });
+            }
+
+            const updates = state.offlineUpdates
+                .filter(u => u.offlineExchangeProgressId === op.id)
+                .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+            return sendJson(res, 200, {
+                success: true,
+                data: {
+                    ...enrichOfflineProgress(op),
+                    updates
+                }
+            });
+        }
+
+        // ===================================================================
+        // ONLINE SKILL EXCHANGE SESSIONS & ZOOM INTEGRATION (MODULE 16 - REST API)
+        // ===================================================================
+
+        // 1. Schedule an Online Session (Creates Zoom meeting via Server-to-Server OAuth or safe fallback)
+        if (pathname === '/api/online-sessions' && req.method === 'POST') {
+            if (!state.currentUser) {
+                return sendJson(res, 401, { success: false, message: "Authentication required." });
+            }
+
+            const body = await parseBody(req);
+            const reqId = Number(body.exchangeRequestId);
+            const exchangeReq = state.requests.find(r => r.id === reqId);
+
+            if (!exchangeReq) {
+                return sendJson(res, 404, { success: false, message: "Exchange proposal not found." });
+            }
+
+            if (exchangeReq.status !== 'ACCEPTED') {
+                return sendJson(res, 400, { success: false, message: "Online sessions can only be scheduled for accepted skill exchanges." });
+            }
+
+            if (exchangeReq.learningMode !== 'ONLINE') {
+                return sendJson(res, 400, { success: false, message: "This skill exchange is not in ONLINE learning mode." });
+            }
+
+            const myId = state.currentUser.userId;
+            const isAdmin = state.currentUser.role === 'ROLE_ADMIN';
+            const isParticipant = (exchangeReq.senderId === myId || exchangeReq.receiverId === myId);
+
+            if (!isParticipant && !isAdmin) {
+                return sendJson(res, 403, { success: false, message: "Security violation: You are not authorized to schedule a session for this exchange." });
+            }
+
+            const scheduledDate = (body.scheduledDate || '').trim();
+            const scheduledTime = (body.scheduledTime || '').trim();
+            if (!scheduledDate || !scheduledTime) {
+                return sendJson(res, 400, { success: false, message: "Session date and start time are required." });
+            }
+
+            const title = (body.title || `${exchangeReq.skillOfferedName} Online Session`).trim();
+            const durationMinutes = Math.min(300, Math.max(15, Number(body.durationMinutes) || 60));
+            const description = (body.description || '').trim();
+            const skillName = exchangeReq.skillOfferedName || body.skillName || "Skill Exchange";
+
+            // Secure Zoom Meeting creation (Server-to-Server OAuth with zero frontend leakage)
+            const zoomResult = await createZoomMeeting({
+                topic: title,
+                startTime: `${scheduledDate}T${scheduledTime}:00Z`,
+                durationMinutes,
+                agenda: description || `Online Skill Exchange Session: ${skillName}`
+            });
+
+            const nextSessionId = state.onlineSessions.length > 0 ? Math.max(...state.onlineSessions.map(s => s.id)) + 1 : 1;
+            const partnerId = (myId === exchangeReq.senderId) ? exchangeReq.receiverId : exchangeReq.senderId;
+            const partnerProf = state.profiles.find(p => p.userId === partnerId);
+            const partnerName = partnerProf ? partnerProf.fullName : ((myId === exchangeReq.senderId) ? exchangeReq.receiverName : exchangeReq.senderName);
+            const myProf = state.profiles.find(p => p.userId === myId);
+            const myName = myProf ? myProf.fullName : (state.currentUser.fullName || "Student");
+
+            const newSession = {
+                id: nextSessionId,
+                exchangeRequestId: exchangeReq.id,
+                exchangeId: exchangeReq.id,
+                title: title,
+                skillId: exchangeReq.skillOfferedId,
+                skillName: skillName,
+                teacherId: exchangeReq.senderId,
+                teacherName: exchangeReq.senderName,
+                teacherEmail: exchangeReq.senderEmail || "teacher@mgmmumbai.ac.in",
+                learnerId: exchangeReq.receiverId,
+                learnerName: exchangeReq.receiverName,
+                learnerEmail: (state.users.find(u => u.id === exchangeReq.receiverId) || {}).email || "learner@mgmmumbai.ac.in",
+                scheduledDate: scheduledDate,
+                scheduledTime: scheduledTime,
+                scheduledAt: new Date(`${scheduledDate}T${scheduledTime}:00`).toISOString(),
+                durationMinutes: durationMinutes,
+                description: description,
+                zoomMeetingId: zoomResult.meetingId,
+                zoomJoinUrl: zoomResult.joinUrl,
+                zoomPassword: zoomResult.password,
+                status: "Scheduled",
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+
+            state.onlineSessions.unshift(newSession);
+            syncSupabase('saveOnlineSession', newSession);
+
+            // Section 8 Requirement: Automatically post a system message to exchange conversation:
+            // "Online session scheduled for [date] at [time]."
+            const nowIso = new Date().toISOString();
+            const nextMsgId = state.messages.length > 0 ? Math.max(...state.messages.map(m => m.id)) + 1 : 1;
+            const autoSystemMsg = {
+                id: nextMsgId,
+                senderId: myId,
+                senderName: myName,
+                receiverId: partnerId,
+                receiverName: partnerName,
+                messageText: `Online session scheduled for ${scheduledDate} at ${scheduledTime}.`,
+                content: `Online session scheduled for ${scheduledDate} at ${scheduledTime}.`,
+                isSystem: true,
+                isDoubt: false,
+                sessionId: newSession.id,
+                attachmentUrl: null,
+                attachmentType: null,
+                attachmentName: null,
+                status: "DELIVERED",
+                sentAt: nowIso,
+                deliveredAt: nowIso,
+                seenAt: null,
+                isRead: false
+            };
+            state.messages.push(autoSystemMsg);
+            syncSupabase('saveMessage', autoSystemMsg);
+
+            // Notify partner
+            const notifMsg = {
+                id: Date.now(),
+                recipientId: partnerId,
+                title: "Online Session Scheduled",
+                message: `${myName} scheduled an online session for ${skillName} on ${scheduledDate} at ${scheduledTime}.`,
+                type: "ONLINE_SESSION_SCHEDULED",
+                linkUrl: "requests.html",
+                isRead: false,
+                createdAt: nowIso
+            };
+            state.notifications.unshift(notifMsg);
+            syncSupabase('saveNotification', notifMsg);
+
+            return sendJson(res, 200, {
+                success: true,
+                data: enrichOnlineSession(newSession),
+                message: "Online skill session scheduled successfully."
+            });
+        }
+
+        // 2. List online sessions for current user (or all if admin)
+        if (pathname === '/api/online-sessions' && req.method === 'GET') {
+            if (!state.currentUser) {
+                return sendJson(res, 401, { success: false, message: "Authentication required." });
+            }
+            const myId = state.currentUser.userId;
+            const isAdmin = state.currentUser.role === 'ROLE_ADMIN';
+
+            const sessions = state.onlineSessions
+                .filter(s => isAdmin || s.teacherId === myId || s.learnerId === myId)
+                .map(enrichOnlineSession);
+
+            return sendJson(res, 200, { success: true, data: sessions });
+        }
+
+        // 3. Get single online session details
+        if (pathname.match(/^\/api\/online-sessions\/(\d+)$/) && req.method === 'GET') {
+            if (!state.currentUser) {
+                return sendJson(res, 401, { success: false, message: "Authentication required." });
+            }
+            const sessId = Number(pathname.split('/')[3]);
+            const session = state.onlineSessions.find(s => s.id === sessId);
+            if (!session) {
+                return sendJson(res, 404, { success: false, message: "Online session not found." });
+            }
+
+            const myId = state.currentUser.userId;
+            const isAdmin = state.currentUser.role === 'ROLE_ADMIN';
+            const isParticipant = (session.teacherId === myId || session.learnerId === myId);
+
+            if (!isParticipant && !isAdmin) {
+                return sendJson(res, 403, { success: false, message: "Access Denied: You are not authorized to view this session." });
+            }
+
+            return sendJson(res, 200, { success: true, data: enrichOnlineSession(session) });
+        }
+
+        // 4. Update session status (e.g. Live or Completed)
+        if (pathname.match(/^\/api\/online-sessions\/(\d+)\/status$/) && req.method === 'PUT') {
+            if (!state.currentUser) {
+                return sendJson(res, 401, { success: false, message: "Authentication required." });
+            }
+            const sessId = Number(pathname.split('/')[3]);
+            const session = state.onlineSessions.find(s => s.id === sessId);
+            if (!session) {
+                return sendJson(res, 404, { success: false, message: "Online session not found." });
+            }
+
+            const myId = state.currentUser.userId;
+            const isAdmin = state.currentUser.role === 'ROLE_ADMIN';
+            const isParticipant = (session.teacherId === myId || session.learnerId === myId);
+
+            if (!isParticipant && !isAdmin) {
+                return sendJson(res, 403, { success: false, message: "Access Denied: You cannot update this session." });
+            }
+
+            const body = await parseBody(req);
+            const validStatuses = ['Scheduled', 'Live', 'Completed'];
+            if (!body.status || !validStatuses.includes(body.status)) {
+                return sendJson(res, 400, { success: false, message: "Invalid status. Allowed: Scheduled, Live, Completed." });
+            }
+
+            session.status = body.status;
+            session.updatedAt = new Date().toISOString();
+            syncSupabase('saveOnlineSession', session);
+
+            return sendJson(res, 200, { success: true, data: enrichOnlineSession(session), message: `Session status updated to ${body.status}` });
+        }
+
+        // 5. Get online session for a specific exchange request
+        if (pathname.match(/^\/api\/exchange-requests\/(\d+)\/online-session$/) && req.method === 'GET') {
+            if (!state.currentUser) {
+                return sendJson(res, 401, { success: false, message: "Authentication required." });
+            }
+            const reqId = Number(pathname.split('/')[3]);
+            const reqObj = state.requests.find(r => r.id === reqId);
+            if (!reqObj) {
+                return sendJson(res, 404, { success: false, message: "Exchange proposal not found." });
+            }
+
+            const myId = state.currentUser.userId;
+            const isAdmin = state.currentUser.role === 'ROLE_ADMIN';
+            const isParticipant = (reqObj.senderId === myId || reqObj.receiverId === myId);
+
+            if (!isParticipant && !isAdmin) {
+                return sendJson(res, 403, { success: false, message: "Access Denied." });
+            }
+
+            const session = state.onlineSessions.find(s => s.exchangeRequestId === reqId);
+            return sendJson(res, 200, { success: true, data: session ? enrichOnlineSession(session) : null });
+        }
+
+        // ===================================================================
+        // EXCHANGE NOTES (MODULE 17 - REST API)
+        // ===================================================================
+
+        // 1. Get notes for current user (filtered optionally by partnerId or exchangeRequestId)
+        if (pathname === '/api/exchange-notes' && req.method === 'GET') {
+            if (!state.currentUser) {
+                return sendJson(res, 401, { success: false, message: "Authentication required." });
+            }
+            const myId = state.currentUser.userId;
+            const partnerId = parsedUrl.query.partnerId ? Number(parsedUrl.query.partnerId) : null;
+            const reqId = parsedUrl.query.exchangeRequestId ? Number(parsedUrl.query.exchangeRequestId) : null;
+
+            let notes = state.exchangeNotes.filter(n => n.studentId === myId);
+            if (partnerId) {
+                notes = notes.filter(n => n.partnerId === partnerId);
+            }
+            if (reqId) {
+                notes = notes.filter(n => n.exchangeRequestId === reqId);
+            }
+            return sendJson(res, 200, { success: true, data: notes });
+        }
+
+        // 2. Create note
+        if (pathname === '/api/exchange-notes' && req.method === 'POST') {
+            if (!state.currentUser) {
+                return sendJson(res, 401, { success: false, message: "Authentication required." });
+            }
+            const body = await parseBody(req);
+            const topic = (body.topic || '').trim();
+            const content = (body.content || '').trim();
+
+            if (!topic) {
+                return sendJson(res, 400, { success: false, message: "Note topic is required." });
+            }
+            if (!content) {
+                return sendJson(res, 400, { success: false, message: "Note content cannot be empty." });
+            }
+
+            const myId = state.currentUser.userId;
+            const partnerId = body.partnerId ? Number(body.partnerId) : null;
+            const partnerProf = partnerId ? state.profiles.find(p => p.userId === partnerId) : null;
+            const partnerName = partnerProf ? partnerProf.fullName : "Partner";
+
+            const nextNoteId = state.exchangeNotes.length > 0 ? Math.max(...state.exchangeNotes.map(n => n.id)) + 1 : 1;
+            const newNote = {
+                id: nextNoteId,
+                studentId: myId,
+                studentName: state.currentUser.fullName || "Student",
+                partnerId: partnerId,
+                partnerName: partnerName,
+                exchangeRequestId: body.exchangeRequestId ? Number(body.exchangeRequestId) : null,
+                topic: escapeHtml(topic),
+                content: escapeHtml(content),
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+
+            state.exchangeNotes.unshift(newNote);
+            syncSupabase('saveExchangeNote', newNote);
+
+            return sendJson(res, 200, { success: true, data: newNote, message: "Note saved successfully." });
+        }
+
+        // 3. Update note
+        if (pathname.match(/^\/api\/exchange-notes\/(\d+)$/) && req.method === 'PUT') {
+            if (!state.currentUser) {
+                return sendJson(res, 401, { success: false, message: "Authentication required." });
+            }
+            const noteId = Number(pathname.split('/')[3]);
+            const note = state.exchangeNotes.find(n => n.id === noteId);
+            if (!note) {
+                return sendJson(res, 404, { success: false, message: "Note not found." });
+            }
+
+            const myId = state.currentUser.userId;
+            const isAdmin = state.currentUser.role === 'ROLE_ADMIN';
+            if (note.studentId !== myId && !isAdmin) {
+                return sendJson(res, 403, { success: false, message: "Forbidden: You can only edit your own notes." });
+            }
+
+            const body = await parseBody(req);
+            if (body.topic) note.topic = escapeHtml(body.topic.trim());
+            if (body.content) note.content = escapeHtml(body.content.trim());
+            note.updatedAt = new Date().toISOString();
+            syncSupabase('saveExchangeNote', note);
+
+            return sendJson(res, 200, { success: true, data: note, message: "Note updated successfully." });
+        }
+
+        // 4. Delete note
+        if (pathname.match(/^\/api\/exchange-notes\/(\d+)$/) && req.method === 'DELETE') {
+            if (!state.currentUser) {
+                return sendJson(res, 401, { success: false, message: "Authentication required." });
+            }
+            const noteId = Number(pathname.split('/')[3]);
+            const idx = state.exchangeNotes.findIndex(n => n.id === noteId);
+            if (idx === -1) {
+                return sendJson(res, 404, { success: false, message: "Note not found." });
+            }
+
+            const myId = state.currentUser.userId;
+            const isAdmin = state.currentUser.role === 'ROLE_ADMIN';
+            if (state.exchangeNotes[idx].studentId !== myId && !isAdmin) {
+                return sendJson(res, 403, { success: false, message: "Forbidden: You can only delete your own notes." });
+            }
+
+            state.exchangeNotes.splice(idx, 1);
+            return sendJson(res, 200, { success: true, message: "Note deleted successfully." });
         }
 
         // --- 6. CHAT & MESSAGING (MODULE 8) ---
@@ -2258,6 +3591,9 @@ const server = http.createServer(async (req, res) => {
 
             const now = new Date().toISOString();
             const nextId = state.messages.length > 0 ? Math.max(...state.messages.map(m => m.id)) + 1 : 1;
+            const isDoubt = Boolean(body.isDoubt);
+            const sessionId = body.sessionId ? Number(body.sessionId) : null;
+
             const newMsg = {
                 id: nextId,
                 senderId: myId,
@@ -2266,6 +3602,8 @@ const server = http.createServer(async (req, res) => {
                 receiverName: receiverProf ? receiverProf.fullName : "Student",
                 messageText: sanitizedText,
                 content: sanitizedText,
+                isDoubt: isDoubt,
+                sessionId: sessionId,
                 attachmentUrl: body.attachmentUrl || null,
                 attachmentType: body.attachmentType || null,
                 attachmentName: body.attachmentName || null,
@@ -2276,22 +3614,23 @@ const server = http.createServer(async (req, res) => {
                 sentAt: now,
                 deliveredAt: now,
                 seenAt: null,
-                status: "DELIVERED",
-                isRead: false
+                status: "DELIVERED"
             };
             state.messages.push(newMsg);
             syncSupabase('saveMessage', newMsg);
 
-            const notifText = newMsg.messageText 
-                ? (newMsg.messageText.length > 50 ? newMsg.messageText.substring(0, 47) + "..." : newMsg.messageText)
-                : `Sent an attachment: ${newMsg.attachmentName || 'file'}`;
+            const notifText = isDoubt 
+                ? `[DOUBT] ${newMsg.messageText}`
+                : (newMsg.messageText 
+                    ? (newMsg.messageText.length > 50 ? newMsg.messageText.substring(0, 47) + "..." : newMsg.messageText)
+                    : `Sent an attachment: ${newMsg.attachmentName || 'file'}`);
 
             const notifMsg = {
                 id: Date.now(),
                 recipientId: receiverId,
-                title: `Message from ${newMsg.senderName}`,
+                title: isDoubt ? `Doubt from ${newMsg.senderName}` : `Message from ${newMsg.senderName}`,
                 message: notifText,
-                type: "NEW_MESSAGE",
+                type: isDoubt ? "DOUBT_MESSAGE" : "NEW_MESSAGE",
                 linkUrl: "chat.html",
                 isRead: false,
                 createdAt: now
@@ -2451,7 +3790,7 @@ const server = http.createServer(async (req, res) => {
         }
 
         if (pathname.match(/^\/api\/verifications\/(\d+)\/approve$/) && req.method === 'PUT') {
-            if (!state.currentUser || state.currentUser.role !== 'ROLE_ADMIN') {
+            if (!isAdmin(state.currentUser)) {
                 return sendJson(res, 403, { success: false, message: "Forbidden: Administrator authorization required." });
             }
             const id = Number(pathname.split('/')[3]);
@@ -2488,7 +3827,7 @@ const server = http.createServer(async (req, res) => {
         }
 
         if (pathname.match(/^\/api\/verifications\/(\d+)\/reject$/) && req.method === 'PUT') {
-            if (!state.currentUser || state.currentUser.role !== 'ROLE_ADMIN') {
+            if (!isAdmin(state.currentUser)) {
                 return sendJson(res, 403, { success: false, message: "Forbidden: Administrator authorization required." });
             }
             const id = Number(pathname.split('/')[3]);
@@ -2525,7 +3864,7 @@ const server = http.createServer(async (req, res) => {
         }
 
         if (pathname.match(/^\/api\/verifications\/(\d+)\/request-resubmission$/) && req.method === 'PUT') {
-            if (!state.currentUser || state.currentUser.role !== 'ROLE_ADMIN') {
+            if (!isAdmin(state.currentUser)) {
                 return sendJson(res, 403, { success: false, message: "Forbidden: Administrator authorization required." });
             }
             const id = Number(pathname.split('/')[3]);
@@ -2702,7 +4041,7 @@ const server = http.createServer(async (req, res) => {
 
         // --- 11. COMPREHENSIVE ADMIN API SUITE ---
         if (pathname.startsWith('/api/admin')) {
-            if (!state.currentUser || state.currentUser.role !== 'ROLE_ADMIN') {
+            if (!isAdmin(state.currentUser)) {
                 return sendJson(res, 403, {
                     success: false,
                     message: "Forbidden: Administrator authorization required to access this endpoint."
@@ -2756,11 +4095,20 @@ const server = http.createServer(async (req, res) => {
                 const learnCount = p.learningSkills ? p.learningSkills.length : 0;
                 const exchangeCount = state.exchanges.filter(e => e.student1Id === p.userId || e.student2Id === p.userId).length;
 
+                const isSuper = user.role === 'ROLE_SUPER_ADMIN' || user.email.toLowerCase() === 'harshtukaram45@gmail.com';
+                const isAdm = user.role === 'ROLE_ADMIN' || isSuper;
+                const displayRole = isSuper ? 'SUPER_ADMIN' : (isAdm ? 'ADMIN' : 'STUDENT');
+
                 return {
                     id: p.id,
                     userId: p.userId,
                     fullName: p.fullName,
                     email: p.email,
+                    role: displayRole,
+                    rawRole: user.role,
+                    isSuperAdmin: isSuper,
+                    isAdmin: isAdm,
+                    canManageRole: !isSuper,
                     department: p.department,
                     college: p.college,
                     yearOfStudy: p.yearOfStudy,
@@ -2792,6 +4140,8 @@ const server = http.createServer(async (req, res) => {
             if (statusFilter === 'UNVERIFIED') usersList = usersList.filter(u => !u.verified);
             if (statusFilter === 'ACTIVE') usersList = usersList.filter(u => u.active);
             if (statusFilter === 'SUSPENDED') usersList = usersList.filter(u => u.suspended);
+            if (statusFilter === 'ADMINS') usersList = usersList.filter(u => u.isAdmin);
+            if (statusFilter === 'STUDENTS') usersList = usersList.filter(u => !u.isAdmin);
 
             return sendJson(res, 200, { success: true, data: usersList });
         }
@@ -2801,17 +4151,25 @@ const server = http.createServer(async (req, res) => {
             const prof = state.profiles.find(p => p.userId === userId || p.id === userId);
             if (!prof) return sendJson(res, 404, { success: false, message: "User profile not found." });
 
-            const user = state.users.find(u => u.id === prof.userId) || { active: true };
+            const user = state.users.find(u => u.id === prof.userId) || { active: true, role: 'ROLE_STUDENT' };
             const studentExchanges = state.exchanges.filter(e => e.student1Id === prof.userId || e.student2Id === prof.userId);
             const studentReviews = state.reviews.filter(r => r.reviewedStudentId === prof.userId);
             const studentProjects = state.projects.filter(p => p.studentId === prof.userId);
             const studentExperiences = state.experiences.filter(e => e.studentId === prof.userId);
             const studentReports = state.reports.filter(r => r.reportedUserId === prof.userId);
 
+            const isSuper = user.role === 'ROLE_SUPER_ADMIN' || user.email.toLowerCase() === 'harshtukaram45@gmail.com';
+            const isAdm = user.role === 'ROLE_ADMIN' || isSuper;
+
             return sendJson(res, 200, {
                 success: true,
                 data: {
                     ...prof,
+                    role: isSuper ? 'SUPER_ADMIN' : (isAdm ? 'ADMIN' : 'STUDENT'),
+                    rawRole: user.role,
+                    isSuperAdmin: isSuper,
+                    isAdmin: isAdm,
+                    canManageRole: !isSuper,
                     active: user.active !== false && !prof.blocked,
                     exchanges: studentExchanges,
                     reviews: studentReviews,
@@ -2822,10 +4180,135 @@ const server = http.createServer(async (req, res) => {
             });
         }
 
+        // 11.2.B Role Management Endpoint (Super Admin Exclusive)
+        if (pathname.match(/^\/api\/admin\/users\/(\d+)\/role$/) && req.method === 'PUT') {
+            if (!isSuperAdmin(state.currentUser)) {
+                return sendJson(res, 403, {
+                    success: false,
+                    message: "Forbidden: Only the Super Admin is authorized to promote or demote administrators."
+                });
+            }
+
+            const userId = Number(pathname.split('/')[4]);
+            const targetUser = state.users.find(u => u.id === userId);
+            const targetProfile = state.profiles.find(p => p.userId === userId || p.id === userId);
+
+            if (!targetUser) {
+                return sendJson(res, 404, { success: false, message: "User not found." });
+            }
+
+            // Permanent Super Admin cannot be modified, demoted, or deleted
+            if (targetUser.role === 'ROLE_SUPER_ADMIN' || targetUser.email.toLowerCase() === 'harshtukaram45@gmail.com') {
+                return sendJson(res, 403, {
+                    success: false,
+                    message: "Forbidden: The permanent Super Admin role cannot be demoted, modified, or removed."
+                });
+            }
+
+            // Super Admin cannot demote themselves
+            if (state.currentUser && (state.currentUser.userId === targetUser.id || state.currentUser.email.toLowerCase() === targetUser.email.toLowerCase())) {
+                return sendJson(res, 403, {
+                    success: false,
+                    message: "Forbidden: Super Admin cannot demote or remove their own Super Admin role."
+                });
+            }
+
+            const body = await parseBody(req);
+            let requestedRole = String(body.role || '').trim().toUpperCase();
+
+            // Prevent assigning SUPER_ADMIN to any other user
+            if (requestedRole.includes('SUPER')) {
+                return sendJson(res, 403, {
+                    success: false,
+                    message: "Forbidden: Only harshtukaram45@gmail.com is designated as Super Admin."
+                });
+            }
+
+            let newRole = 'ROLE_STUDENT';
+            if (requestedRole === 'ADMIN' || requestedRole === 'ROLE_ADMIN') {
+                newRole = 'ROLE_ADMIN';
+            } else if (requestedRole === 'STUDENT' || requestedRole === 'ROLE_STUDENT') {
+                newRole = 'ROLE_STUDENT';
+            } else {
+                return sendJson(res, 400, {
+                    success: false,
+                    message: "Invalid role specified. Only ADMIN and STUDENT roles can be assigned."
+                });
+            }
+
+            targetUser.role = newRole;
+            const targetName = targetProfile ? targetProfile.fullName : targetUser.email;
+
+            if (newRole === 'ROLE_ADMIN') {
+                // Add or update admin team list
+                let adminEntry = state.admins.find(a => a.email.toLowerCase() === targetUser.email.toLowerCase());
+                if (!adminEntry) {
+                    state.admins.push({
+                        id: state.admins.length + 1,
+                        name: targetName,
+                        email: targetUser.email,
+                        role: "ADMIN",
+                        active: true,
+                        lastActive: new Date().toISOString(),
+                        createdAt: new Date().toISOString()
+                    });
+                } else {
+                    adminEntry.role = "ADMIN";
+                    adminEntry.active = true;
+                }
+
+                state.auditLogs.unshift({
+                    id: Date.now(),
+                    action: "ROLE_PROMOTED",
+                    performedBy: state.currentUser ? state.currentUser.email : "Super Admin",
+                    target: targetUser.email,
+                    timestamp: new Date().toISOString(),
+                    status: "SUCCESS",
+                    details: `Super Admin promoted student ${targetName} (${targetUser.email}) to ADMIN.`
+                });
+            } else {
+                // Revert to STUDENT
+                state.admins = state.admins.filter(a => a.email.toLowerCase() !== targetUser.email.toLowerCase());
+
+                state.auditLogs.unshift({
+                    id: Date.now(),
+                    action: "ROLE_DEMOTED",
+                    performedBy: state.currentUser ? state.currentUser.email : "Super Admin",
+                    target: targetUser.email,
+                    timestamp: new Date().toISOString(),
+                    status: "SUCCESS",
+                    details: `Super Admin removed ADMIN role from ${targetName} (${targetUser.email}). Reverted to STUDENT.`
+                });
+            }
+
+            return sendJson(res, 200, {
+                success: true,
+                message: newRole === 'ROLE_ADMIN' 
+                    ? `User ${targetUser.email} promoted to ADMIN successfully.` 
+                    : `ADMIN role removed from ${targetUser.email}. Reverted to STUDENT.`,
+                data: {
+                    userId: targetUser.id,
+                    email: targetUser.email,
+                    role: newRole,
+                    displayRole: newRole === 'ROLE_ADMIN' ? 'ADMIN' : 'STUDENT'
+                }
+            });
+        }
+
         if (pathname.match(/^\/api\/admin\/users\/(\d+)\/toggle-status$/) && req.method === 'PUT') {
             const userId = Number(pathname.split('/')[4]);
             const user = state.users.find(u => u.id === userId);
             const prof = state.profiles.find(p => p.userId === userId || p.id === userId);
+
+            // SECURITY: Super Admin cannot be suspended, demoted, deleted, or disabled
+            if ((user && (user.role === 'ROLE_SUPER_ADMIN' || user.email.toLowerCase() === 'harshtukaram45@gmail.com')) || 
+                (prof && prof.email.toLowerCase() === 'harshtukaram45@gmail.com')) {
+                return sendJson(res, 403, {
+                    success: false,
+                    message: "Forbidden: The permanent Super Admin account cannot be suspended or deactivated."
+                });
+            }
+
             const body = await parseBody(req);
 
             if (prof) prof.blocked = !prof.blocked;
@@ -2839,6 +4322,7 @@ const server = http.createServer(async (req, res) => {
                 performedBy: state.currentUser ? state.currentUser.email : "Admin",
                 target: prof ? prof.email : `User #${userId}`,
                 timestamp: new Date().toISOString(),
+                status: "SUCCESS",
                 details: body.reason ? `Reason: ${body.reason}` : `Account status modified by administrator.`
             });
 
@@ -3233,6 +4717,12 @@ const server = http.createServer(async (req, res) => {
         }
 
         if (pathname === '/api/admin/admins' && req.method === 'POST') {
+            if (!isSuperAdmin(state.currentUser)) {
+                return sendJson(res, 403, {
+                    success: false,
+                    message: "Forbidden: Only the Super Admin is authorized to add or manage administrators."
+                });
+            }
             const body = await parseBody(req);
             if (!body.email || !body.name) {
                 return sendJson(res, 400, { success: false, message: "Name and email are required." });
@@ -3241,7 +4731,7 @@ const server = http.createServer(async (req, res) => {
                 id: state.admins.length + 1,
                 name: body.name.trim(),
                 email: body.email.trim().toLowerCase(),
-                role: body.role || "MODERATOR",
+                role: body.role || "ADMIN",
                 active: true,
                 lastActive: new Date().toISOString(),
                 createdAt: new Date().toISOString()
@@ -3250,12 +4740,13 @@ const server = http.createServer(async (req, res) => {
             state.auditLogs.unshift({
                 id: Date.now(),
                 action: "ADMIN_STAFF_INVITED",
-                performedBy: state.currentUser ? state.currentUser.email : "Admin",
+                performedBy: state.currentUser ? state.currentUser.email : "Super Admin",
                 target: newAdmin.email,
                 timestamp: new Date().toISOString(),
-                details: `Added new admin role: ${newAdmin.role}`
+                status: "SUCCESS",
+                details: `Added new administrator: ${newAdmin.name} (${newAdmin.email}) with role ${newAdmin.role}.`
             });
-            return sendJson(res, 200, { success: true, data: newAdmin, message: "Staff administrator added." });
+            return sendJson(res, 200, { success: true, data: newAdmin, message: "Administrator added successfully." });
         }
 
         // 11.12 Audit Logs
@@ -3294,6 +4785,7 @@ const server = http.createServer(async (req, res) => {
                     performedBy: state.currentUser ? state.currentUser.email : "Admin",
                     target: `Report #${reportId}`,
                     timestamp: new Date().toISOString(),
+                    status: "RESOLVED",
                     details: `Status set to ${report.status}. Notes: ${report.adminNotes}`
                 });
             }
@@ -3312,15 +4804,18 @@ const server = http.createServer(async (req, res) => {
     // Remove leading slash
     if (filePath.startsWith('/')) filePath = filePath.substring(1);
 
-    // Redirect any landing request directly to Home Page index.html
-    if (filePath === 'landing' || filePath === 'landing/' || filePath === 'landing.html') {
-        res.writeHead(302, { 'Location': '/index.html' });
-        res.end();
-        return;
-    }
-
-    // SaaS Clean URL rewrite: Any /admin route serves the admin dashboard
-    if (filePath.startsWith('admin') && !filePath.includes('.')) {
+    // SaaS Clean URL rewrites
+    if (filePath === 'landing' || filePath === 'landing/') {
+        filePath = 'landing.html';
+    } else if (filePath === 'home' || filePath === 'home/') {
+        filePath = 'index.html';
+    } else if (filePath === 'exchange-proposals' || filePath === 'exchange-proposals/') {
+        filePath = 'requests.html';
+    } else if (filePath === 'history' || filePath === 'history/') {
+        filePath = 'exchange-history.html';
+    } else if (filePath === 'verify' || filePath === 'verify/') {
+        filePath = 'verify-email.html';
+    } else if (filePath.startsWith('admin') && !filePath.includes('.')) {
         filePath = 'admin-dashboard.html';
     } else if (!filePath.includes('.')) {
         filePath += '.html';
@@ -3328,10 +4823,71 @@ const server = http.createServer(async (req, res) => {
 
     // Backend-enforced Admin Authorization for Admin Dashboard page
     if (filePath === 'admin-dashboard.html' || filePath.startsWith('admin')) {
-        if (!state.currentUser || state.currentUser.role !== 'ROLE_ADMIN') {
+        if (!isAdmin(state.currentUser)) {
             res.writeHead(302, { 'Location': '/login.html?unauthorized=admin_required' });
             res.end();
             return;
+        }
+    }
+
+    // Backend-enforced Authorization for private uploaded documents (certificates, verifications, proofs)
+    const normalizedFilePath = filePath.replace(/\\/g, '/');
+    if (normalizedFilePath.startsWith('uploads/certificates/') || normalizedFilePath.startsWith('uploads/verifications/') || normalizedFilePath.startsWith('uploads/proofs/')) {
+        if (!state.currentUser) {
+            res.writeHead(403, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ success: false, message: "Access Denied: Authentication required to view verification documents." }));
+            return;
+        }
+
+        const viewerId = state.currentUser.userId;
+        const isStaffUser = isAdmin(state.currentUser);
+
+        if (!isStaffUser) {
+            const fileName = path.basename(normalizedFilePath);
+            let ownerId = null;
+
+            // Search in state.verifications
+            const matchingVer = state.verifications.find(v => 
+                (v.certificateUrl && v.certificateUrl.replace(/\\/g, '/').endsWith(fileName)) ||
+                (v.projectProofUrl && v.projectProofUrl.replace(/\\/g, '/').endsWith(fileName))
+            );
+            if (matchingVer) {
+                ownerId = matchingVer.studentId;
+            } else {
+                // Search in state.profiles teaching skills
+                for (const p of state.profiles) {
+                    if (p.teachingSkills && p.teachingSkills.some(t => t.proofDocumentUrl && t.proofDocumentUrl.replace(/\\/g, '/').endsWith(fileName))) {
+                        ownerId = p.userId;
+                        break;
+                    }
+                }
+                if (!ownerId) {
+                    const matchingProj = state.projects.find(p => p.proofUrl && p.proofUrl.replace(/\\/g, '/').endsWith(fileName));
+                    if (matchingProj) {
+                        ownerId = matchingProj.studentId;
+                    }
+                }
+            }
+
+            // If an owner was identified and viewer is not the owner:
+            if (ownerId && ownerId !== viewerId) {
+                const hasProposal = state.requests.some(r => 
+                    (r.senderId === viewerId && r.receiverId === ownerId) ||
+                    (r.senderId === ownerId && r.receiverId === viewerId)
+                );
+                const hasExchange = state.exchanges.some(e => 
+                    (e.student1Id === viewerId && e.student2Id === ownerId) ||
+                    (e.student1Id === ownerId && e.student2Id === viewerId) ||
+                    (e.userAId === viewerId && e.userBId === ownerId) ||
+                    (e.userAId === ownerId && e.userBId === viewerId)
+                );
+
+                if (!hasProposal && !hasExchange) {
+                    res.writeHead(403, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ success: false, message: "Access Denied: You are not authorized to view this student's private verification document." }));
+                    return;
+                }
+            }
         }
     }
 

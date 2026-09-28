@@ -26,8 +26,8 @@
                         <i class="bi bi-shield-check"></i>
                     </span>
                     <div class="sidebar-header-title">
-                        <strong class="text-dark small d-block" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.02em; line-height: 1.1;">SKILL EXCHANGE</strong>
-                        <span class="badge bg-danger text-white" style="font-size: 0.58rem; padding: 0.15rem 0.35rem;">ADMIN CONSOLE</span>
+                        <strong class="text-dark small d-block" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.02em; line-height: 1.1;">STUDENT SKILL EXCHANGE</strong>
+                        <span class="badge bg-danger text-white" id="adminHeaderBadge" style="font-size: 0.58rem; padding: 0.15rem 0.35rem;">ADMIN PANEL</span>
                     </div>
                 </a>
                 <button class="btn btn-sm btn-outline-custom p-1 d-none d-lg-flex" onclick="toggleSidebarCollapse()" title="Toggle Sidebar">
@@ -61,6 +61,11 @@
                         <i class="bi bi-arrow-repeat text-success"></i>
                         <span class="sidebar-text">Exchanges</span>
                         <span class="badge bg-light text-dark border ms-auto badge-pill-count" id="badgeExchangesCount">0</span>
+                    </a>
+                    <a href="/admin/offline-exchanges" class="admin-nav-link" data-view="offline-exchanges" onclick="navigateToAdminRoute('offline-exchanges', event)">
+                        <i class="bi bi-geo-alt text-warning"></i>
+                        <span class="sidebar-text">Offline Progress</span>
+                        <span class="badge bg-warning text-dark border ms-auto badge-pill-count" id="badgeOfflineCount">0</span>
                     </a>
                     <a href="/admin/requests" class="admin-nav-link" data-view="requests" onclick="navigateToAdminRoute('requests', event)">
                         <i class="bi bi-inbox text-info"></i>
@@ -117,7 +122,7 @@
                     <img src="https://api.dicebear.com/7.x/bottts/svg?seed=AdminStaff" id="adminSidebarAvatar" class="rounded-circle border border-1 border-dark" width="34" height="34" alt="Admin">
                     <div class="admin-profile-details flex-grow-1 overflow-hidden">
                         <div class="fw-bold text-dark text-truncate small" id="adminSidebarName">System Administrator</div>
-                        <span class="badge bg-danger text-white" style="font-size: 0.6rem;">SUPER ADMIN</span>
+                        <span class="badge bg-dark text-white border border-dark" id="adminSidebarRole" style="font-size: 0.6rem;">SUPER ADMIN</span>
                     </div>
                     <button class="btn btn-outline-custom btn-sm p-1 admin-profile-details" onclick="logout()" title="Sign Out">
                         <i class="bi bi-box-arrow-right"></i>
@@ -307,7 +312,7 @@
                                 </div>
                                 <h3 class="fw-bold mb-1 text-dark" id="kpiAvgRating">4.8</h3>
                                 <div class="d-flex align-items-center gap-2">
-                                    <span class="trend-badge trend-up"><i class="bi bi-arrow-up-short"></i> ★ ★ ★ ★ ★</span>
+                                    <span class="trend-badge trend-up"><i class="bi bi-arrow-up-short"></i> 4.8 / 5</span>
                                     <small class="text-muted">peer satisfaction</small>
                                 </div>
                             </div>
@@ -404,6 +409,50 @@
                         </div>
                     </div>
 
+                    <!-- Offline Exchange Progress Oversight Strip -->
+                    <div class="card card-custom p-3 mb-4 bg-white">
+                        <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="stat-icon-wrapper bg-warning text-dark p-2 rounded border border-2 border-dark" style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;">
+                                    <i class="bi bi-geo-alt-fill"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-0 text-dark">Offline Exchange Progress Tracking</h6>
+                                    <small class="text-muted">Real-time supervision of campus in-person peer learning, session logs, and milestones</small>
+                                </div>
+                            </div>
+                            <a href="/admin/offline-exchanges" onclick="navigateToAdminRoute('offline-exchanges', event)" class="btn btn-sm btn-outline-custom">
+                                View Offline Console &rarr;
+                            </a>
+                        </div>
+                        <div class="row g-2 pt-2 border-top border-1 border-dark">
+                            <div class="col-6 col-md-3">
+                                <div class="p-2 border border-1 border-dark rounded bg-light text-center cursor-pointer" onclick="navigateToAdminRoute('offline-exchanges')">
+                                    <small class="text-muted d-block fw-bold text-uppercase" style="font-size: 0.65rem;">Active Offline</small>
+                                    <strong class="fs-5 text-dark" id="dashOfflineActiveCount">0</strong>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="p-2 border border-1 border-dark rounded bg-light text-center cursor-pointer" onclick="navigateToAdminRoute('offline-exchanges')">
+                                    <small class="text-muted d-block fw-bold text-uppercase" style="font-size: 0.65rem;">Completed Offline</small>
+                                    <strong class="fs-5 text-success" id="dashOfflineCompletedCount">0</strong>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="p-2 border border-1 border-dark rounded bg-light text-center cursor-pointer" onclick="navigateToAdminRoute('offline-exchanges')">
+                                    <small class="text-muted d-block fw-bold text-uppercase" style="font-size: 0.65rem;">Progress Updates</small>
+                                    <strong class="fs-5 text-primary" id="dashOfflineTotalUpdatesCount">0</strong>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="p-2 border border-1 border-dark rounded bg-light text-center cursor-pointer" onclick="navigateToAdminRoute('offline-exchanges')">
+                                    <small class="text-muted d-block fw-bold text-uppercase" style="font-size: 0.65rem;">Needs Attention</small>
+                                    <strong class="fs-5 text-warning" id="dashOfflineOverdueCount">0</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Recent Exchanges & Popular Skills Row -->
                     <div class="row g-3">
                         <div class="col-lg-8">
@@ -467,9 +516,9 @@
                             <div class="col-md-7 d-flex gap-2 justify-content-md-end flex-wrap">
                                 <div class="btn-group" role="group">
                                     <button class="btn btn-sm btn-outline-custom active" data-user-filter="ALL" onclick="setUserFilter('ALL', this)">All</button>
+                                    <button class="btn btn-sm btn-outline-custom" data-user-filter="STUDENTS" onclick="setUserFilter('STUDENTS', this)">Students</button>
+                                    <button class="btn btn-sm btn-outline-custom" data-user-filter="ADMINS" onclick="setUserFilter('ADMINS', this)"><i class="bi bi-shield-check me-1"></i>Admins</button>
                                     <button class="btn btn-sm btn-outline-custom" data-user-filter="VERIFIED" onclick="setUserFilter('VERIFIED', this)">Verified</button>
-                                    <button class="btn btn-sm btn-outline-custom" data-user-filter="UNVERIFIED" onclick="setUserFilter('UNVERIFIED', this)">Unverified</button>
-                                    <button class="btn btn-sm btn-outline-custom" data-user-filter="ACTIVE" onclick="setUserFilter('ACTIVE', this)">Active</button>
                                     <button class="btn btn-sm btn-outline-custom" data-user-filter="SUSPENDED" onclick="setUserFilter('SUSPENDED', this)">Suspended</button>
                                 </div>
                             </div>
@@ -483,6 +532,7 @@
                                 <thead class="table-light border-bottom" style="font-size: 0.75rem; text-transform: uppercase;">
                                     <tr>
                                         <th>Student / User</th>
+                                        <th>Role</th>
                                         <th>Department & College</th>
                                         <th>Year</th>
                                         <th>Verified</th>
@@ -494,7 +544,7 @@
                                     </tr>
                                 </thead>
                                 <tbody id="usersTableTbody">
-                                    <tr><td colspan="9" class="text-center py-4 text-muted">Loading students...</td></tr>
+                                    <tr><td colspan="10" class="text-center py-4 text-muted">Loading user accounts...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -613,6 +663,110 @@
                                 </thead>
                                 <tbody id="exchangesTableTbody">
                                     <tr><td colspan="8" class="text-center py-4 text-muted">Loading exchanges...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===================================================================
+                     VIEW: OFFLINE EXCHANGES PROGRESS TRACKING
+                     =================================================================== -->
+                <div class="admin-view-pane" id="pane-offline-exchanges">
+                    <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-2">
+                        <div>
+                            <span class="section-tag mb-1">IN-PERSON LEARNING TRACKER</span>
+                            <h2 class="fw-bold mb-0">Offline Exchanges Progress</h2>
+                            <p class="text-muted small mb-0">Monitor offline meeting milestones, session curriculum updates, and overdue exchange activities</p>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <button class="btn btn-sm btn-outline-custom" onclick="loadOfflineExchangesList()">
+                                <i class="bi bi-arrow-clockwise me-1"></i> Refresh Progress
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Statistics Strip -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-sm-6 col-xl-3">
+                            <div class="admin-stat-card">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span class="text-muted small fw-bold text-uppercase" style="font-size: 0.72rem;">Active Offline</span>
+                                    <div class="stat-icon-wrapper bg-light text-primary"><i class="bi bi-play-circle-fill"></i></div>
+                                </div>
+                                <h3 class="fw-bold mb-1 text-dark" id="offlineStatActive">0</h3>
+                                <small class="text-muted">In-person exchanges ongoing</small>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-xl-3">
+                            <div class="admin-stat-card">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span class="text-muted small fw-bold text-uppercase" style="font-size: 0.72rem;">Completed</span>
+                                    <div class="stat-icon-wrapper bg-light text-success"><i class="bi bi-check-circle-fill"></i></div>
+                                </div>
+                                <h3 class="fw-bold mb-1 text-success" id="offlineStatCompleted">0</h3>
+                                <small class="text-muted">100% curriculum fulfilled</small>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-xl-3">
+                            <div class="admin-stat-card">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span class="text-muted small fw-bold text-uppercase" style="font-size: 0.72rem;">Progress Logs</span>
+                                    <div class="stat-icon-wrapper bg-light text-info"><i class="bi bi-journal-check"></i></div>
+                                </div>
+                                <h3 class="fw-bold mb-1 text-dark" id="offlineStatUpdates">0</h3>
+                                <small class="text-muted">Logged session submissions</small>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-xl-3">
+                            <div class="admin-stat-card">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span class="text-muted small fw-bold text-uppercase" style="font-size: 0.72rem;">Needs Attention</span>
+                                    <div class="stat-icon-wrapper bg-light text-warning"><i class="bi bi-clock-history"></i></div>
+                                </div>
+                                <h3 class="fw-bold mb-1 text-warning" id="offlineStatOverdue">0</h3>
+                                <small class="text-muted">Progress update overdue (&ge; 7 days)</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filter & Search Controls -->
+                    <div class="card card-custom p-3 mb-4 bg-white">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <div class="btn-group flex-wrap" role="group" id="offlineFilterButtonGroup">
+                                <button class="btn btn-sm btn-outline-custom active" onclick="setOfflineStatusFilter('ALL', this)">All Offline</button>
+                                <button class="btn btn-sm btn-outline-custom" onclick="setOfflineStatusFilter('ACTIVE', this)">Active</button>
+                                <button class="btn btn-sm btn-outline-custom" onclick="setOfflineStatusFilter('NEEDS_ATTENTION', this)">
+                                    <i class="bi bi-exclamation-triangle text-warning me-1"></i>Needs Attention
+                                </button>
+                                <button class="btn btn-sm btn-outline-custom" onclick="setOfflineStatusFilter('COMPLETED', this)">Completed</button>
+                            </div>
+                            <div class="input-group input-group-sm" style="max-width: 280px;">
+                                <span class="input-group-text bg-light border-dark"><i class="bi bi-search"></i></span>
+                                <input type="text" class="form-control border-dark" id="offlineSearchInput" placeholder="Search student, skill, or stage..." onkeyup="filterOfflineTable()">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Offline Exchanges Table -->
+                    <div class="card card-custom p-4 bg-white">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle border mb-0">
+                                <thead class="table-light border-bottom" style="font-size: 0.75rem; text-transform: uppercase;">
+                                    <tr>
+                                        <th>Exchange</th>
+                                        <th>Students</th>
+                                        <th>Skill</th>
+                                        <th>Mode</th>
+                                        <th style="min-width: 140px;">Progress</th>
+                                        <th>Stage</th>
+                                        <th>Last Updated</th>
+                                        <th>Status</th>
+                                        <th class="text-end">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="offlineExchangesTableTbody">
+                                    <tr><td colspan="9" class="text-center py-4 text-muted">Loading offline exchange progress...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -1064,11 +1218,12 @@
                                         <th>Administrator</th>
                                         <th>Action Taken</th>
                                         <th>Target Entity</th>
+                                        <th>Status</th>
                                         <th>Audit Log Details</th>
                                     </tr>
                                 </thead>
                                 <tbody id="auditLogsTableTbody">
-                                    <tr><td colspan="5" class="text-center py-4 text-muted">Loading audit logs...</td></tr>
+                                    <tr><td colspan="6" class="text-center py-4 text-muted">Loading audit logs...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -1116,6 +1271,39 @@
                 <div class="modal-footer border-top border-2 border-dark">
                     <button type="button" class="btn btn-outline-custom" data-bs-dismiss="modal">Cancel</button>
                     <button type="button" class="btn btn-danger" id="suspendModalConfirmBtn" onclick="confirmSuspendUser()">Confirm Action</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Role Management Confirmation Modal (Super Admin Exclusive) -->
+    <div class="modal fade" id="adminRoleModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-2 border-dark" style="border-radius: var(--radius-lg); box-shadow: var(--shadow-xl);">
+                <div class="modal-header border-bottom border-2 border-dark">
+                    <h5 class="modal-title fw-bold" id="adminRoleModalTitle"><i class="bi bi-shield-check me-2 text-primary"></i>Manage Administrator Role</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div id="roleModalAlert" class="alert d-none small mb-3"></div>
+                    <p class="mb-3" id="roleModalText">Are you sure you want to modify this user's administrative privileges?</p>
+                    <div class="p-3 border border-2 border-dark rounded bg-light mb-3">
+                        <div class="d-flex align-items-center justify-content-between mb-1">
+                            <strong class="text-dark fs-6" id="roleModalUserName">Student Name</strong>
+                            <span class="badge bg-light text-dark border" id="roleModalCurrentRole">STUDENT</span>
+                        </div>
+                        <small class="text-muted d-block font-monospace" id="roleModalUserEmail">student@mgmmumbai.ac.in</small>
+                    </div>
+                    <div class="alert alert-warning border border-2 border-dark small mb-0 d-flex align-items-start gap-2">
+                        <i class="bi bi-exclamation-triangle-fill fs-5 flex-shrink-0 text-warning"></i>
+                        <span id="roleModalWarningText">Granting the ADMIN role gives full access to the Administrator Control Center, student management, verification queues, and audit logs.</span>
+                    </div>
+                </div>
+                <div class="modal-footer border-top border-2 border-dark">
+                    <button type="button" class="btn btn-outline-custom" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary-custom" id="roleModalConfirmBtn" onclick="executeRoleChange()">
+                        <i class="bi bi-check-circle me-1"></i> Confirm & Update Role
+                    </button>
                 </div>
             </div>
         </div>
@@ -1179,6 +1367,33 @@
                 </div>
                 <div class="modal-body p-4" id="adminExchangeModalBody">
                     <!-- Dynamic -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Offline Exchange Detailed Progress & Timeline Modal -->
+    <div class="modal fade" id="adminOfflineModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-3 border-dark" style="border-radius: 12px; box-shadow: 8px 8px 0px #18181b;">
+                <div class="modal-header border-bottom border-2 border-dark bg-light px-4 py-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="stat-icon-wrapper bg-warning text-dark p-1 rounded border border-1 border-dark" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;">
+                            <i class="bi bi-geo-alt-fill"></i>
+                        </span>
+                        <div>
+                            <h5 class="modal-title fw-bold mb-0" id="adminOfflineModalTitle">Offline Exchange Progress Detail</h5>
+                            <small class="text-muted font-monospace" id="adminOfflineModalSubtitle">EX-0</small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4" id="adminOfflineModalBody">
+                    <!-- Loaded dynamically via openOfflineDetailModal(id) -->
+                </div>
+                <div class="modal-footer border-top border-2 border-dark bg-light px-4 py-2 d-flex justify-content-between">
+                    <small class="text-muted"><i class="bi bi-shield-check me-1"></i>Admin Monitoring Oversight (Audit Only &bull; Non-Interference)</small>
+                    <button type="button" class="btn btn-outline-custom" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
@@ -1326,6 +1541,8 @@
             skills: [],
             categories: [],
             exchanges: [],
+            offlineExchanges: [],
+            offlineMetrics: null,
             requests: [],
             verifications: [],
             reports: [],
@@ -1338,9 +1555,10 @@
         let currentUserFilter = 'ALL';
         let currentSkillFilter = 'ALL';
         let currentExchangeFilter = 'ALL';
+        let currentOfflineFilter = 'ALL';
 
         const VALID_ADMIN_VIEWS = [
-            'dashboard', 'users', 'skills', 'categories', 'exchanges', 
+            'dashboard', 'users', 'skills', 'categories', 'exchanges', 'offline-exchanges',
             'requests', 'verification', 'reports', 'reviews', 'messages', 
             'notifications', 'analytics', 'settings', 'admins', 'activity'
         ];
@@ -1351,6 +1569,7 @@
             skills: 'Skill Listings Oversight',
             categories: 'Skill Categories',
             exchanges: 'Peer Exchanges Pipeline',
+            'offline-exchanges': 'Offline Exchanges Progress',
             requests: 'Exchange Requests Queue',
             verification: 'Skill Verification Queue',
             reports: 'Safety & Abuse Reports',
@@ -1408,22 +1627,34 @@
             renderAdminView(view);
         });
 
-        // Verify session has admin role
+        // Verify session has admin or super admin role
         async function verifyAdminSession() {
             try {
                 const user = await API.get('/api/auth/current-user');
                 if (user && user.success && user.data) {
                     const u = user.data;
-                    if (u.role !== 'ROLE_ADMIN') {
+                    const isSuper = u.role === 'ROLE_SUPER_ADMIN' || u.role === 'SUPER_ADMIN' || u.email.toLowerCase() === 'harshtukaram45@gmail.com';
+                    const isAdm = u.role === 'ROLE_ADMIN' || u.role === 'ADMIN' || isSuper;
+
+                    if (!isAdm) {
                         // Redirect unauthorized student to user dashboard
                         window.location.href = 'dashboard.html';
                         return;
                     }
+
+                    window.currentAdminUser = u;
+                    window.currentAdminUser.isSuperAdmin = isSuper;
+
                     if (document.getElementById('adminSidebarName')) {
                         document.getElementById('adminSidebarName').textContent = u.fullName || u.email;
                     }
                     if (document.getElementById('adminSidebarAvatar') && u.avatarUrl) {
                         document.getElementById('adminSidebarAvatar').src = u.avatarUrl;
+                    }
+                    const roleBadge = document.getElementById('adminSidebarRole');
+                    if (roleBadge) {
+                        roleBadge.textContent = isSuper ? 'SUPER ADMIN' : 'ADMIN';
+                        roleBadge.className = isSuper ? 'badge bg-dark text-white border border-dark' : 'badge bg-danger text-white';
                     }
                 } else {
                     // Redirect unauthenticated guests to login
@@ -1518,6 +1749,7 @@
             if (view === 'skills' && adminData.skills.length === 0) loadSkillsList();
             if (view === 'categories' && adminData.categories.length === 0) loadCategoriesList();
             if (view === 'exchanges' && adminData.exchanges.length === 0) loadExchangesList();
+            if (view === 'offline-exchanges') loadOfflineExchangesList();
             if (view === 'requests' && adminData.requests.length === 0) loadRequestsList();
             if (view === 'verification') loadVerificationsList();
             if (view === 'reports') loadReportsList();
@@ -1533,6 +1765,7 @@
         async function loadAdminDashboard() {
             await Promise.all([
                 loadAdminStats(),
+                loadOfflineMetrics(),
                 loadRecentExchanges(),
                 loadPopularSkills(),
                 loadVerificationsList(),
@@ -1554,7 +1787,7 @@
                     document.getElementById('kpiSkillListings').textContent = d.activeSkillListings ?? 0;
                     document.getElementById('kpiCompletedExchanges').textContent = d.completedExchanges ?? 0;
                     document.getElementById('kpiBarterValue').textContent = d.barterSavingsValue ?? "₹0";
-                    document.getElementById('kpiAvgRating').textContent = (d.averageRating ?? 4.8) + " ★";
+                    document.getElementById('kpiAvgRating').textContent = (d.averageRating ?? 4.8) + " / 5";
                     document.getElementById('kpiPendingReports').textContent = d.pendingReports ?? 0;
 
                     // Update sidebar badges
@@ -1673,7 +1906,7 @@
         // ===================================================================
         async function loadUsersList() {
             const tbody = document.getElementById('usersTableTbody');
-            tbody.innerHTML = `<tr><td colspan="9" class="text-center py-4 text-muted"><span class="spinner-border spinner-border-sm me-2"></span>Loading student accounts...</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="10" class="text-center py-4 text-muted"><span class="spinner-border spinner-border-sm me-2"></span>Loading user accounts...</td></tr>`;
 
             try {
                 const res = await API.get('/api/admin/users');
@@ -1682,7 +1915,7 @@
                     renderUsersTable(adminData.users);
                 }
             } catch (err) {
-                tbody.innerHTML = `<tr><td colspan="9" class="text-center text-danger py-4">Failed to load users directory.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="10" class="text-center text-danger py-4">Failed to load users directory.</td></tr>`;
             }
         }
 
@@ -1695,8 +1928,10 @@
 
         function filterUsersTable() {
             const q = (document.getElementById('userSearchInput').value || '').toLowerCase();
-            let filtered = adminData.users;
+            let filtered = adminData.users || [];
 
+            if (currentUserFilter === 'STUDENTS') filtered = filtered.filter(u => !u.isAdmin);
+            if (currentUserFilter === 'ADMINS') filtered = filtered.filter(u => u.isAdmin);
             if (currentUserFilter === 'VERIFIED') filtered = filtered.filter(u => u.verified);
             if (currentUserFilter === 'UNVERIFIED') filtered = filtered.filter(u => !u.verified);
             if (currentUserFilter === 'ACTIVE') filtered = filtered.filter(u => u.active);
@@ -1704,9 +1939,10 @@
 
             if (q) {
                 filtered = filtered.filter(u => 
-                    u.fullName.toLowerCase().includes(q) || 
-                    u.email.toLowerCase().includes(q) || 
-                    u.department.toLowerCase().includes(q) || 
+                    (u.fullName && u.fullName.toLowerCase().includes(q)) || 
+                    (u.email && u.email.toLowerCase().includes(q)) || 
+                    (u.department && u.department.toLowerCase().includes(q)) || 
+                    (u.role && u.role.toLowerCase().includes(q)) || 
                     String(u.userId).includes(q)
                 );
             }
@@ -1717,11 +1953,47 @@
         function renderUsersTable(users) {
             const tbody = document.getElementById('usersTableTbody');
             if (users.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" class="text-center py-4 text-muted">No student accounts matched your search/filter.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="10" class="text-center py-4 text-muted">No user accounts matched your search/filter.</td></tr>`;
                 return;
             }
 
-            tbody.innerHTML = users.map(u => `
+            const currentUserIsSuperAdmin = window.currentAdminUser && 
+                (window.currentAdminUser.role === 'ROLE_SUPER_ADMIN' || 
+                 window.currentAdminUser.role === 'SUPER_ADMIN' || 
+                 (window.currentAdminUser.email && window.currentAdminUser.email.toLowerCase() === 'harshtukaram45@gmail.com'));
+
+            tbody.innerHTML = users.map(u => {
+                const isTargetSuper = u.isSuperAdmin || u.role === 'SUPER_ADMIN' || (u.email && u.email.toLowerCase() === 'harshtukaram45@gmail.com');
+                const isTargetAdmin = u.isAdmin || u.role === 'ADMIN' || isTargetSuper;
+
+                let roleBadge = '';
+                if (isTargetSuper) {
+                    roleBadge = '<span class="badge bg-dark text-white border border-dark"><i class="bi bi-shield-lock-fill me-1"></i>SUPER ADMIN</span>';
+                } else if (isTargetAdmin) {
+                    roleBadge = '<span class="badge bg-danger text-white"><i class="bi bi-shield-shaded me-1"></i>ADMIN</span>';
+                } else {
+                    roleBadge = '<span class="badge bg-light text-dark border">STUDENT</span>';
+                }
+
+                let roleActionBtn = '';
+                if (currentUserIsSuperAdmin) {
+                    if (isTargetSuper) {
+                        roleActionBtn = `<span class="badge bg-light text-muted border py-1 px-2" title="Permanent Super Admin cannot be demoted or modified"><i class="bi bi-lock-fill me-1"></i>Locked</span>`;
+                    } else if (isTargetAdmin) {
+                        roleActionBtn = `<button class="btn btn-sm btn-outline-danger" onclick="openRoleModal(${u.userId}, '${escapeHtml(u.fullName)}', '${escapeHtml(u.email)}', 'REMOVE')" title="Remove Admin Role"><i class="bi bi-person-dash me-1"></i>Remove Admin</button>`;
+                    } else {
+                        roleActionBtn = `<button class="btn btn-sm btn-outline-primary" onclick="openRoleModal(${u.userId}, '${escapeHtml(u.fullName)}', '${escapeHtml(u.email)}', 'PROMOTE')" title="Make Admin"><i class="bi bi-shield-plus me-1"></i>Make Admin</button>`;
+                    }
+                }
+
+                let suspendBtn = '';
+                if (!isTargetSuper) {
+                    suspendBtn = `<button class="btn btn-sm ${u.suspended ? 'btn-outline-success' : 'btn-outline-danger'}" onclick="openSuspendModal(${u.userId}, '${escapeHtml(u.fullName)}', ${u.suspended})" title="${u.suspended ? 'Reactivate Account' : 'Suspend Account'}">
+                        <i class="bi ${u.suspended ? 'bi-check-circle' : 'bi-slash-circle'}"></i>
+                    </button>`;
+                }
+
+                return `
                 <tr>
                     <td>
                         <div class="d-flex align-items-center gap-2">
@@ -1732,32 +2004,33 @@
                             </div>
                         </div>
                     </td>
-                    <td><span class="small fw-bold text-dark">${escapeHtml(u.department)}</span></td>
-                    <td><span class="badge bg-light text-dark border">${escapeHtml(u.yearOfStudy)}</span></td>
+                    <td>${roleBadge}</td>
+                    <td><span class="small fw-bold text-dark">${escapeHtml(u.department || 'General')}</span></td>
+                    <td><span class="badge bg-light text-dark border">${escapeHtml(u.yearOfStudy || 'Student')}</span></td>
                     <td>
                         ${u.verified ? '<span class="status-pill-verified"><i class="bi bi-patch-check-fill me-1"></i>Verified</span>' : '<span class="badge bg-light text-muted border">Unverified</span>'}
                     </td>
-                    <td><span class="badge bg-light text-dark border">${u.teachingSkillsCount} teach / ${u.learningSkillsCount} learn</span></td>
-                    <td><span class="badge bg-light text-dark border">${u.completedExchangesCount} completed</span></td>
-                    <td><strong class="text-warning">★ ${u.averageRating || 5.0}</strong></td>
+                    <td><span class="badge bg-light text-dark border">${u.teachingSkillsCount || 0} teach / ${u.learningSkillsCount || 0} learn</span></td>
+                    <td><span class="badge bg-light text-dark border">${u.completedExchangesCount || 0} completed</span></td>
+                    <td><strong class="text-dark">${(u.averageRating || 5.0).toFixed(1)} / 5</strong></td>
                     <td>
                         ${u.suspended ? '<span class="badge bg-danger text-white">Suspended</span>' : '<span class="badge bg-success text-white">Active</span>'}
                     </td>
                     <td class="text-end">
-                        <div class="d-inline-flex gap-1">
+                        <div class="d-inline-flex gap-1 align-items-center">
                             <button class="btn btn-sm btn-outline-custom" onclick="openUserProfileModal(${u.userId})" title="View Full Profile">
                                 <i class="bi bi-eye"></i>
                             </button>
                             <button class="btn btn-sm ${u.verified ? 'btn-outline-custom' : 'btn-outline-success'}" onclick="toggleUserVerification(${u.userId})" title="Toggle Verified Credential">
                                 <i class="bi ${u.verified ? 'bi-patch-check-fill text-success' : 'bi-patch-check'}"></i>
                             </button>
-                            <button class="btn btn-sm ${u.suspended ? 'btn-outline-success' : 'btn-outline-danger'}" onclick="openSuspendModal(${u.userId}, '${escapeHtml(u.fullName)}', ${u.suspended})" title="${u.suspended ? 'Reactivate Account' : 'Suspend Account'}">
-                                <i class="bi ${u.suspended ? 'bi-check-circle' : 'bi-slash-circle'}"></i>
-                            </button>
+                            ${roleActionBtn}
+                            ${suspendBtn}
                         </div>
                     </td>
                 </tr>
-            `).join('');
+            `;
+            }).join('');
         }
 
         // Open detailed user profile modal
@@ -1780,7 +2053,7 @@
                                 <div class="mt-1">
                                     ${u.verified ? '<span class="status-pill-verified me-2"><i class="bi bi-patch-check-fill me-1"></i>Verified Student</span>' : '<span class="badge bg-light text-muted border me-2">Unverified</span>'}
                                     ${u.blocked ? '<span class="badge bg-danger text-white">Account Suspended</span>' : '<span class="badge bg-success text-white">Active</span>'}
-                                    <span class="badge bg-light text-warning fw-bold border ms-1">★ ${u.averageRating || 5.0} Rating</span>
+                                    <span class="badge bg-light text-dark fw-bold border ms-1">${(u.averageRating || 5.0).toFixed(1)} / 5 Rating</span>
                                 </div>
                             </div>
                         </div>
@@ -1831,7 +2104,7 @@
                                     <div class="p-2 border rounded mb-2">
                                         <div class="d-flex justify-content-between">
                                             <strong class="text-dark">${escapeHtml(r.reviewerName)}</strong>
-                                            <span class="text-warning">★ ${r.rating} / 5.0</span>
+                                            <span class="text-dark fw-bold">${r.rating} / 5</span>
                                         </div>
                                         <p class="mb-0 small text-muted mt-1">"${escapeHtml(r.comment)}"</p>
                                     </div>
@@ -1888,6 +2161,80 @@
                 }
             } catch (err) {
                 showAdminAlert("Failed to update account status.", "danger");
+            }
+        }
+
+        // ===================================================================
+        // ROLE MANAGEMENT FUNCTIONS (SUPER ADMIN EXCLUSIVE)
+        // ===================================================================
+        let targetRoleChange = { userId: null, newRole: null };
+
+        function openRoleModal(userId, fullName, email, action) {
+            targetRoleChange.userId = userId;
+            const isPromote = action === 'PROMOTE';
+            targetRoleChange.newRole = isPromote ? 'ADMIN' : 'STUDENT';
+
+            const alertBox = document.getElementById('roleModalAlert');
+            if (alertBox) {
+                alertBox.className = 'alert d-none small mb-3';
+                alertBox.textContent = '';
+            }
+
+            document.getElementById('adminRoleModalTitle').innerHTML = isPromote
+                ? '<i class="bi bi-shield-plus me-2 text-primary"></i>Promote User to Administrator'
+                : '<i class="bi bi-shield-slash me-2 text-danger"></i>Revoke Administrator Role';
+
+            document.getElementById('roleModalText').innerHTML = isPromote
+                ? `Are you sure you want to promote <strong>${escapeHtml(fullName)}</strong> to <strong>ADMIN</strong>?`
+                : `Are you sure you want to remove the <strong>ADMIN</strong> role from <strong>${escapeHtml(fullName)}</strong> and revert them to a <strong>STUDENT</strong>?`;
+
+            document.getElementById('roleModalUserName').textContent = fullName;
+            document.getElementById('roleModalUserEmail').textContent = email;
+            document.getElementById('roleModalCurrentRole').textContent = isPromote ? 'STUDENT' : 'ADMIN';
+
+            document.getElementById('roleModalWarningText').textContent = isPromote
+                ? "Promoting this user gives them access to the Administrator Control Center, verification queues, user oversight, and audit logs."
+                : "Revoking this role will immediately block access to the Admin Panel and revert this account to standard student permissions.";
+
+            const confirmBtn = document.getElementById('roleModalConfirmBtn');
+            if (isPromote) {
+                confirmBtn.className = 'btn btn-primary-custom';
+                confirmBtn.innerHTML = '<i class="bi bi-shield-check me-1"></i> Make Admin';
+            } else {
+                confirmBtn.className = 'btn btn-danger text-white border border-2 border-dark';
+                confirmBtn.innerHTML = '<i class="bi bi-person-dash me-1"></i> Remove Admin Role';
+            }
+
+            const modal = new bootstrap.Modal(document.getElementById('adminRoleModal'));
+            modal.show();
+        }
+
+        async function executeRoleChange() {
+            if (!targetRoleChange.userId || !targetRoleChange.newRole) return;
+            const btn = document.getElementById('roleModalConfirmBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Updating...';
+
+            try {
+                const res = await API.put(`/api/admin/users/${targetRoleChange.userId}/role`, { role: targetRoleChange.newRole });
+                if (res && res.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('adminRoleModal')).hide();
+                    showAdminAlert(res.message || 'Role updated successfully.', 'success');
+                    await loadUsersList();
+                    if (typeof loadAdminStats === 'function') await loadAdminStats();
+                } else {
+                    const alertBox = document.getElementById('roleModalAlert');
+                    alertBox.className = 'alert alert-danger small mb-3';
+                    alertBox.textContent = res ? res.message : 'Failed to update user role.';
+                    alertBox.classList.remove('d-none');
+                }
+            } catch (e) {
+                const alertBox = document.getElementById('roleModalAlert');
+                alertBox.className = 'alert alert-danger small mb-3';
+                alertBox.textContent = e.message || 'Error executing role update.';
+                alertBox.classList.remove('d-none');
+            } finally {
+                btn.disabled = false;
             }
         }
 
@@ -2174,9 +2521,9 @@
                         <div class="timeline-step-time">${isCompleted ? 'Finished' : 'In Progress'}</div>
                     </div>
                     <div class="timeline-step ${isCompleted ? 'completed' : ''}">
-                        <div class="timeline-step-icon"><i class="bi bi-star"></i></div>
-                        <div class="timeline-step-title">5. Rated</div>
-                        <div class="timeline-step-time">${isCompleted ? '★ Rated' : 'Pending'}</div>
+                        <div class="timeline-step-icon"><i class="bi bi-clipboard-check"></i></div>
+                        <div class="timeline-step-title">5. Feedback</div>
+                        <div class="timeline-step-time">${isCompleted ? 'Reviewed (Completed)' : 'Pending'}</div>
                     </div>
                 </div>
 
@@ -2200,11 +2547,405 @@
                 if (res && res.success) {
                     bootstrap.Modal.getInstance(document.getElementById('adminExchangeModal')).hide();
                     showAdminAlert("Exchange status updated.", "success");
-                    await loadExchangesList();
-                    await loadAdminStats();
+        }
+
+        // ===================================================================
+        // OFFLINE EXCHANGES PROGRESS TRACKING CONTROLLER
+        // ===================================================================
+        async function loadOfflineMetrics() {
+            try {
+                const res = await API.get('/api/offline-exchanges/metrics');
+                if (res && res.success && res.data) {
+                    const m = res.data;
+                    adminData.offlineMetrics = m;
+
+                    if (document.getElementById('dashOfflineActiveCount')) document.getElementById('dashOfflineActiveCount').textContent = m.activeCount ?? 0;
+                    if (document.getElementById('dashOfflineCompletedCount')) document.getElementById('dashOfflineCompletedCount').textContent = m.completedCount ?? 0;
+                    if (document.getElementById('dashOfflineTotalUpdatesCount')) document.getElementById('dashOfflineTotalUpdatesCount').textContent = m.totalUpdates ?? 0;
+                    if (document.getElementById('dashOfflineOverdueCount')) document.getElementById('dashOfflineOverdueCount').textContent = m.overdueCount ?? 0;
+
+                    if (document.getElementById('offlineStatActive')) document.getElementById('offlineStatActive').textContent = m.activeCount ?? 0;
+                    if (document.getElementById('offlineStatCompleted')) document.getElementById('offlineStatCompleted').textContent = m.completedCount ?? 0;
+                    if (document.getElementById('offlineStatUpdates')) document.getElementById('offlineStatUpdates').textContent = m.totalUpdates ?? 0;
+                    if (document.getElementById('offlineStatOverdue')) document.getElementById('offlineStatOverdue').textContent = m.overdueCount ?? 0;
+
+                    if (document.getElementById('badgeOfflineCount')) {
+                        document.getElementById('badgeOfflineCount').textContent = (m.activeCount ?? 0) + (m.overdueCount ?? 0);
+                    }
                 }
             } catch (err) {
-                showAdminAlert("Failed to update exchange status.", "danger");
+                console.error("Failed to load offline metrics:", err);
+            }
+        }
+
+        async function loadOfflineExchangesList() {
+            const tbody = document.getElementById('offlineExchangesTableTbody');
+            if (tbody) {
+                tbody.innerHTML = `<tr><td colspan="9" class="text-center py-4 text-muted"><span class="spinner-border spinner-border-sm me-2"></span>Loading offline exchanges progress...</td></tr>`;
+            }
+
+            try {
+                const [resList, _] = await Promise.all([
+                    API.get('/api/offline-exchanges'),
+                    loadOfflineMetrics()
+                ]);
+                if (resList && resList.success && resList.data) {
+                    adminData.offlineExchanges = resList.data;
+                    applyOfflineFilters();
+                } else {
+                    if (tbody) tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-4">No offline exchange records found.</td></tr>`;
+                }
+            } catch (err) {
+                console.error("Failed to load offline exchanges:", err);
+                if (tbody) tbody.innerHTML = `<tr><td colspan="9" class="text-center text-danger py-4">Failed to load offline exchange progress.</td></tr>`;
+            }
+        }
+
+        function setOfflineStatusFilter(status, btn) {
+            currentOfflineFilter = status;
+            document.querySelectorAll('#offlineFilterButtonGroup button').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            applyOfflineFilters();
+        }
+
+        function filterOfflineTable() {
+            applyOfflineFilters();
+        }
+
+        function applyOfflineFilters() {
+            let list = adminData.offlineExchanges || [];
+
+            if (currentOfflineFilter === 'ACTIVE') {
+                list = list.filter(e => e.status === 'ACTIVE' && !e.isOverdue);
+            } else if (currentOfflineFilter === 'NEEDS_ATTENTION') {
+                list = list.filter(e => e.isOverdue || e.status === 'NEEDS_ATTENTION');
+            } else if (currentOfflineFilter === 'COMPLETED') {
+                list = list.filter(e => e.status === 'COMPLETED');
+            }
+
+            const searchInput = document.getElementById('offlineSearchInput');
+            const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
+            if (query) {
+                list = list.filter(e => {
+                    const teacher = (e.teacherName || '').toLowerCase();
+                    const learner = (e.learnerName || '').toLowerCase();
+                    const skillT = (e.skillTaughtName || '').toLowerCase();
+                    const skillL = (e.skillLearnedName || '').toLowerCase();
+                    const stage = (e.currentStage || '').toLowerCase();
+                    const loc = (e.location || '').toLowerCase();
+                    return teacher.includes(query) || learner.includes(query) || skillT.includes(query) || skillL.includes(query) || stage.includes(query) || loc.includes(query);
+                });
+            }
+
+            renderOfflineExchangesTable(list);
+        }
+
+        function renderOfflineExchangesTable(list) {
+            const tbody = document.getElementById('offlineExchangesTableTbody');
+            if (!tbody) return;
+
+            if (list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" class="text-center py-4 text-muted">No offline exchanges match the current criteria.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = list.map(e => {
+                const isOverdue = e.isOverdue === true || e.status === 'NEEDS_ATTENTION';
+                const isCompleted = e.status === 'COMPLETED';
+                const pct = Math.min(100, Math.max(0, parseInt(e.progressPercentage) || 0));
+
+                let statusBadge = `<span class="badge bg-primary text-white border border-1 border-dark font-monospace">Active</span>`;
+                if (isCompleted) {
+                    statusBadge = `<span class="badge bg-success text-white border border-1 border-dark font-monospace">Completed</span>`;
+                } else if (isOverdue) {
+                    statusBadge = `<span class="badge bg-warning text-dark border border-1 border-dark font-monospace">Needs Attention</span>`;
+                }
+
+                return `
+                    <tr>
+                        <td>
+                            <strong class="font-monospace">#EX-${e.exchangeRequestId || e.id}</strong>
+                        </td>
+                        <td>
+                            <div class="fw-bold text-dark">${escapeHtml(e.teacherName)} <span class="text-muted fw-normal">⇄</span> ${escapeHtml(e.learnerName)}</div>
+                            <small class="text-muted"><i class="bi bi-geo-alt me-1"></i>${escapeHtml(e.location || 'Campus / Offline')}</small>
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-primary border border-1 border-dark">${escapeHtml(e.skillTaughtName || 'Skill')}</span>
+                            ${e.skillLearnedName ? `<br><small class="text-muted">for ${escapeHtml(e.skillLearnedName)}</small>` : ''}
+                        </td>
+                        <td>
+                            <span class="badge bg-dark text-white font-monospace"><i class="bi bi-geo-alt me-1 text-warning"></i>Offline</span>
+                        </td>
+                        <td>
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="fw-bold font-monospace small">${pct}%</span>
+                            </div>
+                            <div class="offline-progress-bar-outer" style="height: 10px;">
+                                <div class="offline-progress-bar-fill" style="width: ${pct}%;"></div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge-stage-brutal ${isCompleted ? 'badge-stage-completed' : ''}">${escapeHtml(e.currentStage || 'Exchange Accepted')}</span>
+                            ${e.nextActivity ? `<div class="small text-muted mt-1 text-truncate" style="max-width: 140px;" title="${escapeHtml(e.nextActivity)}">Next: ${escapeHtml(e.nextActivity)}</div>` : ''}
+                        </td>
+                        <td>
+                            <span class="small text-dark fw-bold">${formatDate(e.lastActivityAt || e.updatedAt || e.startDate)}</span>
+                            ${isOverdue && !isCompleted ? `<br><span class="badge-overdue-brutal mt-1"><i class="bi bi-clock-history"></i>Progress update overdue</span>` : ''}
+                        </td>
+                        <td>
+                            ${statusBadge}
+                        </td>
+                        <td class="text-end">
+                            <button class="btn btn-sm btn-outline-custom" onclick="openOfflineDetailModal(${e.id})">
+                                <i class="bi bi-eye me-1"></i> Track Progress
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function openOfflineDetailModal(id) {
+            const modalEl = document.getElementById('adminOfflineModal');
+            const modalBody = document.getElementById('adminOfflineModalBody');
+            const modalTitle = document.getElementById('adminOfflineModalTitle');
+            const modalSubtitle = document.getElementById('adminOfflineModalSubtitle');
+
+            modalBody.innerHTML = `
+                <div class="text-center py-5 text-muted">
+                    <div class="spinner-border text-primary mb-3" role="status"></div>
+                    <p class="mb-0 fw-bold">Fetching comprehensive offline exchange history & timeline...</p>
+                </div>
+            `;
+            modalSubtitle.textContent = `EX-${id}`;
+
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+
+            try {
+                const res = await API.get(`/api/offline-exchanges/${id}`);
+                if (!res || !res.success || !res.data) {
+                    modalBody.innerHTML = `
+                        <div class="p-4 border border-2 border-danger rounded bg-white text-center">
+                            <i class="bi bi-exclamation-triangle-fill fs-3 text-danger mb-2 d-block"></i>
+                            <h6 class="fw-bold text-danger">Failed to load offline exchange record</h6>
+                            <p class="small text-muted mb-0">${escapeHtml(res && res.message ? res.message : 'Record not found.')}</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const d = res.data;
+                const isOverdue = d.isOverdue === true || d.status === 'NEEDS_ATTENTION';
+                const isCompleted = d.status === 'COMPLETED';
+                const pct = Math.min(100, Math.max(0, parseInt(d.progressPercentage) || 0));
+
+                modalTitle.textContent = `Offline Exchange Progress — ${d.skillTaughtName}`;
+                modalSubtitle.textContent = `#EX-${d.exchangeRequestId || d.id}`;
+
+                // Timeline stages list
+                const STAGES = [
+                    "Exchange Accepted",
+                    "Offline Session Planned",
+                    "First Session Completed",
+                    "Learning in Progress",
+                    "Practice / Assignment",
+                    "Final Session",
+                    "Exchange Completed"
+                ];
+
+                const currentStageIdx = STAGES.indexOf(d.currentStage);
+
+                modalBody.innerHTML = `
+                    <!-- 1. OVERVIEW PROFILE CARDS -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="card-detail-item h-100" style="background: #fdf4ff;">
+                                <div class="d-flex align-items-center gap-3">
+                                    <img src="https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(d.teacherName || 'Teacher')}" class="avatar-modal-lg" alt="Teacher">
+                                    <div>
+                                        <span class="badge bg-primary text-white border border-1 border-dark mb-1 font-monospace" style="font-size:0.65rem;">TEACHER / MENTOR</span>
+                                        <h5 class="fw-bold text-dark mb-0">${escapeHtml(d.teacherName)}</h5>
+                                        <div class="small text-muted">${escapeHtml(d.teacherEmail || '')}</div>
+                                        <div class="mt-2 small">
+                                            <span class="text-muted">Teaching:</span> <strong class="text-primary">${escapeHtml(d.skillTaughtName)}</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="card-detail-item h-100" style="background: #f0fdf4;">
+                                <div class="d-flex align-items-center gap-3">
+                                    <img src="https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(d.learnerName || 'Learner')}" class="avatar-modal-lg" alt="Learner">
+                                    <div>
+                                        <span class="badge bg-success text-white border border-1 border-dark mb-1 font-monospace" style="font-size:0.65rem;">LEARNER / PEER</span>
+                                        <h5 class="fw-bold text-dark mb-0">${escapeHtml(d.learnerName)}</h5>
+                                        <div class="small text-muted">${escapeHtml(d.learnerEmail || '')}</div>
+                                        <div class="mt-2 small">
+                                            <span class="text-muted">Learning:</span> <strong class="text-success">${escapeHtml(d.skillLearnedName || d.skillTaughtName)}</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. OFFLINE EXCHANGE METADATA STRIP -->
+                    <div class="offline-progress-container mb-4">
+                        <div class="row g-3 align-items-center">
+                            <div class="col-md-3">
+                                <span class="text-muted d-block small fw-bold text-uppercase" style="font-size:0.68rem;">Meeting Location</span>
+                                <strong class="text-dark"><i class="bi bi-geo-alt-fill text-danger me-1"></i>${escapeHtml(d.location || 'College Library / Campus Center')}</strong>
+                            </div>
+                            <div class="col-md-3">
+                                <span class="text-muted d-block small fw-bold text-uppercase" style="font-size:0.68rem;">Start &bull; Expected Completion</span>
+                                <strong class="text-dark">${formatDate(d.startDate)} &bull; ${formatDate(d.expectedCompletionDate)}</strong>
+                            </div>
+                            <div class="col-md-3">
+                                <span class="text-muted d-block small fw-bold text-uppercase" style="font-size:0.68rem;">Current Stage</span>
+                                <span class="badge-stage-brutal ${isCompleted ? 'badge-stage-completed' : ''}">${escapeHtml(d.currentStage || 'Exchange Accepted')}</span>
+                            </div>
+                            <div class="col-md-3">
+                                <span class="text-muted d-block small fw-bold text-uppercase" style="font-size:0.68rem;">Exchange Status</span>
+                                ${isCompleted 
+                                    ? '<span class="badge bg-success text-white border border-1 border-dark px-3 py-1 font-monospace">Completed</span>' 
+                                    : (isOverdue 
+                                        ? '<span class="badge bg-warning text-dark border border-1 border-dark px-3 py-1 font-monospace">Needs Attention</span>' 
+                                        : '<span class="badge bg-primary text-white border border-1 border-dark px-3 py-1 font-monospace">Active</span>')
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Progress Bar & Next Activity -->
+                        <div class="mt-3 pt-3 border-top border-1 border-dark">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="small fw-bold text-uppercase text-muted" style="font-size:0.7rem;">Curriculum Progress:</span>
+                                <span class="fw-bold font-monospace fs-6 text-dark">${pct}% Completed</span>
+                            </div>
+                            <div class="offline-progress-bar-outer" style="height: 16px;">
+                                <div class="offline-progress-bar-fill" style="width: ${pct}%;"></div>
+                            </div>
+                            ${d.nextActivity ? `
+                                <div class="mt-2 small d-flex align-items-center gap-2">
+                                    <span class="badge bg-dark text-white font-monospace" style="font-size:0.65rem;">NEXT PLANNED</span>
+                                    <span class="text-dark fw-bold">${escapeHtml(d.nextActivity)}</span>
+                                </div>
+                            ` : ''}
+                        </div>
+
+                        ${isOverdue && !isCompleted ? `
+                            <div class="mt-3 p-2 border border-1 border-warning rounded bg-warning-subtle text-dark small d-flex align-items-center gap-2">
+                                <i class="bi bi-clock-history fs-5 text-warning-emphasis"></i>
+                                <div>
+                                    <strong>Progress update overdue:</strong> No session logged for <strong>${d.daysSinceLastActivity} days</strong>. Admin monitoring flag activated for inactivity awareness.
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    <!-- 3. PROGRESS TIMELINE -->
+                    <div class="section-header-box">
+                        <h6 class="section-title"><i class="bi bi-signpost-split-fill text-primary"></i>PROGRESS TIMELINE</h6>
+                        <small class="text-muted">Chronological milestone roadmap of offline sessions and curriculum advancement</small>
+                    </div>
+
+                    <div class="offline-v-timeline">
+                        ${STAGES.map((st, sIdx) => {
+                            const isPastOrDone = (currentStageIdx >= sIdx) || (pct >= ((sIdx + 1) * 14)) || (isCompleted);
+                            const isCurrent = currentStageIdx === sIdx;
+                            return `
+                                <div class="offline-v-step ${isPastOrDone ? 'completed' : (isCurrent ? 'current' : '')}">
+                                    <div class="offline-v-dot">
+                                        ${isPastOrDone ? '<i class="bi bi-check2"></i>' : (sIdx + 1)}
+                                    </div>
+                                    <div class="offline-v-card">
+                                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                            <strong class="text-dark ${isPastOrDone ? 'text-decoration-none' : 'text-muted'}">${st}</strong>
+                                            ${isPastOrDone ? '<span class="badge bg-success-subtle text-success border border-1 border-success font-monospace" style="font-size:0.65rem;">✓ Milestone Completed</span>' : (isCurrent ? '<span class="badge bg-primary-subtle text-primary border border-1 border-primary font-monospace" style="font-size:0.65rem;">In Progress</span>' : '<span class="badge bg-light text-muted border font-monospace" style="font-size:0.65rem;">Pending</span>')}
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+
+                    <!-- 4. SESSION / PROGRESS UPDATES LOG -->
+                    <div class="section-header-box mt-4">
+                        <h6 class="section-title"><i class="bi bi-journal-text text-success"></i>SESSION / PROGRESS UPDATES (${d.updates ? d.updates.length : 0})</h6>
+                        <small class="text-muted">Verified log of participant submissions, topics completed, notes, and attachments</small>
+                    </div>
+
+                    <div id="offlineModalUpdatesContainer">
+                        ${(!d.updates || d.updates.length === 0) ? `
+                            <div class="empty-state-notice">
+                                <i class="bi bi-journal-x fs-3 d-block mb-2 text-muted"></i>
+                                <h6 class="fw-bold mb-1">No Progress Updates Logged Yet</h6>
+                                <p class="small text-muted mb-0">The students have not logged their first offline session update yet.</p>
+                            </div>
+                        ` : d.updates.map((u, uIdx) => {
+                            const topics = (u.topicsCovered || '').split('\n').filter(t => t.trim());
+                            return `
+                                <div class="session-update-item">
+                                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2 pb-2 border-bottom border-1 border-dark">
+                                        <div>
+                                            <span class="badge bg-dark text-white font-monospace me-2">Session #${uIdx + 1}</span>
+                                            <strong class="text-dark"><i class="bi bi-calendar-check me-1 text-primary"></i>${formatDate(u.sessionDate)}</strong>
+                                            <span class="text-muted small ms-2">&bull; Submitted by <strong>${escapeHtml(u.submittedByName || 'Student')}</strong></span>
+                                        </div>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="badge bg-primary text-white font-monospace">${u.progressPercentage}% Progress</span>
+                                            ${u.stage ? `<span class="badge-stage-brutal" style="font-size:0.65rem;">${escapeHtml(u.stage)}</span>` : ''}
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-2">
+                                        <strong class="text-dark d-block small mb-1"><i class="bi bi-check2-circle text-success me-1"></i>Topics / Skills Covered:</strong>
+                                        ${topics.length > 0 ? `
+                                            <ul class="mb-0 ps-3 small text-dark">
+                                                ${topics.map(tp => `<li>${escapeHtml(tp.replace(/^[-*•]\s*/, ''))}</li>`).join('')}
+                                            </ul>
+                                        ` : `<p class="small text-dark mb-0">${escapeHtml(u.topicsCovered)}</p>`}
+                                    </div>
+
+                                    ${u.description ? `
+                                        <div class="mb-2 p-2 rounded bg-light border border-1 border-dark small">
+                                            <span class="text-muted d-block fw-bold text-uppercase" style="font-size:0.65rem;">Session Notes & Observations:</span>
+                                            <span class="text-dark">${escapeHtml(u.description)}</span>
+                                        </div>
+                                    ` : ''}
+
+                                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 pt-2 border-top border-1 border-light">
+                                        ${u.nextActivity ? `
+                                            <div class="small">
+                                                <span class="text-muted fw-bold">Next Planned:</span> <span class="text-primary fw-bold">${escapeHtml(u.nextActivity)}</span>
+                                            </div>
+                                        ` : '<div></div>'}
+
+                                        ${u.attachmentUrl ? `
+                                            <div>
+                                                <a href="${escapeHtml(u.attachmentUrl)}" target="_blank" class="btn btn-sm btn-outline-custom p-1 px-2" style="font-size:0.75rem;">
+                                                    <i class="bi bi-paperclip me-1 text-primary"></i>View Attached Proof / Resource
+                                                </a>
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+            } catch (err) {
+                console.error("Error opening offline detail modal:", err);
+                modalBody.innerHTML = `
+                    <div class="empty-state-notice text-danger border-danger">
+                        <i class="bi bi-wifi-off fs-3 d-block mb-2 text-danger"></i>
+                        <h6 class="fw-bold text-danger mb-1">Network Error</h6>
+                        <p class="small mb-0">Could not connect to server to fetch offline progress.</p>
+                    </div>
+                `;
             }
         }
 
@@ -2454,7 +3195,7 @@
                             <td><span class="small fst-italic">"${escapeHtml(r.comment)}"</span></td>
                             <td><strong class="text-dark">${escapeHtml(r.reviewerName)}</strong></td>
                             <td><strong class="text-dark">${escapeHtml(r.reviewedStudentName)}</strong></td>
-                            <td><strong class="text-warning">★ ${r.rating} / 5.0</strong></td>
+                            <td><strong class="text-dark">${r.rating} / 5</strong></td>
                             <td><span class="small text-muted">${formatDate(r.createdAt)}</span></td>
                             <td>
                                 ${r.status === 'HIDDEN' ? '<span class="badge bg-danger text-white">Hidden</span>' : '<span class="badge bg-success text-white">Visible</span>'}
@@ -2703,28 +3444,40 @@
         // ===================================================================
         async function loadAuditLogsList() {
             const tbody = document.getElementById('auditLogsTableTbody');
-            tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-muted"><span class="spinner-border spinner-border-sm me-2"></span>Loading audit logs...</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted"><span class="spinner-border spinner-border-sm me-2"></span>Loading audit logs...</td></tr>`;
 
             try {
                 const res = await API.get('/api/admin/audit-logs');
                 if (res && res.success && res.data) {
                     adminData.auditLogs = res.data;
                     if (adminData.auditLogs.length === 0) {
-                        tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-muted">No audit logs recorded yet.</td></tr>`;
+                        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">No audit logs recorded yet.</td></tr>`;
                         return;
                     }
-                    tbody.innerHTML = adminData.auditLogs.map(l => `
+                    tbody.innerHTML = adminData.auditLogs.map(l => {
+                        let actionBadgeClass = 'bg-dark text-white';
+                        if (l.action && l.action.includes('PROMOT')) actionBadgeClass = 'bg-primary text-white';
+                        else if (l.action && (l.action.includes('DEMOT') || l.action.includes('SUSPEND'))) actionBadgeClass = 'bg-danger text-white';
+                        else if (l.action && l.action.includes('VERIF')) actionBadgeClass = 'bg-success text-white';
+
+                        const statusBadge = (l.status === 'SUCCESS' || !l.status)
+                            ? '<span class="badge bg-success text-white" style="font-size: 0.65rem;">SUCCESS</span>'
+                            : `<span class="badge bg-secondary text-white" style="font-size: 0.65rem;">${escapeHtml(l.status)}</span>`;
+
+                        return `
                         <tr>
                             <td><span class="small font-monospace text-muted">${formatDate(l.timestamp)}</span></td>
                             <td><span class="small fw-bold text-dark">${escapeHtml(l.performedBy || 'System')}</span></td>
-                            <td><span class="badge bg-dark text-white font-monospace">${escapeHtml(l.action)}</span></td>
+                            <td><span class="badge ${actionBadgeClass} font-monospace">${escapeHtml(l.action)}</span></td>
                             <td><strong class="text-dark small">${escapeHtml(l.target || 'N/A')}</strong></td>
+                            <td>${statusBadge}</td>
                             <td><span class="small text-muted">${escapeHtml(l.details || '')}</span></td>
                         </tr>
-                    `).join('');
+                    `;
+                    }).join('');
                 }
             } catch (err) {
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">Failed to load audit logs.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">Failed to load audit logs.</td></tr>`;
             }
         }
 

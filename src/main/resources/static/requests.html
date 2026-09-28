@@ -7,6 +7,154 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        .request-clickable-card {
+            cursor: pointer;
+            transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.18s ease;
+            position: relative;
+        }
+        .request-clickable-card:hover {
+            transform: translate(-3px, -3px);
+            box-shadow: 6px 6px 0px #18181b !important;
+            border-color: #18181b !important;
+        }
+        .request-card-badge-clickable {
+            font-size: 0.72rem;
+            font-weight: 700;
+            background: #ede9fe;
+            color: #4f46e5;
+            border: 1.5px solid #18181b;
+            padding: 3px 8px;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: background 0.15s ease, color 0.15s ease;
+        }
+        .request-clickable-card:hover .request-card-badge-clickable {
+            background: #4f46e5;
+            color: #ffffff;
+        }
+        .modal-brutalist .modal-content {
+            border: 3px solid #18181b;
+            border-radius: 12px;
+            box-shadow: 8px 8px 0px #18181b;
+            background: #ffffff;
+        }
+        .modal-brutalist .modal-header {
+            border-bottom: 2.5px solid #18181b;
+            background: #fbf9f5;
+            padding: 16px 24px;
+        }
+        .modal-brutalist .modal-footer {
+            border-top: 2.5px solid #18181b;
+            background: #fbf9f5;
+            padding: 16px 24px;
+        }
+        .section-header-box {
+            background: #f8fafc;
+            border: 2px solid #18181b;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            box-shadow: 3px 3px 0px #18181b;
+        }
+        .section-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.92rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin-bottom: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #0f172a;
+        }
+        .card-detail-item {
+            border: 2px solid #18181b;
+            border-radius: 8px;
+            background: #ffffff;
+            box-shadow: 3px 3px 0px #18181b;
+            padding: 14px;
+            margin-bottom: 12px;
+            transition: transform 0.15s ease;
+        }
+        .card-detail-item:hover {
+            transform: translate(-1px, -1px);
+            box-shadow: 4px 4px 0px #18181b;
+        }
+        .avatar-modal-lg {
+            width: 76px;
+            height: 76px;
+            border-radius: 50%;
+            border: 3px solid #18181b;
+            box-shadow: 3px 3px 0px #18181b;
+            object-fit: cover;
+            background: #ffffff;
+            flex-shrink: 0;
+        }
+        .skill-compare-box {
+            border: 2px solid #18181b;
+            border-radius: 8px;
+            padding: 14px 16px;
+            box-shadow: 3px 3px 0px #18181b;
+            height: 100%;
+        }
+        .skill-compare-box.teach-box {
+            background-color: #f3e8ff; /* Lavender */
+        }
+        .skill-compare-box.learn-box {
+            background-color: #ffe4e6; /* Soft Pink */
+        }
+        .status-pill-brutal {
+            display: inline-block;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 4px;
+            border: 1.5px solid #18181b;
+            text-transform: uppercase;
+        }
+        .badge-verified-brutal {
+            background: #dcfce7;
+            color: #064e3b;
+            border: 1.5px solid #059669;
+        }
+        .badge-pending-brutal {
+            background: #fef3c7;
+            color: #78350f;
+            border: 1.5px solid #d97706;
+        }
+        .badge-unaudited-brutal {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1.5px solid #64748b;
+        }
+        .badge-needs-resubmission-brutal {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1.5px solid #dc2626;
+        }
+        .preview-iframe-wrapper {
+            border: 2px solid #18181b;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #f8fafc;
+            height: 520px;
+            box-shadow: 4px 4px 0px #18181b;
+        }
+        .empty-state-notice {
+            background: #f8fafc;
+            border: 2px dashed #94a3b8;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+            color: #64748b;
+            font-size: 0.88rem;
+        }
+    </style>
 </head>
 <body class="bg-light">
 
@@ -59,11 +207,16 @@
             <div class="tab-pane fade show active" id="incomingTab">
                 <div class="card card-custom p-4 bg-white">
                     <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-2 border-dark">
-                        <h5 class="fw-bold mb-0 text-dark">Incoming Proposals</h5>
-                        <small class="text-muted">Proposals sent to you by campus peers</small>
+                        <div>
+                            <h5 class="fw-bold mb-0 text-dark">Incoming Proposals</h5>
+                            <small class="text-muted">Proposals sent to you by campus peers &bull; Click any card to inspect sender portfolio & credentials</small>
+                        </div>
+                        <span class="badge bg-light text-dark border border-1 border-dark px-3 py-2 small">
+                            <i class="bi bi-cursor-fill me-1 text-primary"></i>Click card to open full profile
+                        </span>
                     </div>
                     <div id="incomingContainer" class="d-flex flex-column gap-3">
-                        <div class="text-center py-4 text-muted small">Loading requests...</div>
+                        <div class="text-center py-4 text-muted small">Loading incoming requests...</div>
                     </div>
                 </div>
             </div>
@@ -72,13 +225,262 @@
             <div class="tab-pane fade" id="outgoingTab">
                 <div class="card card-custom p-4 bg-white">
                     <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-2 border-dark">
-                        <h5 class="fw-bold mb-0 text-dark">Proposals You Sent</h5>
-                        <small class="text-muted">Invitations you sent out to potential partners</small>
+                        <div>
+                            <h5 class="fw-bold mb-0 text-dark">Proposals You Sent</h5>
+                            <small class="text-muted">Invitations you sent to potential learning partners &bull; Click any card to review details</small>
+                        </div>
+                        <span class="badge bg-light text-dark border border-1 border-dark px-3 py-2 small">
+                            <i class="bi bi-cursor-fill me-1 text-primary"></i>Click card to open details
+                        </span>
                     </div>
                     <div id="outgoingContainer" class="d-flex flex-column gap-3">
-                        <div class="text-center py-4 text-muted small">Loading sent requests...</div>
+                        <div class="text-center py-4 text-muted small">Loading sent proposals...</div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- COMPREHENSIVE SENDER DETAILS & EXCHANGE REQUEST MODAL         -->
+    <!-- ============================================================= -->
+    <div class="modal fade modal-brutalist" id="requestDetailModal" tabindex="-1" aria-labelledby="requestDetailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <span class="brand-icon-box" style="width:36px; height:36px; font-size:1rem;"><i class="bi bi-arrow-left-right"></i></span>
+                        <div>
+                            <h5 class="modal-title fw-bold text-dark mb-0" id="requestDetailModalLabel">Skill Exchange Request Details</h5>
+                            <small class="text-muted" id="modalSubTitle">Proposal Information & Sender Qualifications</small>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span id="modalRequestStatusBadge" class="status-pill-brutal">PENDING</span>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="modal-body p-4" id="requestDetailModalBody">
+                    <!-- Populated dynamically -->
+                    <div class="text-center py-5 text-muted">
+                        <div class="spinner-border text-primary mb-3" role="status"></div>
+                        <p class="mb-0 fw-bold">Loading student profile and verification credentials...</p>
+                    </div>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="modal-footer d-flex justify-content-between align-items-center flex-wrap gap-2" id="requestDetailModalFooter">
+                    <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">Close</button>
+                    <div id="modalActionButtons" class="d-flex gap-2">
+                        <!-- Contextual actions rendered dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- DOCUMENT & CERTIFICATE PREVIEW MODAL                         -->
+    <!-- ============================================================= -->
+    <div class="modal fade modal-brutalist" id="documentPreviewModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-primary text-white border border-dark px-2 py-1"><i class="bi bi-file-earmark-check me-1"></i>Document</span>
+                        <h6 class="modal-title fw-bold text-dark mb-0" id="documentPreviewTitle">Certificate Preview</h6>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-3" id="documentPreviewBody">
+                    <!-- Dynamic Document Preview Frame or Image -->
+                </div>
+                <div class="modal-footer d-flex justify-content-between align-items-center">
+                    <a id="documentExternalLink" href="#" target="_blank" class="btn btn-sm btn-outline-dark">
+                        <i class="bi bi-box-arrow-up-right me-1"></i>Open in New Window
+                    </a>
+                    <button type="button" class="btn btn-sm btn-dark" data-bs-dismiss="modal">Close Preview</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- STUDENT OFFLINE PROGRESS UPDATE MODAL                         -->
+    <!-- ============================================================= -->
+    <div class="modal fade modal-brutalist" id="studentProgressModal" tabindex="-1" aria-labelledby="studentProgressModalLabel" aria-hidden="true" style="z-index: 1065;">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="brand-icon-box" style="width:34px; height:34px; font-size:0.95rem; background: #fef08a; color: #854d0e;">
+                            <i class="bi bi-pencil-square"></i>
+                        </span>
+                        <div>
+                            <h5 class="modal-title fw-bold text-dark mb-0" id="studentProgressModalLabel">Update Offline Progress</h5>
+                            <small class="text-muted" id="studentProgressModalSub">Log completed session topics and milestones</small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="studentProgressForm" onsubmit="submitStudentProgress(event)">
+                    <input type="hidden" id="spOfflineExchangeId">
+                    <div class="modal-body p-4">
+                        <div id="spAlertContainer"></div>
+
+                        <!-- Session Date & Stage -->
+                        <div class="row g-2 mb-3">
+                            <div class="col-sm-6">
+                                <label class="form-label fw-bold small text-dark mb-1">Session Date *</label>
+                                <input type="date" id="spSessionDate" class="form-control border border-2 border-dark" required>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label fw-bold small text-dark mb-1">Progress Stage *</label>
+                                <select id="spCurrentStage" class="form-select border border-2 border-dark" required>
+                                    <option value="Exchange Accepted">1. Exchange Accepted</option>
+                                    <option value="Offline Session Planned">2. Offline Session Planned</option>
+                                    <option value="First Session Completed">3. First Session Completed</option>
+                                    <option value="Learning in Progress" selected>4. Learning in Progress</option>
+                                    <option value="Practice / Assignment">5. Practice / Assignment</option>
+                                    <option value="Final Session">6. Final Session</option>
+                                    <option value="Exchange Completed">7. Exchange Completed</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Progress Percentage Slider & Number -->
+                        <div class="mb-3 p-3 rounded bg-light border border-2 border-dark">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="form-label fw-bold small text-dark mb-0">Current Progress Percentage *</label>
+                                <span class="fw-bold font-monospace fs-6 text-primary" id="spPercentageLabel">50%</span>
+                            </div>
+                            <input type="range" class="form-range" id="spPercentageRange" min="0" max="100" step="5" value="50" oninput="updateSpPercentage(this.value)">
+                            <div class="d-flex justify-content-between small text-muted font-monospace" style="font-size:0.7rem;">
+                                <span>0% (Not Started)</span>
+                                <span>50% (In Progress)</span>
+                                <span>100% (Completed)</span>
+                            </div>
+                        </div>
+
+                        <!-- Topics / Skills Covered -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-dark mb-1">Topics / Skills Covered *</label>
+                            <textarea id="spTopicsCovered" class="form-control border border-2 border-dark" rows="3" placeholder="e.g. Java OOP basics&#10;Classes and Objects&#10;Inheritance&#10;Polymorphism" required></textarea>
+                            <small class="text-muted" style="font-size:0.72rem;">Enter what concepts/topics were taught and practiced during this meetup</small>
+                        </div>
+
+                        <!-- Session Notes & Observations -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-dark mb-1">Session Notes / Description</label>
+                            <textarea id="spDescription" class="form-control border border-2 border-dark" rows="2" placeholder="e.g. Met at college library for 2 hours. Student practiced inheritance and completed 3 OOP exercises."></textarea>
+                        </div>
+
+                        <!-- Next Planned Activity -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-dark mb-1">Next Planned Activity</label>
+                            <input type="text" id="spNextActivity" class="form-control border border-2 border-dark" placeholder="e.g. Exception Handling & Mini practice task">
+                        </div>
+
+                        <!-- Optional Proof Document URL / Reference -->
+                        <div class="mb-2">
+                            <label class="form-label fw-bold small text-dark mb-1">Optional Proof / Resource / Note Document Link</label>
+                            <input type="text" id="spAttachmentUrl" class="form-control border border-2 border-dark" placeholder="https://github.com/... or Google Drive notes link">
+                            <small class="text-muted" style="font-size:0.72rem;">Optional link to shared code, notes, or verification document</small>
+                        </div>
+                    </div>
+                    <div class="modal-footer d-flex justify-content-between">
+                        <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-dark text-white fw-bold px-4" id="spSubmitBtn">
+                            <i class="bi bi-cloud-arrow-up-fill me-1"></i> Save Progress
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- SCHEDULE ONLINE SESSION MODAL (ZOOM INTEGRATION)              -->
+    <!-- ============================================================= -->
+    <div class="modal fade modal-brutalist" id="scheduleOnlineSessionModal" tabindex="-1" aria-labelledby="scheduleOnlineSessionModalLabel" aria-hidden="true" style="z-index: 1070;">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header d-flex justify-content-between align-items-center" style="background:#fdf2f8;">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="brand-icon-box" style="width:34px; height:34px; font-size:0.95rem; background: #fbcfe8; color: #831843;">
+                            <i class="bi bi-camera-video-fill"></i>
+                        </span>
+                        <div>
+                            <h5 class="modal-title fw-bold text-dark mb-0" id="scheduleOnlineSessionModalLabel">Schedule Online Session</h5>
+                            <small class="text-muted">Arrange an online meeting with Zoom integration</small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="scheduleOnlineSessionForm" onsubmit="handleScheduleOnlineSessionSubmit(event)">
+                    <input type="hidden" id="sosExchangeRequestId">
+                    <div class="modal-body p-4">
+                        <div id="sosAlertContainer"></div>
+
+                        <!-- Session Title -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-dark mb-1">Session Title *</label>
+                            <input type="text" id="sosTitle" class="form-control border border-2 border-dark" placeholder="e.g. Java OOP Masterclass & Problem Solving" required>
+                        </div>
+
+                        <!-- Skill -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-dark mb-1">Skill Being Exchanged</label>
+                            <input type="text" id="sosSkillName" class="form-control border border-2 border-dark bg-light font-monospace" readonly>
+                        </div>
+
+                        <!-- Partner Name -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-dark mb-1">Exchange Partner</label>
+                            <input type="text" id="sosPartnerName" class="form-control border border-2 border-dark bg-light" readonly>
+                        </div>
+
+                        <!-- Date & Time -->
+                        <div class="row g-2 mb-3">
+                            <div class="col-sm-6">
+                                <label class="form-label fw-bold small text-dark mb-1">Date *</label>
+                                <input type="date" id="sosDate" class="form-control border border-2 border-dark" required>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label fw-bold small text-dark mb-1">Start Time *</label>
+                                <input type="time" id="sosTime" class="form-control border border-2 border-dark" required>
+                            </div>
+                        </div>
+
+                        <!-- Duration -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-dark mb-1">Estimated Duration *</label>
+                            <select id="sosDuration" class="form-select border border-2 border-dark">
+                                <option value="30">30 minutes</option>
+                                <option value="45">45 minutes</option>
+                                <option value="60" selected>60 minutes (1 hour)</option>
+                                <option value="90">90 minutes (1.5 hours)</option>
+                                <option value="120">120 minutes (2 hours)</option>
+                            </select>
+                        </div>
+
+                        <!-- Description / Agenda -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-dark mb-1">Optional Agenda & Topics</label>
+                            <textarea id="sosDescription" class="form-control border border-2 border-dark" rows="3" placeholder="Outline specific topics to cover, preparation requirements, or doubts..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer d-flex justify-content-between align-items-center">
+                        <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-dark text-white fw-bold px-4" id="sosSubmitBtn">
+                            <i class="bi bi-camera-video me-1"></i> Create Zoom Meeting
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -87,6 +489,8 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/app.js"></script>
     <script>
+        let currentModalProposalId = null;
+
         document.addEventListener("DOMContentLoaded", async () => {
             await loadRequests();
         });
@@ -116,6 +520,212 @@
             }
         }
 
+        function getStatusBrutalPill(status) {
+            switch (status) {
+                case 'ACCEPTED': return 'badge-verified-brutal';
+                case 'COMPLETED': return 'bg-success text-white border-dark';
+                case 'REJECTED': return 'badge-needs-resubmission-brutal';
+                case 'PENDING':
+                default: return 'badge-pending-brutal';
+            }
+        }
+
+        let currentOfflineRecord = null;
+
+        async function openStudentProgressModal(requestId) {
+            const modalEl = document.getElementById('studentProgressModal');
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+
+            document.getElementById('spOfflineExchangeId').value = requestId;
+            document.getElementById('spSessionDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('spTopicsCovered').value = '';
+            document.getElementById('spDescription').value = '';
+            document.getElementById('spNextActivity').value = '';
+            document.getElementById('spAttachmentUrl').value = '';
+            document.getElementById('spAlertContainer').innerHTML = '';
+
+            try {
+                const res = await API.get(`/api/exchange-requests/${requestId}/offline-progress`);
+                if (res && res.success && res.data) {
+                    currentOfflineRecord = res.data;
+                    document.getElementById('studentProgressModalSub').textContent = 
+                        `${res.data.skillTaughtName} Exchange • Current: ${res.data.progressPercentage}% (${res.data.currentStage})`;
+
+                    const nextPct = Math.min(100, Math.max(0, (res.data.progressPercentage || 0) + 15));
+                    updateSpPercentage(nextPct);
+
+                    if (res.data.currentStage) {
+                        document.getElementById('spCurrentStage').value = res.data.currentStage;
+                    }
+                }
+            } catch (err) {
+                console.warn("Could not prefetch offline progress:", err);
+            }
+
+            modal.show();
+        }
+
+        function updateSpPercentage(val) {
+            document.getElementById('spPercentageRange').value = val;
+            document.getElementById('spPercentageLabel').textContent = `${val}%`;
+        }
+
+        async function submitStudentProgress(event) {
+            event.preventDefault();
+            const requestId = document.getElementById('spOfflineExchangeId').value;
+            const sessionDate = document.getElementById('spSessionDate').value;
+            const stage = document.getElementById('spCurrentStage').value;
+            const progressPercentage = parseInt(document.getElementById('spPercentageRange').value);
+            const topicsCovered = document.getElementById('spTopicsCovered').value.trim();
+            const description = document.getElementById('spDescription').value.trim();
+            const nextActivity = document.getElementById('spNextActivity').value.trim();
+            const attachmentUrl = document.getElementById('spAttachmentUrl').value.trim();
+
+            if (!topicsCovered) {
+                document.getElementById('spAlertContainer').innerHTML = `
+                    <div class="alert alert-danger py-2 small fw-bold">Please specify topics or skills covered in this session.</div>
+                `;
+                return;
+            }
+
+            const submitBtn = document.getElementById('spSubmitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span>Saving...`;
+
+            try {
+                let offlineId = currentOfflineRecord ? currentOfflineRecord.id : null;
+                if (!offlineId) {
+                    const check = await API.get(`/api/exchange-requests/${requestId}/offline-progress`);
+                    if (check && check.success && check.data) {
+                        offlineId = check.data.id;
+                    }
+                }
+
+                if (!offlineId) {
+                    throw new Error("No offline exchange record found for this request.");
+                }
+
+                const res = await API.post(`/api/offline-exchanges/${offlineId}/updates`, {
+                    sessionDate,
+                    stage,
+                    progressPercentage,
+                    topicsCovered,
+                    description,
+                    nextActivity,
+                    attachmentUrl
+                });
+
+                if (res && res.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('studentProgressModal')).hide();
+                    showToast("Progress update recorded successfully!", "success");
+                    await loadRequests();
+                    if (currentModalProposalId === parseInt(requestId)) {
+                        openRequestDetailModal(requestId);
+                    }
+                } else {
+                    document.getElementById('spAlertContainer').innerHTML = `
+                        <div class="alert alert-danger py-2 small fw-bold">${escapeHtml(res && res.message ? res.message : 'Failed to save progress update.')}</div>
+                    `;
+                }
+            } catch (err) {
+                document.getElementById('spAlertContainer').innerHTML = `
+                    <div class="alert alert-danger py-2 small fw-bold">${escapeHtml(err.message || 'Error communicating with server.')}</div>
+                `;
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `<i class="bi bi-cloud-arrow-up-fill me-1"></i> Save Progress`;
+            }
+        }
+
+        // =============================================================
+        // ONLINE SESSIONS & ZOOM INTEGRATION HANDLERS
+        // =============================================================
+        function openScheduleOnlineSessionModal(requestId, skillName, partnerName) {
+            document.getElementById('sosExchangeRequestId').value = requestId;
+            document.getElementById('sosTitle').value = `${skillName || 'Skill'} Online Session`;
+            document.getElementById('sosSkillName').value = skillName || 'Skill Exchange';
+            document.getElementById('sosPartnerName').value = partnerName || 'Peer';
+
+            const today = new Date().toISOString().split('T')[0];
+            const dateInput = document.getElementById('sosDate');
+            dateInput.min = today;
+            dateInput.value = today;
+            document.getElementById('sosTime').value = "19:00";
+            document.getElementById('sosDuration').value = "60";
+            document.getElementById('sosDescription').value = "";
+            document.getElementById('sosAlertContainer').innerHTML = "";
+
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('scheduleOnlineSessionModal')).show();
+        }
+
+        async function handleScheduleOnlineSessionSubmit(e) {
+            e.preventDefault();
+            const submitBtn = document.getElementById('sosSubmitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> Creating Zoom Meeting...`;
+            document.getElementById('sosAlertContainer').innerHTML = '';
+
+            try {
+                const requestId = Number(document.getElementById('sosExchangeRequestId').value);
+                const title = document.getElementById('sosTitle').value.trim();
+                const skillName = document.getElementById('sosSkillName').value.trim();
+                const scheduledDate = document.getElementById('sosDate').value;
+                const scheduledTime = document.getElementById('sosTime').value;
+                const durationMinutes = Number(document.getElementById('sosDuration').value);
+                const description = document.getElementById('sosDescription').value.trim();
+
+                const res = await API.post('/api/online-sessions', {
+                    exchangeRequestId: requestId,
+                    title,
+                    skillName,
+                    scheduledDate,
+                    scheduledTime,
+                    durationMinutes,
+                    description
+                });
+
+                if (res && res.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('scheduleOnlineSessionModal')).hide();
+                    showToast("Online Zoom session scheduled successfully!", "success");
+                    await loadRequests();
+                    if (currentModalProposalId === parseInt(requestId)) {
+                        openRequestDetailModal(requestId);
+                    }
+                } else {
+                    document.getElementById('sosAlertContainer').innerHTML = `
+                        <div class="alert alert-danger py-2 small fw-bold">${escapeHtml(res && res.message ? res.message : 'Failed to schedule online session.')}</div>
+                    `;
+                }
+            } catch (err) {
+                document.getElementById('sosAlertContainer').innerHTML = `
+                    <div class="alert alert-danger py-2 small fw-bold">${escapeHtml(err.message || 'Error communicating with server.')}</div>
+                `;
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `<i class="bi bi-camera-video me-1"></i> Create Zoom Meeting`;
+            }
+        }
+
+        function shareOnlineSessionInChat(sessionId, partnerId) {
+            window.location.href = `chat.html?partnerId=${partnerId}&shareSessionId=${sessionId}`;
+        }
+
+        async function endOnlineSession(sessionId) {
+            if (!confirm("Are you sure you want to end this online session and mark it as Completed?")) return;
+            try {
+                const res = await API.put(`/api/online-sessions/${sessionId}/status`, { status: "Completed" });
+                if (res && res.success) {
+                    showToast("Online session marked as Completed.", "success");
+                    await loadRequests();
+                    if (currentModalProposalId) {
+                        openRequestDetailModal(currentModalProposalId);
+                    }
+                }
+            } catch (err) {
+                showToast(err.message || "Failed to end session", "danger");
+            }
+        }
+
         function renderIncoming(requests) {
             const container = document.getElementById('incomingContainer');
             if (requests.length === 0) {
@@ -124,57 +734,102 @@
             }
 
             container.innerHTML = requests.map(r => `
-                <div class="card card-custom p-3 bg-white">
+                <div class="card card-custom request-clickable-card p-3 bg-white" onclick="openRequestDetailModal(${r.id})">
                     <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2 pb-2 border-bottom border-1 border-dark">
-                        <div>
-                            <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-person me-1 text-primary"></i>${r.senderName} (${r.senderEmail})</h6>
-                            <p class="mb-0 small text-muted">Proposed on ${new Date(r.createdAt).toLocaleDateString()}</p>
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-person-fill me-1 text-primary"></i>${escapeHtml(r.senderName)}</h6>
+                            <span class="text-muted small">(${escapeHtml(r.senderEmail || '')})</span>
+                            <span class="request-card-badge-clickable"><i class="bi bi-person-vcard me-1"></i>View Profile & Proof</span>
                         </div>
                         <span class="badge ${getStatusBadge(r.status)} px-3 py-1">${r.status}</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <small class="text-muted"><i class="bi bi-calendar-event me-1"></i>Proposed on ${new Date(r.createdAt).toLocaleDateString()}</small>
+                        <small class="text-muted fst-italic"><i class="bi bi-hand-index-thumb me-1"></i>Click card to view complete qualifications</small>
                     </div>
 
                     <!-- Skills & Learning Mode -->
                     <div class="row g-2 p-2 rounded mb-2 small border border-2 border-dark" style="background-color: var(--canvas-bg);">
                         <div class="col-sm-5">
                             <span class="text-muted d-block fw-bold text-uppercase" style="font-size:0.68rem;">They Offer:</span>
-                            <strong class="text-dark fs-6">${r.skillOfferedName}</strong>
+                            <strong class="text-dark fs-6">${escapeHtml(r.skillOfferedName)}</strong>
                             ${r.skillOfferedVerified ? '<span class="badge badge-verified ms-1" style="font-size:0.68rem;"><i class="bi bi-patch-check-fill me-1"></i>✓ Verified</span>' : ''}
                         </div>
                         <div class="col-sm-2 text-center text-dark fw-bold d-flex align-items-center justify-content-center">FOR</div>
                         <div class="col-sm-5 text-sm-end">
                             <span class="text-muted d-block fw-bold text-uppercase" style="font-size:0.68rem;">They Want from You:</span>
-                            <strong class="text-dark fs-6">${r.skillRequestedName}</strong>
+                            <strong class="text-dark fs-6">${escapeHtml(r.skillRequestedName)}</strong>
                         </div>
                     </div>
 
+                    ${r.learningMode === 'OFFLINE' && (r.status === 'ACCEPTED' || r.status === 'COMPLETED') ? `
+                        <div class="p-2 rounded mb-2 border border-1 border-dark bg-white" style="box-shadow: 2px 2px 0px #18181b;">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="small fw-bold text-dark"><i class="bi bi-geo-alt-fill text-warning me-1"></i>Offline Exchange Progress: <span class="font-monospace text-primary">${r.progressPercentage || 0}%</span></span>
+                                <span class="badge-stage-brutal" style="font-size:0.65rem;">${escapeHtml(r.currentStage || 'Exchange Accepted')}</span>
+                            </div>
+                            <div class="offline-progress-bar-outer" style="height:8px;">
+                                <div class="offline-progress-bar-fill" style="width:${r.progressPercentage || 0}%;"></div>
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    ${r.learningMode === 'ONLINE' && r.onlineSession ? `
+                        <div class="p-2 rounded mb-2 border border-2 border-dark" style="background: #fdf2f8; box-shadow: 2px 2px 0px #18181b;">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="badge bg-dark text-white font-monospace" style="font-size:0.68rem;"><i class="bi bi-camera-video me-1"></i>ONLINE SESSION • ${r.onlineSession.status}</span>
+                                <span class="small font-monospace fw-bold text-dark"><i class="bi bi-clock me-1"></i>${r.onlineSession.scheduledDate} @ ${r.onlineSession.scheduledTime} (${r.onlineSession.durationMinutes}m)</span>
+                            </div>
+                            <div class="d-flex gap-2 mt-2 flex-wrap">
+                                <a href="${r.onlineSession.zoomJoinUrl}" target="_blank" class="btn btn-sm btn-primary-custom" onclick="event.stopPropagation();">
+                                    <i class="bi bi-camera-video-fill me-1"></i> Join Session
+                                </a>
+                                <button type="button" class="btn btn-sm btn-outline-dark" onclick="event.stopPropagation(); shareOnlineSessionInChat(${r.onlineSession.id}, ${r.senderId})">
+                                    <i class="bi bi-chat-quote-fill me-1"></i> Share in Chat
+                                </button>
+                            </div>
+                        </div>
+                    ` : ''}
+
                     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-2">
                         <div>
-                            <span class="badge badge-${r.learningMode.toLowerCase()} me-2">Mode: ${r.learningMode}</span>
-                            <span class="small text-muted fst-italic">"${r.message || 'No note added'}"</span>
+                            <span class="badge badge-${r.learningMode ? r.learningMode.toLowerCase() : 'online'} me-2">Mode: ${r.learningMode || 'ONLINE'}</span>
+                            <span class="small text-muted fst-italic">"${escapeHtml(r.message || 'No note added')}"</span>
                         </div>
 
-                        <div class="d-flex gap-2">
+                        <div class="d-flex gap-2 flex-wrap">
                             ${r.status === 'PENDING' ? `
-                                <button class="btn btn-sm btn-success px-3" onclick="acceptProposal(${r.id})">
+                                <button class="btn btn-sm btn-success px-3" onclick="event.stopPropagation(); acceptProposal(${r.id})">
                                     <i class="bi bi-check2 me-1"></i> Accept
                                 </button>
-                                <button class="btn btn-sm btn-outline-danger" onclick="rejectProposal(${r.id})">
+                                <button class="btn btn-sm btn-outline-danger" onclick="event.stopPropagation(); rejectProposal(${r.id})">
                                     <i class="bi bi-x me-1"></i> Decline
                                 </button>
                             ` : ''}
 
                             ${r.status === 'ACCEPTED' ? `
-                                <a href="chat.html?partnerId=${r.senderId}" class="btn btn-sm btn-primary-custom">
+                                <a href="chat.html?partnerId=${r.senderId}" class="btn btn-sm btn-primary-custom" onclick="event.stopPropagation();">
                                     <i class="bi bi-chat-dots me-1"></i> Open Chat
                                 </a>
-                                <button class="btn btn-sm btn-outline-custom" onclick="completeProposal(${r.id})">
+                                ${r.learningMode === 'ONLINE' && !r.onlineSession ? `
+                                    <button class="btn btn-sm btn-outline-custom" onclick="event.stopPropagation(); openScheduleOnlineSessionModal(${r.id}, '${escapeHtml(r.skillOfferedName)}', '${escapeHtml(r.senderName)}')">
+                                        <i class="bi bi-calendar-plus me-1"></i> Schedule Online Session
+                                    </button>
+                                ` : ''}
+                                ${r.learningMode === 'OFFLINE' ? `
+                                    <button class="btn btn-sm btn-outline-custom" onclick="event.stopPropagation(); openStudentProgressModal(${r.id})">
+                                        <i class="bi bi-pencil-square me-1"></i> Update Progress
+                                    </button>
+                                ` : ''}
+                                <button class="btn btn-sm btn-outline-custom" onclick="event.stopPropagation(); completeProposal(${r.id})">
                                     <i class="bi bi-check2-all me-1"></i> Mark Completed
                                 </button>
                             ` : ''}
 
                             ${r.status === 'COMPLETED' ? `
-                                <a href="exchange-history.html" class="btn btn-sm btn-outline-custom">
-                                    <i class="bi bi-star me-1 text-warning"></i> Rate Peer
+                                <a href="exchange-history.html" class="btn btn-sm btn-outline-custom" onclick="event.stopPropagation();">
+                                    <i class="bi bi-chat-square-text me-1"></i> Review Peer
                                 </a>
                             ` : ''}
                         </div>
@@ -191,37 +846,81 @@
             }
 
             container.innerHTML = requests.map(r => `
-                <div class="card card-custom p-3 bg-white">
+                <div class="card card-custom request-clickable-card p-3 bg-white" onclick="openRequestDetailModal(${r.id})">
                     <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2 pb-2 border-bottom border-1 border-dark">
-                        <div>
-                            <h6 class="mb-0 fw-bold text-dark">To: ${r.receiverName}</h6>
-                            <p class="mb-0 small text-muted">Sent on ${new Date(r.createdAt).toLocaleDateString()}</p>
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-send-fill me-1 text-primary"></i>To: ${escapeHtml(r.receiverName)}</h6>
+                            <span class="request-card-badge-clickable"><i class="bi bi-card-text me-1"></i>View Details</span>
                         </div>
                         <span class="badge ${getStatusBadge(r.status)} px-3 py-1">${r.status}</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <small class="text-muted"><i class="bi bi-calendar-event me-1"></i>Sent on ${new Date(r.createdAt).toLocaleDateString()}</small>
+                        <small class="text-muted fst-italic"><i class="bi bi-hand-index-thumb me-1"></i>Click card to inspect proposal details</small>
                     </div>
 
                     <div class="row g-2 p-2 rounded mb-2 small border border-2 border-dark" style="background-color: var(--canvas-bg);">
                         <div class="col-sm-5">
                             <span class="text-muted d-block fw-bold text-uppercase" style="font-size:0.68rem;">You Offered:</span>
-                            <strong class="text-dark fs-6">${r.skillOfferedName}</strong>
+                            <strong class="text-dark fs-6">${escapeHtml(r.skillOfferedName)}</strong>
                         </div>
                         <div class="col-sm-2 text-center text-dark fw-bold d-flex align-items-center justify-content-center">FOR</div>
                         <div class="col-sm-5 text-sm-end">
                             <span class="text-muted d-block fw-bold text-uppercase" style="font-size:0.68rem;">You Requested:</span>
-                            <strong class="text-dark fs-6">${r.skillRequestedName}</strong>
+                            <strong class="text-dark fs-6">${escapeHtml(r.skillRequestedName)}</strong>
                         </div>
                     </div>
 
+                    ${r.learningMode === 'OFFLINE' && (r.status === 'ACCEPTED' || r.status === 'COMPLETED') ? `
+                        <div class="p-2 rounded mb-2 border border-1 border-dark bg-white" style="box-shadow: 2px 2px 0px #18181b;">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="small fw-bold text-dark"><i class="bi bi-geo-alt-fill text-warning me-1"></i>Offline Exchange Progress: <span class="font-monospace text-primary">${r.progressPercentage || 0}%</span></span>
+                                <span class="badge-stage-brutal" style="font-size:0.65rem;">${escapeHtml(r.currentStage || 'Exchange Accepted')}</span>
+                            </div>
+                            <div class="offline-progress-bar-outer" style="height:8px;">
+                                <div class="offline-progress-bar-fill" style="width:${r.progressPercentage || 0}%;"></div>
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    ${r.learningMode === 'ONLINE' && r.onlineSession ? `
+                        <div class="p-2 rounded mb-2 border border-2 border-dark" style="background: #fdf2f8; box-shadow: 2px 2px 0px #18181b;">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="badge bg-dark text-white font-monospace" style="font-size:0.68rem;"><i class="bi bi-camera-video me-1"></i>ONLINE SESSION • ${r.onlineSession.status}</span>
+                                <span class="small font-monospace fw-bold text-dark"><i class="bi bi-clock me-1"></i>${r.onlineSession.scheduledDate} @ ${r.onlineSession.scheduledTime} (${r.onlineSession.durationMinutes}m)</span>
+                            </div>
+                            <div class="d-flex gap-2 mt-2 flex-wrap">
+                                <a href="${r.onlineSession.zoomJoinUrl}" target="_blank" class="btn btn-sm btn-primary-custom" onclick="event.stopPropagation();">
+                                    <i class="bi bi-camera-video-fill me-1"></i> Join Session
+                                </a>
+                                <button type="button" class="btn btn-sm btn-outline-dark" onclick="event.stopPropagation(); shareOnlineSessionInChat(${r.onlineSession.id}, ${r.receiverId})">
+                                    <i class="bi bi-chat-quote-fill me-1"></i> Share in Chat
+                                </button>
+                            </div>
+                        </div>
+                    ` : ''}
+
                     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-2">
                         <div>
-                            <span class="badge badge-${r.learningMode.toLowerCase()} me-2">Mode: ${r.learningMode}</span>
-                            <span class="small text-muted fst-italic">"${r.message || 'No note added'}"</span>
+                            <span class="badge badge-${r.learningMode ? r.learningMode.toLowerCase() : 'online'} me-2">Mode: ${r.learningMode || 'ONLINE'}</span>
+                            <span class="small text-muted fst-italic">"${escapeHtml(r.message || 'No note added')}"</span>
                         </div>
-                        <div>
+                        <div class="d-flex gap-2 flex-wrap">
                             ${r.status === 'ACCEPTED' ? `
-                                <a href="chat.html?partnerId=${r.receiverId}" class="btn btn-sm btn-primary-custom">
+                                <a href="chat.html?partnerId=${r.receiverId}" class="btn btn-sm btn-primary-custom" onclick="event.stopPropagation();">
                                     <i class="bi bi-chat-dots me-1"></i> Open Chat
                                 </a>
+                                ${r.learningMode === 'ONLINE' && !r.onlineSession ? `
+                                    <button class="btn btn-sm btn-outline-custom" onclick="event.stopPropagation(); openScheduleOnlineSessionModal(${r.id}, '${escapeHtml(r.skillRequestedName)}', '${escapeHtml(r.receiverName)}')">
+                                        <i class="bi bi-calendar-plus me-1"></i> Schedule Online Session
+                                    </button>
+                                ` : ''}
+                                ${r.learningMode === 'OFFLINE' ? `
+                                    <button class="btn btn-sm btn-outline-custom" onclick="event.stopPropagation(); openStudentProgressModal(${r.id})">
+                                        <i class="bi bi-pencil-square me-1"></i> Update Progress
+                                    </button>
+                                ` : ''}
                             ` : ''}
                         </div>
                     </div>
@@ -229,11 +928,834 @@
             `).join('');
         }
 
+        // =============================================================
+        // DETAILED SENDER MODAL HANDLER
+        // =============================================================
+        async function openRequestDetailModal(requestId) {
+            currentModalProposalId = requestId;
+            const modalEl = document.getElementById('requestDetailModal');
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+
+            // Set loading state
+            document.getElementById('requestDetailModalBody').innerHTML = `
+                <div class="text-center py-5 text-muted">
+                    <div class="spinner-border text-primary mb-3" role="status"></div>
+                    <p class="mb-0 fw-bold">Fetching student profile and verification credentials...</p>
+                </div>
+            `;
+            document.getElementById('modalActionButtons').innerHTML = '';
+            document.getElementById('modalRequestStatusBadge').className = 'status-pill-brutal badge-pending-brutal';
+            document.getElementById('modalRequestStatusBadge').innerText = 'LOADING';
+
+            modal.show();
+
+            try {
+                const res = await API.get(`/api/exchange-requests/${requestId}/details`);
+                if (!res || !res.success || !res.data) {
+                    document.getElementById('requestDetailModalBody').innerHTML = `
+                        <div class="empty-state-notice text-danger border-danger">
+                            <i class="bi bi-exclamation-triangle-fill fs-3 d-block mb-2 text-danger"></i>
+                            <h6 class="fw-bold text-danger mb-1">Proposal Details Unavailable</h6>
+                            <p class="small mb-0">${escapeHtml(res && res.message ? res.message : 'Could not retrieve sender details for this request.')}</p>
+                        </div>
+                    `;
+                    document.getElementById('modalRequestStatusBadge').innerText = 'ERROR';
+                    return;
+                }
+
+                renderModalContent(res.data);
+            } catch (err) {
+                console.error("Error opening request detail modal:", err);
+                document.getElementById('requestDetailModalBody').innerHTML = `
+                    <div class="empty-state-notice text-danger border-danger">
+                        <i class="bi bi-wifi-off fs-3 d-block mb-2 text-danger"></i>
+                        <h6 class="fw-bold text-danger mb-1">Network Error</h6>
+                        <p class="small mb-0">Failed to connect to the skill exchange server. Please try again.</p>
+                    </div>
+                `;
+            }
+        }
+
+        let activeParticipantRole = 'sender'; // 'sender' or 'receiver'
+        let cachedModalData = null;
+
+        function escapeHtml(str) {
+            if (!str || typeof str !== 'string') return '';
+            return str
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function renderModalContent(data) {
+            cachedModalData = data;
+            const { request, sender, receiver, offeredSkillDetails, requestedSkillDetails, viewer } = data;
+
+            // Status Badge in Header
+            const statusBadge = document.getElementById('modalRequestStatusBadge');
+            statusBadge.innerText = request.status;
+            statusBadge.className = `status-pill-brutal ${getStatusBrutalPill(request.status)}`;
+
+            document.getElementById('modalSubTitle').innerText = request.isIncoming 
+                ? `Proposal from ${sender.fullName} &bull; Requested on ${new Date(request.createdAt).toLocaleDateString()}`
+                : `Proposal sent to ${receiver.fullName} &bull; Sent on ${new Date(request.createdAt).toLocaleDateString()}`;
+
+            // Set active participant role:
+            // For incoming requests, the user primarily reviews the SENDER (peer who sent it).
+            // For sent requests, the user primarily reviews the RECIPIENT (peer invited).
+            activeParticipantRole = request.isIncoming ? 'sender' : 'receiver';
+
+            // Format timestamp
+            const formattedDate = new Date(request.createdAt).toLocaleString(undefined, {
+                year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
+
+            // 1. TOP SECTION: THE ACTUAL EXCHANGE REQUEST DETAILS (Requirement 3)
+            const exchangeRequestHtml = `
+                <div class="section-header-box mb-4" style="background-color: var(--canvas-bg);">
+                    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-2 border-dark flex-wrap gap-2">
+                        <div>
+                            <span class="badge bg-dark text-white font-monospace mb-1" style="font-size:0.7rem; letter-spacing:0.5px;">SKILL EXCHANGE REQUEST #${request.id}</span>
+                            <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                                <i class="bi bi-arrow-left-right text-primary"></i> ${escapeHtml(request.skillOfferedName)} <i class="bi bi-arrow-repeat text-muted"></i> ${escapeHtml(request.skillRequestedName)}
+                            </h5>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge ${getStatusBadge(request.status)} px-3 py-2 fs-6">${request.status}</span>
+                        </div>
+                    </div>
+
+                    <div class="row g-2 mb-3 small">
+                        <div class="col-md-6">
+                            <div class="p-2 rounded bg-white border border-1 border-dark">
+                                <span class="text-muted fw-bold text-uppercase d-block" style="font-size:0.68rem;">Requested by (Sender):</span>
+                                <strong class="text-dark fs-6"><i class="bi bi-person-fill text-primary me-1"></i>${escapeHtml(request.senderName)}</strong>
+                                <span class="text-muted small d-block">(${escapeHtml(request.senderEmail || 'College Peer')})</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-2 rounded bg-white border border-1 border-dark">
+                                <span class="text-muted fw-bold text-uppercase d-block" style="font-size:0.68rem;">Exchange Partner (Recipient):</span>
+                                <strong class="text-dark fs-6"><i class="bi bi-person-check-fill text-success me-1"></i>${escapeHtml(request.receiverName)}</strong>
+                                <span class="text-muted small d-block"><i class="bi bi-clock me-1"></i>Proposed on ${formattedDate}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Distinct Offered vs Requested Skills (Lavender vs Soft Pink) -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-5">
+                            <div class="skill-compare-box teach-box">
+                                <span class="text-uppercase fw-bold text-dark d-block mb-1" style="font-size:0.72rem; letter-spacing:0.5px;">
+                                    <i class="bi bi-mortarboard-fill me-1 text-primary"></i>THEY CAN TEACH (OFFERED SKILL)
+                                </span>
+                                <h4 class="fw-bold text-dark mb-2">${escapeHtml(request.skillOfferedName)}</h4>
+                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                    ${offeredSkillDetails.categoryName ? `<span class="badge bg-white text-dark border border-1 border-dark small">${escapeHtml(offeredSkillDetails.categoryName)}</span>` : ''}
+                                    <span class="badge bg-light text-dark border border-1 border-dark small">Proficiency: ${escapeHtml(offeredSkillDetails.proficiencyLevel || 'Competent')}</span>
+                                    ${offeredSkillDetails.isVerified 
+                                        ? '<span class="badge badge-verified border border-success small"><i class="bi bi-patch-check-fill me-1"></i>✓ Verified Skill</span>' 
+                                        : (offeredSkillDetails.verificationStatus === 'PENDING' 
+                                            ? '<span class="badge bg-warning text-dark border border-dark small"><i class="bi bi-hourglass-split me-1"></i>Audit Pending</span>' 
+                                            : '<span class="badge bg-light text-muted border border-secondary small">Not Verified</span>')}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-2 d-flex flex-column align-items-center justify-content-center text-center">
+                            <span class="brand-icon-box mx-auto my-1" style="width:44px; height:44px; font-size:1.2rem; box-shadow: 2px 2px 0px #18181b;">
+                                <i class="bi bi-arrow-left-right"></i>
+                            </span>
+                            <span class="small fw-bold text-muted text-uppercase" style="font-size:0.68rem; letter-spacing:0.5px;">Reciprocal Barter</span>
+                        </div>
+
+                        <div class="col-md-5">
+                            <div class="skill-compare-box learn-box">
+                                <span class="text-uppercase fw-bold text-dark d-block mb-1" style="font-size:0.72rem; letter-spacing:0.5px;">
+                                    <i class="bi bi-lightbulb-fill me-1 text-danger"></i>THEY WANT TO LEARN (REQUESTED SKILL)
+                                </span>
+                                <h4 class="fw-bold text-dark mb-2">${escapeHtml(request.skillRequestedName)}</h4>
+                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                    ${requestedSkillDetails.categoryName ? `<span class="badge bg-white text-dark border border-1 border-dark small">${escapeHtml(requestedSkillDetails.categoryName)}</span>` : ''}
+                                    <span class="badge bg-light text-dark border border-1 border-dark small">Priority: ${escapeHtml(requestedSkillDetails.urgencyLevel || 'Standard')}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Learning Mode & Personal Note -->
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 pt-2 border-top border-1 border-dark small">
+                        <div>
+                            <span class="badge badge-${request.learningMode ? request.learningMode.toLowerCase() : 'online'} me-2 py-2 px-3">
+                                <i class="bi bi-geo-alt me-1"></i>Learning Mode: ${request.learningMode || 'ONLINE'}
+                            </span>
+                        </div>
+                        <div class="text-dark">
+                            <strong class="text-muted text-uppercase" style="font-size:0.7rem;">Personal Message:</strong>
+                            <span class="fst-italic ms-1">"${escapeHtml(request.message || 'No personal proposal note included.')}"</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Offline Progress & Timeline section if offline mode
+            let offlineSectionHtml = '';
+            if (request.learningMode === 'OFFLINE' && data.offlineProgress) {
+                const op = data.offlineProgress;
+                const pct = Math.min(100, Math.max(0, parseInt(op.progressPercentage) || 0));
+                const STAGES = [
+                    "Exchange Accepted",
+                    "Offline Session Planned",
+                    "First Session Completed",
+                    "Learning in Progress",
+                    "Practice / Assignment",
+                    "Final Session",
+                    "Exchange Completed"
+                ];
+                const stageIdx = STAGES.indexOf(op.currentStage);
+
+                offlineSectionHtml = `
+                    <div class="offline-progress-container mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-2 border-dark flex-wrap gap-2">
+                            <div>
+                                <span class="badge bg-warning text-dark border border-1 border-dark font-monospace mb-1" style="font-size:0.68rem;">OFFLINE LEARNING IN PROGRESS</span>
+                                <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-geo-alt-fill text-danger me-1"></i>Offline Exchange Progress & Sessions</h5>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                ${viewer.canComplete || request.status === 'ACCEPTED' ? `
+                                    <button class="btn btn-sm btn-dark text-white fw-bold px-3" onclick="openStudentProgressModal(${request.id})">
+                                        <i class="bi bi-pencil-square me-1"></i> Update Session Progress
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+
+                        <!-- Location & Stage Meta -->
+                        <div class="row g-2 mb-3 small">
+                            <div class="col-md-4">
+                                <span class="text-muted d-block fw-bold text-uppercase" style="font-size:0.65rem;">Meeting Location:</span>
+                                <strong class="text-dark"><i class="bi bi-pin-map-fill text-danger me-1"></i>${escapeHtml(op.location || 'College Library / Campus Center')}</strong>
+                            </div>
+                            <div class="col-md-4">
+                                <span class="text-muted d-block fw-bold text-uppercase" style="font-size:0.65rem;">Current Stage:</span>
+                                <span class="badge-stage-brutal">${escapeHtml(op.currentStage || 'Exchange Accepted')}</span>
+                            </div>
+                            <div class="col-md-4">
+                                <span class="text-muted d-block fw-bold text-uppercase" style="font-size:0.65rem;">Target Dates:</span>
+                                <strong class="text-dark">${new Date(op.startDate).toLocaleDateString()} &bull; ${new Date(op.expectedCompletionDate).toLocaleDateString()}</strong>
+                            </div>
+                        </div>
+
+                        <!-- Progress Bar -->
+                        <div class="p-3 bg-white border border-2 border-dark rounded mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="small fw-bold text-uppercase text-muted" style="font-size:0.7rem;">Curriculum Advancement:</span>
+                                <span class="fw-bold font-monospace fs-6 text-primary">${pct}% Completed</span>
+                            </div>
+                            <div class="offline-progress-bar-outer" style="height: 14px;">
+                                <div class="offline-progress-bar-fill" style="width: ${pct}%;"></div>
+                            </div>
+                            ${op.nextActivity ? `
+                                <div class="mt-2 small">
+                                    <span class="text-muted fw-bold">Next Planned Activity:</span> <span class="text-dark fw-bold">${escapeHtml(op.nextActivity)}</span>
+                                </div>
+                            ` : ''}
+                        </div>
+
+                        <!-- Interactive Milestone Timeline -->
+                        <div class="section-header-box mb-2 p-2">
+                            <small class="fw-bold text-dark text-uppercase"><i class="bi bi-signpost-split me-1 text-primary"></i>Curriculum Timeline</small>
+                        </div>
+                        <div class="offline-v-timeline">
+                            ${STAGES.map((st, sIdx) => {
+                                const isDone = (stageIdx >= sIdx) || (pct >= ((sIdx + 1) * 14)) || (op.status === 'COMPLETED');
+                                const isCurr = stageIdx === sIdx;
+                                return `
+                                    <div class="offline-v-step ${isDone ? 'completed' : (isCurr ? 'current' : '')}">
+                                        <div class="offline-v-dot">
+                                            ${isDone ? '<i class="bi bi-check2"></i>' : (sIdx + 1)}
+                                        </div>
+                                        <div class="offline-v-card py-2">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <strong class="small text-dark">${st}</strong>
+                                                ${isDone ? '<span class="badge bg-success-subtle text-success border border-1 border-success font-monospace" style="font-size:0.65rem;">✓ Completed</span>' : (isCurr ? '<span class="badge bg-primary-subtle text-primary border border-1 border-primary font-monospace" style="font-size:0.65rem;">In Progress</span>' : '<span class="badge bg-light text-muted border font-monospace" style="font-size:0.65rem;">Pending</span>')}
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+
+                        <!-- Updates History -->
+                        ${op.updates && op.updates.length > 0 ? `
+                            <div class="section-header-box mt-3 mb-2 p-2">
+                                <small class="fw-bold text-dark text-uppercase"><i class="bi bi-journal-check me-1 text-success"></i>Logged Sessions (${op.updates.length})</small>
+                            </div>
+                            <div>
+                                ${op.updates.map((u, idx) => `
+                                    <div class="p-2 border border-1 border-dark rounded bg-light mb-2 small">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <strong>Session #${idx + 1} &bull; ${new Date(u.sessionDate).toLocaleDateString()}</strong>
+                                            <span class="badge bg-primary text-white font-monospace">${u.progressPercentage}%</span>
+                                        </div>
+                                        <div class="text-dark"><strong>Topics:</strong> ${escapeHtml(u.topicsCovered)}</div>
+                                        ${u.description ? `<div class="text-muted mt-1"><em>${escapeHtml(u.description)}</em></div>` : ''}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+
+            // Online Session & Zoom integration section if online mode
+            let onlineSectionHtml = '';
+            if (request.learningMode === 'ONLINE' && (request.status === 'ACCEPTED' || request.status === 'COMPLETED')) {
+                const otherStudentId = request.isIncoming ? request.senderId : request.receiverId;
+                const otherStudentName = request.isIncoming ? request.senderName : request.receiverName;
+
+                if (data.onlineSession) {
+                    const os = data.onlineSession;
+                    const statusClass = os.status === 'Live' ? 'bg-danger' : (os.status === 'Completed' ? 'bg-secondary' : 'bg-success');
+                    onlineSectionHtml = `
+                        <div class="card p-3 mb-4 border border-2 border-dark" style="background: #fdf2f8; box-shadow: 4px 4px 0 #18181b;">
+                            <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom border-1 border-dark flex-wrap gap-2">
+                                <span class="badge bg-dark text-white font-monospace" style="font-size:0.75rem;"><i class="bi bi-camera-video me-1"></i>ONLINE SKILL SESSION</span>
+                                <span class="badge ${statusClass} text-white font-monospace px-2 py-1">
+                                    ● ${os.status || 'Scheduled'}
+                                </span>
+                            </div>
+                            <div class="row g-2 mb-3 small">
+                                <div class="col-sm-6">
+                                    <strong class="text-muted d-block text-uppercase" style="font-size:0.68rem;">Skill:</strong>
+                                    <span class="fw-bold fs-6 text-dark">${escapeHtml(os.skillName || request.skillOfferedTitle)}</span>
+                                </div>
+                                <div class="col-sm-6">
+                                    <strong class="text-muted d-block text-uppercase" style="font-size:0.68rem;">Teacher:</strong>
+                                    <span class="fw-bold text-dark">${escapeHtml(os.teacherName || request.senderName)}</span>
+                                </div>
+                                <div class="col-sm-6">
+                                    <strong class="text-muted d-block text-uppercase" style="font-size:0.68rem;">Learner:</strong>
+                                    <span class="fw-bold text-dark">${escapeHtml(os.learnerName || request.receiverName)}</span>
+                                </div>
+                                <div class="col-sm-6">
+                                    <strong class="text-muted d-block text-uppercase" style="font-size:0.68rem;">Date & Time:</strong>
+                                    <span class="fw-bold text-dark">${os.scheduledDate} at ${os.scheduledTime} (${os.durationMinutes} mins)</span>
+                                </div>
+                                ${os.description ? `
+                                <div class="col-12 mt-1">
+                                    <strong class="text-muted d-block text-uppercase" style="font-size:0.68rem;">Agenda / Notes:</strong>
+                                    <span class="text-dark fst-italic">${escapeHtml(os.description)}</span>
+                                </div>
+                                ` : ''}
+                            </div>
+                            <div class="d-flex gap-2 flex-wrap pt-2 border-top border-1 border-dark">
+                                <a href="${os.zoomJoinUrl}" target="_blank" class="btn btn-sm btn-primary-custom">
+                                    <i class="bi bi-camera-video-fill me-1"></i> Join Session
+                                </a>
+                                <button type="button" class="btn btn-sm btn-outline-dark" onclick="shareOnlineSessionInChat(${os.id}, ${otherStudentId})">
+                                    <i class="bi bi-chat-quote-fill me-1"></i> Share in Chat
+                                </button>
+                                ${os.status !== 'Completed' ? `
+                                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="endOnlineSession(${os.id})">
+                                        <i class="bi bi-stop-circle me-1"></i> End Session
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                } else if (request.status === 'ACCEPTED') {
+                    onlineSectionHtml = `
+                        <div class="p-3 mb-4 rounded border border-2 border-dark" style="background:#faf5ff; box-shadow: 3px 3px 0 #18181b;">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                <div>
+                                    <h6 class="fw-bold mb-1"><i class="bi bi-camera-video me-1 text-primary"></i>Online Skill Exchange Session</h6>
+                                    <p class="small text-muted mb-0">No Zoom session scheduled yet. Coordinate with ${escapeHtml(otherStudentName)} to arrange an online meeting.</p>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-primary-custom" onclick="openScheduleOnlineSessionModal(${request.id}, '${escapeHtml(request.skillOfferedTitle)}', '${escapeHtml(otherStudentName)}')">
+                                    <i class="bi bi-calendar-plus me-1"></i> Schedule Online Session
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            // Participant Switcher Tabs
+            const participantTabsHtml = `
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3 pb-2 border-bottom border-2 border-dark">
+                    <div>
+                        <h6 class="fw-bold text-dark mb-0"><i class="bi bi-person-vcard-fill text-primary me-2"></i>Student Qualifications & Audit Record</h6>
+                        <small class="text-muted">Review the student's actual portfolio, projects, work experience, certificates, and verification status</small>
+                    </div>
+                    <div class="btn-group border border-2 border-dark rounded" style="box-shadow: 2px 2px 0px #18181b;">
+                        <button type="button" class="btn btn-sm ${activeParticipantRole === 'sender' ? 'btn-dark text-white' : 'btn-light text-dark'} fw-bold" onclick="switchParticipantTab('sender')">
+                            <i class="bi bi-person-fill me-1"></i>Sender: ${escapeHtml(sender.fullName)} ${request.isIncoming ? '(Peer)' : '(You)'}
+                        </button>
+                        <button type="button" class="btn btn-sm ${activeParticipantRole === 'receiver' ? 'btn-dark text-white' : 'btn-light text-dark'} fw-bold" onclick="switchParticipantTab('receiver')">
+                            <i class="bi bi-person-check-fill me-1"></i>Recipient: ${escapeHtml(receiver.fullName)} ${request.isIncoming ? '(You)' : '(Peer)'}
+                        </button>
+                    </div>
+                </div>
+                <div id="participantQualificationsContainer"></div>
+            `;
+
+            // Inject into modal body
+            document.getElementById('requestDetailModalBody').innerHTML = `
+                ${exchangeRequestHtml}
+                ${offlineSectionHtml}
+                ${onlineSectionHtml}
+                ${participantTabsHtml}
+            `;
+
+            // Render active qualifications container
+            renderActiveParticipantQualifications();
+
+            // Render contextual actions in modal footer
+            renderModalFooterActions(data);
+        }
+
+        function switchParticipantTab(role) {
+            activeParticipantRole = role;
+            if (!cachedModalData) return;
+
+            const btnGroup = document.querySelector('#requestDetailModalBody .btn-group');
+            if (btnGroup) {
+                const btns = btnGroup.querySelectorAll('button');
+                if (btns.length === 2) {
+                    if (role === 'sender') {
+                        btns[0].className = 'btn btn-sm btn-dark text-white fw-bold';
+                        btns[1].className = 'btn btn-sm btn-light text-dark fw-bold';
+                    } else {
+                        btns[0].className = 'btn btn-sm btn-light text-dark fw-bold';
+                        btns[1].className = 'btn btn-sm btn-dark text-white fw-bold';
+                    }
+                }
+            }
+
+            renderActiveParticipantQualifications();
+        }
+
+        function renderActiveParticipantQualifications() {
+            if (!cachedModalData) return;
+            const container = document.getElementById('participantQualificationsContainer');
+            if (!container) return;
+
+            const isSender = activeParticipantRole === 'sender';
+            const details = isSender ? (cachedModalData.senderDetails || {
+                profile: cachedModalData.sender,
+                projects: cachedModalData.projects || [],
+                experiences: cachedModalData.experiences || [],
+                certificates: cachedModalData.certificates || [],
+                verification: cachedModalData.verification || {}
+            }) : (cachedModalData.receiverDetails || {
+                profile: cachedModalData.receiver,
+                projects: cachedModalData.receiverProjects || [],
+                experiences: cachedModalData.receiverExperiences || [],
+                certificates: cachedModalData.receiverCertificates || [],
+                verification: cachedModalData.receiverVerification || {}
+            });
+
+            container.innerHTML = generateStudentQualificationsHtml(details, isSender ? 'Request Sender' : 'Proposal Recipient');
+        }
+
+        function generateStudentQualificationsHtml(details, roleLabel) {
+            const student = details.profile || {};
+            const projects = details.projects || [];
+            const experiences = details.experiences || [];
+            const certificates = details.certificates || [];
+            const verification = details.verification || {};
+
+            // Fallback avatar
+            const fallbackAvatar = `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(student.fullName || 'Student')}`;
+            const avatarSrc = student.avatarUrl || fallbackAvatar;
+
+            // 1. Profile Header
+            const profileHeaderHtml = `
+                <div class="card-detail-item mb-4" style="background:#ffffff;">
+                    <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-2">
+                        <span class="text-uppercase fw-bold text-muted" style="font-size:0.7rem; letter-spacing:0.5px;">${escapeHtml(roleLabel)} Profile</span>
+                        ${student.verified 
+                            ? '<span class="status-pill-brutal badge-verified-brutal"><i class="bi bi-patch-check-fill me-1"></i>✓ Verified Student Member</span>' 
+                            : '<span class="status-pill-brutal badge-unaudited-brutal">Student Peer</span>'}
+                    </div>
+
+                    <div class="d-flex align-items-start gap-3 flex-wrap flex-sm-nowrap">
+                        <img src="${avatarSrc}" alt="${escapeHtml(student.fullName || '')}" class="avatar-modal-lg" onerror="this.src='${fallbackAvatar}'">
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <h4 class="fw-bold text-dark mb-0">${escapeHtml(student.fullName || 'Student')}</h4>
+                                <span class="badge bg-light text-dark border border-1 border-dark small" style="font-family: var(--font-mono);">
+                                    <i class="bi bi-award-fill text-dark me-1"></i>${(student.averageRating || 5.0).toFixed(1)} / 5
+                                </span>
+                                <span class="badge bg-light text-dark border border-1 border-dark small">
+                                    <i class="bi bi-arrow-repeat text-primary me-1"></i>${student.completedExchangesCount || 0} Exchanges Completed
+                                </span>
+                            </div>
+
+                            <p class="text-muted small mb-2 mt-1">
+                                <i class="bi bi-envelope-at me-1"></i>${escapeHtml(student.email || 'Email not provided')} &bull; 
+                                <i class="bi bi-mortarboard me-1"></i>${escapeHtml(student.department || 'Not provided')} &bull; 
+                                <i class="bi bi-calendar3 me-1"></i>${escapeHtml(student.yearOfStudy || 'Not provided')} &bull; 
+                                <span>${escapeHtml(student.college || 'College of Engineering & Technology')}</span>
+                            </p>
+
+                            <div class="p-2 rounded bg-light border border-1 border-dark small text-dark">
+                                <strong class="d-block text-muted text-uppercase mb-1" style="font-size:0.68rem;">Short Bio:</strong>
+                                ${student.bio ? `<span>"${escapeHtml(student.bio)}"</span>` : '<span class="text-muted fst-italic">Not provided.</span>'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // 2. Skills Overview
+            const teachSkills = student.teachingSkills || [];
+            const learnSkills = student.learningSkills || [];
+
+            const skillsHtml = `
+                <div class="card-detail-item mb-4">
+                    <h6 class="section-title mb-3">
+                        <i class="bi bi-cpu text-primary"></i> Skills Overview
+                    </h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <span class="text-uppercase fw-bold text-muted d-block mb-2 small">Skills They Can Teach:</span>
+                            <div class="d-flex flex-wrap gap-2">
+                                ${teachSkills.length > 0 ? teachSkills.map(ts => `
+                                    <span class="badge p-2 bg-light text-dark border border-1 border-dark d-flex align-items-center gap-1">
+                                        <strong>${escapeHtml(ts.skillName)}</strong>
+                                        <span class="text-muted ms-1">(${escapeHtml(ts.levelOrUrgency || 'Intermediate')})</span>
+                                        ${ts.verified || ts.verificationStatus === 'VERIFIED' ? '<i class="bi bi-patch-check-fill text-success ms-1" title="Verified"></i>' : ''}
+                                    </span>
+                                `).join('') : '<span class="text-muted small">No other teaching skills listed.</span>'}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <span class="text-uppercase fw-bold text-muted d-block mb-2 small">Skills They Want to Learn:</span>
+                            <div class="d-flex flex-wrap gap-2">
+                                ${learnSkills.length > 0 ? learnSkills.map(ls => `
+                                    <span class="badge p-2 bg-light text-dark border border-1 border-dark">
+                                        ${escapeHtml(ls.skillName)}
+                                        <span class="text-muted ms-1">(${escapeHtml(ls.levelOrUrgency || 'Medium')})</span>
+                                    </span>
+                                `).join('') : '<span class="text-muted small">No wishlist skills listed.</span>'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // 3. Projects Portfolio
+            let projectsHtml = `
+                <div class="card-detail-item mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="section-title mb-0">
+                            <i class="bi bi-folder-check text-primary"></i> Projects Portfolio (${projects.length})
+                        </h6>
+                        <span class="badge bg-light text-dark border border-1 border-dark small">Hands-on Work Proof</span>
+                    </div>
+            `;
+
+            if (projects.length === 0) {
+                projectsHtml += `
+                    <div class="empty-state-notice">
+                        <i class="bi bi-journal-code fs-4 d-block mb-1"></i>
+                        No portfolio projects added by this student yet.
+                    </div>
+                `;
+            } else {
+                projectsHtml += projects.map(p => `
+                    <div class="p-3 mb-2 rounded bg-light border border-1 border-dark">
+                        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-1">
+                            <div>
+                                <h6 class="fw-bold text-dark mb-0">
+                                    <i class="bi bi-code-slash text-primary me-1"></i>${escapeHtml(p.title)}
+                                </h6>
+                                ${p.isOfferedSkillProject ? '<span class="badge bg-primary text-white border border-dark small mt-1" style="font-size:0.68rem;">Offered Skill Demonstration Project</span>' : ''}
+                            </div>
+                            <span class="status-pill-brutal ${p.reviewStatus === 'VERIFIED' ? 'badge-verified-brutal' : (p.reviewStatus === 'PENDING' ? 'badge-pending-brutal' : 'badge-unaudited-brutal')}">
+                                ${p.reviewStatus === 'VERIFIED' ? '✓ Reviewed & Verified' : (p.reviewStatus === 'PENDING' ? 'Audit In Progress' : 'Student Portfolio')}
+                            </span>
+                        </div>
+                        <p class="small text-dark mb-2">${escapeHtml(p.description || 'Not provided.')}</p>
+                        
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 pt-2 border-top border-1 border-secondary small">
+                            <div>
+                                <strong class="text-muted" style="font-size:0.75rem;">Technologies:</strong>
+                                <span class="text-dark fw-bold">${escapeHtml(p.technologies || 'Not specified')}</span>
+                            </div>
+                            <div class="d-flex gap-2">
+                                ${p.link ? `
+                                    <a href="${escapeHtml(p.link)}" target="_blank" class="btn btn-xs btn-outline-dark px-2 py-1" style="font-size:0.75rem;">
+                                        <i class="bi bi-github me-1"></i>Repository / Demo
+                                    </a>
+                                ` : ''}
+                                ${p.proofUrl ? `
+                                    <button class="btn btn-xs btn-primary-custom px-2 py-1" style="font-size:0.75rem;" onclick="previewDocument('${escapeHtml(p.proofUrl)}', '${escapeHtml(p.title)} Proof')">
+                                        <i class="bi bi-file-earmark-image me-1"></i>View Proof
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            projectsHtml += `</div>`;
+
+            // 4. Practical Experience
+            let experiencesHtml = `
+                <div class="card-detail-item mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="section-title mb-0">
+                            <i class="bi bi-briefcase text-primary"></i> Practical Experience (${experiences.length})
+                        </h6>
+                        <span class="badge bg-light text-dark border border-1 border-dark small">Leadership & Teaching History</span>
+                    </div>
+            `;
+
+            if (experiences.length === 0) {
+                experiencesHtml += `
+                    <div class="empty-state-notice">
+                        <i class="bi bi-building fs-4 d-block mb-1"></i>
+                        No practical experience records provided.
+                    </div>
+                `;
+            } else {
+                experiencesHtml += experiences.map(e => `
+                    <div class="p-3 mb-2 rounded bg-light border border-1 border-dark">
+                        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-1">
+                            <div>
+                                <h6 class="fw-bold text-dark mb-0">
+                                    <i class="bi bi-award text-primary me-1"></i>${escapeHtml(e.title || e.role)}
+                                </h6>
+                                <span class="text-muted small fw-bold"><i class="bi bi-building me-1"></i>${escapeHtml(e.organization || 'Not provided')}</span>
+                            </div>
+                            <span class="status-pill-brutal ${e.reviewStatus === 'VERIFIED' ? 'badge-verified-brutal' : (e.reviewStatus === 'PENDING' ? 'badge-pending-brutal' : 'badge-unaudited-brutal')}">
+                                ${e.reviewStatus === 'VERIFIED' ? '✓ Validated Experience' : (e.reviewStatus === 'PENDING' ? 'Audit In Progress' : 'Self-Reported')}
+                            </span>
+                        </div>
+                        <p class="small text-dark mb-2">${escapeHtml(e.description || 'Not provided.')}</p>
+                        <div class="small text-muted pt-2 border-top border-1 border-secondary">
+                            <i class="bi bi-clock-history me-1"></i><strong>Duration:</strong> ${escapeHtml(e.duration || 'Not specified')}
+                            ${e.startDate ? ` &bull; <span>${escapeHtml(e.startDate)} to ${escapeHtml(e.endDate || 'Present')}</span>` : ''}
+                        </div>
+                    </div>
+                `).join('');
+            }
+            experiencesHtml += `</div>`;
+
+            // 5. Certificates & Verification Proofs
+            let certHtml = `
+                <div class="card-detail-item mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="section-title mb-0">
+                            <i class="bi bi-patch-check text-primary"></i> Certificates & Verification Proofs (${certificates.length})
+                        </h6>
+                        <span class="badge bg-light text-dark border border-1 border-dark small">Official Documents</span>
+                    </div>
+            `;
+
+            if (certificates.length === 0) {
+                certHtml += `
+                    <div class="empty-state-notice">
+                        <i class="bi bi-file-earmark-x fs-4 d-block mb-1"></i>
+                        No certificates uploaded for this profile.
+                    </div>
+                `;
+            } else {
+                certHtml += certificates.map(c => `
+                    <div class="p-3 mb-2 rounded bg-light border border-1 border-dark">
+                        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                            <div>
+                                <h6 class="fw-bold text-dark mb-0">
+                                    <i class="bi bi-file-earmark-pdf text-danger me-1"></i>${escapeHtml(c.title)}
+                                </h6>
+                                <p class="text-muted small mb-0">
+                                    <i class="bi bi-building me-1"></i>${escapeHtml(c.issuingOrganization || 'Certification Authority')} &bull; Skill: <strong>${escapeHtml(c.skillName)}</strong>
+                                    ${c.reviewedDate ? ` &bull; <span class="text-muted">${new Date(c.reviewedDate).toLocaleDateString()}</span>` : ''}
+                                </p>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="status-pill-brutal ${c.verificationStatus === 'VERIFIED' ? 'badge-verified-brutal' : (c.verificationStatus === 'NEEDS_RESUBMISSION' ? 'badge-needs-resubmission-brutal' : 'badge-pending-brutal')}">
+                                    ${c.verificationStatus === 'VERIFIED' ? '✓ Verified Certificate' : (c.verificationStatus === 'NEEDS_RESUBMISSION' ? '⚠ Update Requested' : 'Pending Review')}
+                                </span>
+                                ${c.documentUrl ? `
+                                    <button class="btn btn-sm btn-primary-custom px-2 py-1" onclick="previewDocument('${escapeHtml(c.documentUrl)}', '${escapeHtml(c.title)}')">
+                                        <i class="bi bi-eye me-1"></i>View Document
+                                    </button>
+                                ` : '<span class="text-muted small fst-italic">No document attached</span>'}
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            certHtml += `</div>`;
+
+            // 6. Verification Summary Box
+            const auditHtml = `
+                <div class="card-detail-item mb-2" style="background:#f8fafc;">
+                    <h6 class="section-title mb-2">
+                        <i class="bi bi-shield-check text-primary"></i> Verification Summary
+                    </h6>
+                    <div class="row g-2 small mb-2">
+                        <div class="col-sm-6">
+                            <span class="text-muted">Offered Skill Status:</span>
+                            <strong class="text-dark ms-1">${verification.offeredSkillStatus || 'NOT_VERIFIED'}</strong>
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-muted">Project Audit:</span>
+                            <strong class="text-dark ms-1">${verification.hasReviewedProjects ? 'Reviewed & Validated ✓' : 'Self-Reported Only'}</strong>
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-muted">Experience Audit:</span>
+                            <strong class="text-dark ms-1">${verification.hasReviewedExperience ? 'Reviewed & Validated ✓' : 'Self-Reported Only'}</strong>
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-muted">Certificate Audit:</span>
+                            <strong class="text-dark ms-1">${verification.hasVerifiedCertificate ? 'Verified Certificate on Record ✓' : 'None Verified'}</strong>
+                        </div>
+                    </div>
+                    ${verification.adminComment ? `
+                        <div class="p-2 rounded bg-white border border-1 border-secondary small text-dark mt-2">
+                            <strong class="d-block text-muted text-uppercase mb-1" style="font-size:0.68rem;"><i class="bi bi-chat-left-quote me-1"></i>Administrator Audit Feedback:</strong>
+                            "${escapeHtml(verification.adminComment)}"
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+
+            return `
+                ${profileHeaderHtml}
+                ${skillsHtml}
+                ${projectsHtml}
+                ${experiencesHtml}
+                ${certHtml}
+                ${auditHtml}
+            `;
+        }
+
+        function renderModalFooterActions(data) {
+            const { request, viewer } = data;
+            let actionButtonsHtml = '';
+
+            if (viewer.canAcceptOrReject) {
+                actionButtonsHtml = `
+                    <button class="btn btn-success px-4" onclick="acceptProposalFromModal(${request.id})">
+                        <i class="bi bi-check2 me-1"></i> Accept Request
+                    </button>
+                    <button class="btn btn-outline-danger px-3" onclick="rejectProposalFromModal(${request.id})">
+                        <i class="bi bi-x me-1"></i> Decline Request
+                    </button>
+                `;
+            } else if (viewer.canChat) {
+                const partnerId = request.isIncoming ? request.senderId : request.receiverId;
+                actionButtonsHtml = `
+                    <a href="chat.html?partnerId=${partnerId}" class="btn btn-primary-custom px-4">
+                        <i class="bi bi-chat-dots me-1"></i> Open Chat
+                    </a>
+                    ${viewer.canComplete ? `
+                        <button class="btn btn-outline-custom" onclick="completeProposalFromModal(${request.id})">
+                            <i class="bi bi-check2-all me-1"></i> Mark Completed
+                        </button>
+                    ` : ''}
+                `;
+            } else if (request.status === 'COMPLETED') {
+                actionButtonsHtml = `
+                    <a href="exchange-history.html" class="btn btn-outline-custom">
+                        <i class="bi bi-chat-square-text me-1"></i> View Exchange Feedback
+                    </a>
+                `;
+            } else if (request.isSender && request.status === 'PENDING') {
+                actionButtonsHtml = `
+                    <span class="badge bg-warning text-dark border border-dark p-2">
+                        <i class="bi bi-hourglass-split me-1"></i>Awaiting Peer Review
+                    </span>
+                `;
+            }
+
+            document.getElementById('modalActionButtons').innerHTML = actionButtonsHtml;
+        }
+
+        // =============================================================
+        // SAFE DOCUMENT PREVIEW FUNCTION
+        // =============================================================
+        function previewDocument(docUrl, title) {
+            if (!docUrl) {
+                showAlert("Document link not available.", "warning");
+                return;
+            }
+
+            const cleanUrl = docUrl.startsWith('/') ? docUrl.substring(1) : docUrl;
+            document.getElementById('documentPreviewTitle').innerText = title || 'Document Preview';
+            document.getElementById('documentExternalLink').href = cleanUrl;
+
+            const isPdf = cleanUrl.toLowerCase().endsWith('.pdf');
+            const isImage = cleanUrl.toLowerCase().match(/\.(png|jpg|jpeg|webp|gif|svg)$/);
+
+            const previewContainer = document.getElementById('documentPreviewBody');
+
+            if (isPdf) {
+                previewContainer.innerHTML = `
+                    <div class="preview-iframe-wrapper">
+                        <iframe src="${cleanUrl}" width="100%" height="100%" style="border:none;">
+                            <div class="p-4 text-center">
+                                <p>Your browser does not support inline PDF preview.</p>
+                                <a href="${cleanUrl}" target="_blank" class="btn btn-dark">Open Document</a>
+                            </div>
+                        </iframe>
+                    </div>
+                `;
+            } else if (isImage) {
+                previewContainer.innerHTML = `
+                    <div class="text-center p-2 bg-light border border-2 border-dark rounded">
+                        <img src="${cleanUrl}" alt="${escapeHtml(title)}" class="img-fluid rounded" style="max-height: 520px; object-fit: contain;">
+                    </div>
+                `;
+            } else {
+                previewContainer.innerHTML = `
+                    <div class="empty-state-notice">
+                        <i class="bi bi-file-earmark-text fs-2 d-block mb-2 text-primary"></i>
+                        <h6 class="fw-bold mb-1">Direct Preview Not Supported for This File Type</h6>
+                        <p class="small text-muted mb-3">This document format cannot be rendered inside the interactive frame.</p>
+                        <a href="${cleanUrl}" target="_blank" class="btn btn-primary-custom">
+                            <i class="bi bi-box-arrow-up-right me-1"></i>Open or Download Document
+                        </a>
+                    </div>
+                `;
+            }
+
+            const docModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('documentPreviewModal'));
+            docModal.show();
+        }
+
+        // =============================================================
+        // MODAL ACTION TRIGGERS
+        // =============================================================
+        async function acceptProposalFromModal(id) {
+            await acceptProposal(id);
+            bootstrap.Modal.getInstance(document.getElementById('requestDetailModal'))?.hide();
+        }
+
+        async function rejectProposalFromModal(id) {
+            await rejectProposal(id);
+            bootstrap.Modal.getInstance(document.getElementById('requestDetailModal'))?.hide();
+        }
+
+        async function completeProposalFromModal(id) {
+            await completeProposal(id);
+            bootstrap.Modal.getInstance(document.getElementById('requestDetailModal'))?.hide();
+        }
+
         async function acceptProposal(id) {
             const res = await API.put(`/api/exchange-requests/${id}/accept`);
             if (res && res.success) {
                 showAlert("Proposal accepted! You can now start communicating and scheduling sessions.", "success");
-                loadRequests();
+                await loadRequests();
+            } else {
+                showAlert(res && res.message ? res.message : "Failed to accept proposal", "danger");
             }
         }
 
@@ -241,7 +1763,9 @@
             const res = await API.put(`/api/exchange-requests/${id}/reject`);
             if (res && res.success) {
                 showAlert("Proposal declined.", "info");
-                loadRequests();
+                await loadRequests();
+            } else {
+                showAlert(res && res.message ? res.message : "Failed to decline proposal", "danger");
             }
         }
 
@@ -249,7 +1773,9 @@
             const res = await API.put(`/api/exchange-requests/${id}/complete`);
             if (res && res.success) {
                 showAlert("Skill exchange completed! Please leave a review for your peer.", "success");
-                loadRequests();
+                await loadRequests();
+            } else {
+                showAlert(res && res.message ? res.message : "Failed to complete exchange", "danger");
             }
         }
     </script>

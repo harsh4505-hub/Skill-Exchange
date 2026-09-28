@@ -178,15 +178,26 @@ async function runTests() {
     // ----------------------------------------------------
     console.log('\n--- TEST SUITE 4: Landing Page vs Home Page ---');
 
-    // 4a. Check landing.html is removed and redirects to /index.html
+    // 4a. Check landing.html returns 200 OK as the official starting page
     const landingRes = await makeRequest({
         hostname: 'localhost',
         port: 8080,
         path: '/landing.html',
         method: 'GET'
     });
-    assert('landing.html is removed and redirects (302) to /index.html', 
-        landingRes.statusCode === 302 && landingRes.headers.location === '/index.html'
+    assert('landing.html is active start page returning HTTP 200', 
+        landingRes.statusCode === 200 && landingRes.raw.includes('SKILL') && landingRes.raw.includes('EXCHANGE')
+    );
+
+    // 4a-clean. Check clean URL /landing rewrite returns 200 OK
+    const landingCleanRes = await makeRequest({
+        hostname: 'localhost',
+        port: 8080,
+        path: '/landing',
+        method: 'GET'
+    });
+    assert('/landing clean URL rewrite returns HTTP 200', 
+        landingCleanRes.statusCode === 200 && landingCleanRes.raw.includes('landing-body')
     );
 
     // 4b. Check index.html is normal working Home Page
@@ -432,6 +443,158 @@ async function runTests() {
     });
     assert('Admin session retains ROLE_ADMIN in /api/auth/current-user', 
         adminMe.statusCode === 200 && adminMe.data.data.role === 'ROLE_ADMIN'
+    );
+
+    // ----------------------------------------------------
+    // TEST SUITE 9: Complete Sender Details When Opening Skill Exchange Request
+    // ----------------------------------------------------
+    console.log('\n--- TEST SUITE 9: Complete Sender Details When Opening Skill Exchange Request ---');
+
+    // 9a. Log in as Harsh (userId 2)
+    const harshLogin = await makeRequest({
+        hostname: 'localhost',
+        port: 8080,
+        path: '/api/auth/login',
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+    }, {
+        email: 'harsh@mgmmumbai.ac.in',
+        password: 'password123'
+    });
+    assert('Harsh logs in as student', harshLogin.statusCode === 200 && harshLogin.data.success);
+
+    // 9b. Fetch incoming requests
+    const myRequests = await makeRequest({
+        hostname: 'localhost',
+        port: 8080,
+        path: '/api/exchange-requests',
+        method: 'GET'
+    });
+    assert('Fetch exchange requests list returns array', myRequests.statusCode === 200 && Array.isArray(myRequests.data.data));
+
+    // 9c. Open Request 3 details (Incoming from Sejal Sharma)
+    const req3Details = await makeRequest({
+        hostname: 'localhost',
+        port: 8080,
+        path: '/api/exchange-requests/3/details',
+        method: 'GET'
+    });
+    assert('Participant can open request 3 details (200 OK)', req3Details.statusCode === 200 && req3Details.data.success);
+
+    const r3 = req3Details.data.data;
+    assert('Request 3 details return actual sender name (Sejal Sharma)', r3.sender.fullName === 'Sejal Sharma');
+    assert('Request 3 details return sender college email', r3.sender.email === 'sejal@mgmmumbai.ac.in');
+    assert('Request 3 details return sender department and academic year', r3.sender.department === 'Information Technology' && r3.sender.yearOfStudy === '2nd Year');
+    assert('Request 3 details return sender bio', typeof r3.sender.bio === 'string' && r3.sender.bio.length > 0);
+    assert('Request 3 details return sender avatar URL', typeof r3.sender.avatarUrl === 'string' && r3.sender.avatarUrl.length > 0);
+    assert('Request 3 details return offered skill (Graphic Design) and requested skill (HTML/CSS/JS)', 
+        r3.request.skillOfferedName === 'Graphic Design' && r3.request.skillRequestedName === 'HTML/CSS/JS'
+    );
+    assert('Request 3 details return learning mode (ONLINE) and valid status', 
+        r3.request.learningMode === 'ONLINE' && ['PENDING', 'ACCEPTED'].includes(r3.request.status)
+    );
+    assert('Request 3 details return sender portfolio projects', Array.isArray(r3.projects) && r3.projects.length > 0);
+    assert('Request 3 details return sender practical experiences', Array.isArray(r3.experiences) && r3.experiences.length > 0);
+    assert('Request 3 details return sender certificates', Array.isArray(r3.certificates) && r3.certificates.length > 0);
+    assert('Request 3 details return verification audit summary', 
+        r3.verification && typeof r3.verification.isStudentVerified === 'boolean' && r3.verification.offeredSkillStatus === 'NEEDS_RESUBMISSION'
+    );
+    assert('Request 3 details do NOT expose passwords, tokens, or hashes', 
+        !JSON.stringify(r3).includes('password') && !JSON.stringify(r3).includes('hashOtp')
+    );
+
+    // 9d. Open Request 4 details (Incoming from Raza Khan)
+    const req4Details = await makeRequest({
+        hostname: 'localhost',
+        port: 8080,
+        path: '/api/exchange-requests/4/details',
+        method: 'GET'
+    });
+    assert('Open request 4 details returns 200 OK', req4Details.statusCode === 200 && req4Details.data.success);
+    const r4 = req4Details.data.data;
+    assert('Request 4 sender is Raza Khan', r4.sender.fullName === 'Raza Khan');
+    assert('Request 4 offered skill is Python with PENDING verification', 
+        r4.offeredSkillDetails.skillName === 'Python' && r4.offeredSkillDetails.verificationStatus === 'PENDING'
+    );
+    assert('Request 4 returns Raza project: Automated Data Scraping & Analysis Pipeline', 
+        r4.projects.some(p => p.title.includes('Data Scraping'))
+    );
+    assert('Request 4 returns Raza experience: Lead Python Developer', 
+        r4.experiences.some(e => e.title.includes('Python Developer'))
+    );
+    assert('Request 4 returns Raza certificate: HackerRank Python badge', 
+        r4.certificates.some(c => c.title.includes('HackerRank') && c.documentUrl.includes('raza_python.pdf'))
+    );
+
+    // 9e. Open Sent Proposal Request 1 (Sent by Harsh to Sejal)
+    const req1Details = await makeRequest({
+        hostname: 'localhost',
+        port: 8080,
+        path: '/api/exchange-requests/1/details',
+        method: 'GET'
+    });
+    assert('Open sent request 1 returns 200 OK', req1Details.statusCode === 200 && req1Details.data.success);
+    const r1 = req1Details.data.data;
+    assert('Sent request 1 identifies viewer as sender', r1.request.isSender === true);
+    assert('Sent request 1 returns recipient (Sejal Sharma)', r1.receiver.fullName === 'Sejal Sharma');
+    assert('Sent request 1 returns sender portfolio projects (Microservices)', 
+        r1.projects.some(p => p.title.includes('Microservices'))
+    );
+
+    // 9f. Security & Authorization: Access Denied for Unrelated Request (Request 2 between Raza and Udipti)
+    const req2Unauthorized = await makeRequest({
+        hostname: 'localhost',
+        port: 8080,
+        path: '/api/exchange-requests/2/details',
+        method: 'GET'
+    });
+    assert('Unauthorized non-participant student cannot access request 2 details (403 Forbidden)', 
+        req2Unauthorized.statusCode === 403 && !req2Unauthorized.data.success
+    );
+
+    // 9g. Security & Authorization: Private Document Protection
+    // Harsh has no exchange relationship with Udipti -> cannot access Udipti's debate certificate
+    const debateCertUnauthorized = await makeRequest({
+        hostname: 'localhost',
+        port: 8080,
+        path: '/uploads/certificates/debate.pdf',
+        method: 'GET'
+    });
+    assert('Unauthorized student cannot access private certificate of stranger without exchange (403 Forbidden)', 
+        debateCertUnauthorized.statusCode === 403
+    );
+
+    // Harsh accesses his own certificate -> Allowed (200 OK)
+    const ownCertAuthorized = await makeRequest({
+        hostname: 'localhost',
+        port: 8080,
+        path: '/uploads/certificates/harsh_java.pdf',
+        method: 'GET'
+    });
+    assert('Student can access their own certificate (200 OK)', 
+        ownCertAuthorized.statusCode === 200 && ownCertAuthorized.headers['content-type'] === 'application/pdf'
+    );
+
+    // Harsh accesses Sejal's certificate (Harsh has exchange request with Sejal) -> Allowed (200 OK)
+    const partnerCertAuthorized = await makeRequest({
+        hostname: 'localhost',
+        port: 8080,
+        path: '/uploads/certificates/sejal_photoshop.pdf',
+        method: 'GET'
+    });
+    assert('Student can access certificate of exchange partner (200 OK)', 
+        partnerCertAuthorized.statusCode === 200 && partnerCertAuthorized.headers['content-type'] === 'application/pdf'
+    );
+
+    // 9h. Workflow Actions: Accept Request 4
+    const acceptReq4 = await makeRequest({
+        hostname: 'localhost',
+        port: 8080,
+        path: '/api/exchange-requests/4/accept',
+        method: 'PUT'
+    });
+    assert('Accepting incoming proposal updates status to ACCEPTED (200 OK)', 
+        acceptReq4.statusCode === 200 && acceptReq4.data.data.status === 'ACCEPTED'
     );
 
     console.log('\n====================================================');

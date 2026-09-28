@@ -4,6 +4,7 @@ import com.skillexchange.dto.AdminStatsDto;
 import com.skillexchange.dto.StudentProfileDto;
 import com.skillexchange.entity.StudentProfile;
 import com.skillexchange.entity.User;
+import com.skillexchange.exception.BadRequestException;
 import com.skillexchange.exception.ResourceNotFoundException;
 import com.skillexchange.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,7 +62,7 @@ public class AdminService {
 
     public List<StudentProfileDto> getAllStudents() {
         return profileRepository.findAll().stream()
-                .filter(p -> !"ROLE_ADMIN".equals(p.getUser().getRole()))
+                .filter(p -> !p.getUser().isAdmin())
                 .map(profileService::mapToDto)
                 .collect(Collectors.toList());
     }
@@ -70,15 +71,44 @@ public class AdminService {
     public boolean toggleUserStatus(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userId));
+        if (user.isSuperAdmin()) {
+            throw new BadRequestException("The permanent Super Admin account cannot be deactivated or suspended.");
+        }
         user.setActive(!user.isActive());
         userRepository.save(user);
         return user.isActive();
     }
 
     @Transactional
+    public String updateUserRole(Long userId, String requestedRole) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userId));
+        if (user.isSuperAdmin()) {
+            throw new BadRequestException("The permanent Super Admin role cannot be demoted or modified.");
+        }
+
+        String normalized = requestedRole != null ? requestedRole.trim().toUpperCase() : "ROLE_STUDENT";
+        String targetRole = User.ROLE_STUDENT;
+        if ("ADMIN".equals(normalized) || User.ROLE_ADMIN.equals(normalized)) {
+            targetRole = User.ROLE_ADMIN;
+        } else if ("STUDENT".equals(normalized) || User.ROLE_STUDENT.equals(normalized)) {
+            targetRole = User.ROLE_STUDENT;
+        } else {
+            throw new BadRequestException("Invalid role. Only ADMIN and STUDENT roles can be assigned.");
+        }
+
+        user.setRole(targetRole);
+        userRepository.save(user);
+        return targetRole;
+    }
+
+    @Transactional
     public boolean toggleBlockStudent(Long profileId) {
         StudentProfile profile = profileRepository.findById(profileId)
                 .orElseThrow(() -> new ResourceNotFoundException("Student profile not found: " + profileId));
+        if (profile.getUser().isSuperAdmin()) {
+            throw new BadRequestException("The permanent Super Admin cannot be blocked.");
+        }
         profile.setBlocked(!profile.isBlocked());
         profileRepository.save(profile);
         return profile.isBlocked();

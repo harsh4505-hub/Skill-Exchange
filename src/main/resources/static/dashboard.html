@@ -119,7 +119,7 @@
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
                             <span class="text-muted small fw-bold text-uppercase" style="letter-spacing: 0.05em; font-size: 0.72rem;">Completed & Rating</span>
-                            <h3 class="fw-bold mt-1 mb-0" id="statCompleted">0 <small class="fs-6 text-warning">★ 0.0</small></h3>
+                            <h3 class="fw-bold mt-1 mb-0" id="statCompleted">0 <small class="fs-6 text-muted">0.0 / 5</small></h3>
                         </div>
                         <div class="border border-2 border-dark rounded d-flex align-items-center justify-content-center bg-light" style="width: 44px; height: 44px; box-shadow: 2px 2px 0px var(--border-color);">
                             <i class="bi bi-trophy fs-5 text-warning"></i>
@@ -216,7 +216,7 @@
 
                 document.getElementById('statTeachCount').innerText = p.teachingSkills ? p.teachingSkills.length : 0;
                 document.getElementById('statLearnCount').innerText = p.learningSkills ? p.learningSkills.length : 0;
-                document.getElementById('statCompleted').innerHTML = `${p.completedExchangesCount} <small class="fs-6 text-warning">★ ${(p.averageRating || 0).toFixed(1)}</small>`;
+                document.getElementById('statCompleted').innerHTML = `${p.completedExchangesCount} <small class="fs-6 text-muted">${(p.averageRating || 0).toFixed(1)} / 5</small>`;
             }
 
             // Active exchanges count
@@ -250,7 +250,7 @@
                                         <h6 class="mb-0 fw-bold">${m.studentName}</h6>
                                         ${(m.skillTheyTeachYouVerified || m.verified) ? '<span class="badge badge-verified" style="font-size:0.65rem;"><i class="bi bi-patch-check-fill"></i> ✓ Verified</span>' : ''}
                                     </div>
-                                    <small class="text-muted">${m.department} &bull; Rating: <strong class="text-dark">${(m.averageRating || 0).toFixed(1)}★</strong></small>
+                                    <small class="text-muted">${m.department} &bull; Rating: <strong class="text-dark">${(m.averageRating || 0).toFixed(1)} / 5</strong></small>
                                 </div>
                             </div>
                             <div class="d-flex align-items-center gap-2">

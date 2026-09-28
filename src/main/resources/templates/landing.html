@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Skill Exchange — Peer-to-Peer Campus Learning Platform</title>
+    <meta name="description" content="Exchange skills with campus peers: teach what you know, learn what you need. A reciprocal, peer-to-peer university learning network with verified skill credentials.">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap 5 CSS & Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="css/style.css">
+
+    <!-- Pre-check: If already authenticated, bypass landing page directly to Main Website -->
+    <script>
+        (function() {
+            fetch('/api/auth/current-user')
+                .then(r => r.json())
+                .then(res => {
+                    if (res && res.success && res.data && res.data.authenticated) {
+                        try {
+                            localStorage.setItem('landingPageVisited', 'true');
+                            localStorage.setItem('se_landing_viewed', 'true');
+                        } catch (e) {}
+                        window.location.replace('index.html');
+                    }
+                })
+                .catch(() => {});
+        })();
+
+        // Handler to mark landing page as seen ONLY when user enters authentication flow
+        function enterAuthFlow(targetUrl) {
+            try {
+                localStorage.setItem('landingPageVisited', 'true');
+                localStorage.setItem('se_landing_viewed', 'true');
+            } catch (e) {
+                console.error('Storage access error:', e);
+            }
+            window.location.href = targetUrl || 'login.html';
+        }
+    </script>
+
+    <style>
+        /* ===================================================================
+           NEO-BRUTALIST LANDING PAGE STYLING (Pastels: Lavender, Pink, White)
+           =================================================================== */
+        body.landing-body {
+            background-color: #fafafa;
+            color: #0f172a;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .landing-header {
+            background-color: #ffffff;
+            border-bottom: 2px solid #0f172a;
+            position: sticky;
+            top: 0;
+            z-index: 1030;
+        }
+
+        /* Neo-Brutalist Buttons */
+        .btn-neo-primary {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            color: #ffffff;
+            background-color: #f43f5e;
+            border: 2px solid #0f172a;
+            border-radius: 6px;
+            box-shadow: 3px 3px 0 #0f172a;
+            padding: 0.55rem 1.35rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.15s ease;
+            cursor: pointer;
+        }
+
+        .btn-neo-primary:hover {
+            transform: translate(-1px, -1px);
+            box-shadow: 5px 5px 0 #0f172a;
+            background-color: #e11d48;
+            color: #ffffff;
+        }
+
+        .btn-neo-outline {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            color: #0f172a;
+            background-color: #ffffff;
+            border: 2px solid #0f172a;
+            border-radius: 6px;
+            box-shadow: 3px 3px 0 #0f172a;
+            padding: 0.55rem 1.35rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.15s ease;
+            cursor: pointer;
+        }
+
+        .btn-neo-outline:hover {
+            transform: translate(-1px, -1px);
+            box-shadow: 5px 5px 0 #0f172a;
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+
+        .btn-neo-lavender {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            color: #0f172a;
+            background-color: #ede9fe;
+            border: 2px solid #0f172a;
+            border-radius: 6px;
+            box-shadow: 3px 3px 0 #0f172a;
+            padding: 0.55rem 1.35rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.15s ease;
+            cursor: pointer;
+        }
+
+        .btn-neo-lavender:hover {
+            transform: translate(-1px, -1px);
+            box-shadow: 5px 5px 0 #0f172a;
+            background-color: #ddd6fe;
+            color: #0f172a;
+        }
+
+        /* Hero */
+        .landing-hero {
+            background-color: #ffffff;
+            border-bottom: 2px solid #0f172a;
+            padding: 4.5rem 0 4rem;
+        }
+
+        .hero-headline {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 800;
+            font-size: clamp(2.35rem, 5vw, 3.85rem);
+            line-height: 1.1;
+            letter-spacing: -0.03em;
+            color: #0f172a;
+        }
+
+        .hero-lead {
+            font-size: 1.12rem;
+            line-height: 1.6;
+            color: #475569;
+            max-width: 580px;
+        }
+
+        /* Feature & Action Cards */
+        .neo-card {
+            background-color: #ffffff;
+            border: 2px solid #0f172a;
+            border-radius: 8px;
+            box-shadow: 4px 4px 0 #0f172a;
+            padding: 1.85rem;
+            height: 100%;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .neo-card:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0 #0f172a;
+        }
+
+        .icon-box-feature {
+            width: 48px;
+            height: 48px;
+            border: 2px solid #0f172a;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.35rem;
+            margin-bottom: 1.25rem;
+            box-shadow: 2px 2px 0 #0f172a;
+        }
+
+        .badge-mono {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            padding: 0.35rem 0.75rem;
+            border: 1.5px solid #0f172a;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        /* Barter Visual Card */
+        .barter-demo-card {
+            background: #ffffff;
+            border: 2px solid #0f172a;
+            border-radius: 10px;
+            box-shadow: 6px 6px 0 #0f172a;
+            padding: 1.75rem;
+        }
+
+        .barter-side {
+            border: 2px solid #0f172a;
+            border-radius: 6px;
+            padding: 1.1rem;
+        }
+
+        .barter-side-teach {
+            background-color: #ede9fe;
+        }
+
+        .barter-side-learn {
+            background-color: #fff1f2;
+        }
+
+        /* Step Card */
+        .step-num-box {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #0f172a;
+            background: #ffe4e6;
+            border: 2px solid #0f172a;
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            box-shadow: 2px 2px 0 #0f172a;
+        }
+
+        /* Banner CTA */
+        .cta-banner-box {
+            background: #ede9fe;
+            border: 2px solid #0f172a;
+            border-radius: 10px;
+            box-shadow: 6px 6px 0 #0f172a;
+            padding: 3.25rem 2rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="landing-body">
+
+    <!-- ===================================================================
+         1. TOP NAVIGATION HEADER (PUBLIC LANDING PAGE — LOGO & AUTH ONLY)
+         =================================================================== -->
+    <header class="landing-header py-3">
+        <div class="container d-flex align-items-center justify-content-between gap-3">
+            <!-- Brand Logo (Left) -->
+            <a href="landing.html" class="d-flex align-items-center gap-2 text-decoration-none">
+                <span class="d-flex align-items-center justify-content-center rounded-2 border border-2 border-dark bg-dark text-white flex-shrink-0" style="width: 38px; height: 38px; box-shadow: 2px 2px 0 #0f172a;">
+                    <i class="bi bi-arrow-left-right fs-6"></i>
+                </span>
+                <div class="d-flex align-items-center">
+                    <span class="fs-5 fw-bold text-dark text-nowrap" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.02em;">
+                        SKILL<span style="color: #f43f5e;">EXCHANGE</span>
+                    </span>
+                    <span class="badge badge-mono bg-light text-dark ms-2 d-none d-sm-inline-block">CAMPUS NETWORK</span>
+                </div>
+            </a>
+
+            <!-- Authentication Actions (Far Right: LOGIN & SIGN UP Only) -->
+            <div class="d-flex align-items-center gap-2 ms-auto flex-shrink-0">
+                <button type="button" class="btn-neo-outline btn-sm fw-bold text-uppercase px-3" id="navLoginBtn" onclick="enterAuthFlow('login.html')">
+                    LOGIN
+                </button>
+                <button type="button" class="btn-neo-primary btn-sm fw-bold text-uppercase px-3" id="navSignUpBtn" onclick="enterAuthFlow('register.html')">
+                    SIGN UP
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ===================================================================
+         2. HERO SECTION
+         =================================================================== -->
+    <section class="landing-hero">
+        <div class="container">
+            <div class="row align-items-center g-5">
+                <!-- Left: Platform Explanation & CTAs -->
+                <div class="col-lg-7">
+                    <div class="d-inline-flex align-items-center gap-2 mb-3">
+                        <span class="badge badge-mono" style="background: #ede9fe; color: #0f172a;">
+                            <i class="bi bi-mortarboard-fill me-1 text-primary"></i> PEER-TO-PEER CAMPUS LEARNING
+                        </span>
+                    </div>
+
+                    <h1 class="hero-headline mb-3">
+                        Share What You Know.<br>
+                        <span style="color: #f43f5e; text-decoration: underline; text-decoration-color: #0f172a;">Learn What You Need.</span>
+                    </h1>
+
+                    <p class="hero-lead mb-4">
+                        A reciprocal student-to-student platform where university peers exchange skills, collaborate on academic projects, and build verifiable practical expertise — without monetary costs.
+                    </p>
+
+                    <!-- Hero Call to Action Buttons -->
+                    <div class="d-flex flex-wrap gap-3 mb-4">
+                        <button type="button" class="btn-neo-primary py-3 px-4 fs-6" id="heroSignUpBtn" onclick="enterAuthFlow('register.html')">
+                            <i class="bi bi-person-plus-fill"></i> Sign Up for Free
+                        </button>
+                        <button type="button" class="btn-neo-outline py-3 px-4 fs-6" id="heroLoginBtn" onclick="enterAuthFlow('login.html')">
+                            <i class="bi bi-box-arrow-in-right"></i> Student Log In
+                        </button>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-2 pt-1 text-muted small">
+                        <i class="bi bi-shield-check text-success fs-5"></i>
+                        <span>Sign up with any valid email &bull; Verified student credentials &bull; Zero platform charges</span>
+                    </div>
+                </div>
+
+                <!-- Right: Reciprocal Barter Demonstration Visual -->
+                <div class="col-lg-5">
+                    <div class="barter-demo-card">
+                        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom border-2 border-dark">
+                            <span class="badge badge-mono bg-dark text-white">RECIPROCAL EXCHANGE EXAMPLE</span>
+                            <span class="badge badge-mono" style="background: #ede9fe; color: #4338ca;">1:1 MATCH</span>
+                        </div>
+
+                        <!-- Side 1: Skill Offered -->
+                        <div class="barter-side barter-side-teach mb-2">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="badge-mono bg-white text-dark" style="font-size:0.68rem;">OFFERED SKILL</span>
+                                <span class="badge bg-white text-dark border border-dark small" style="font-size:0.65rem;">ADVANCED</span>
+                            </div>
+                            <h5 class="fw-bold text-dark mb-1">
+                                <i class="bi bi-terminal-fill text-dark me-1"></i> Python for Data Science
+                            </h5>
+                            <p class="small text-muted mb-0">Pandas, NumPy, statistical modeling, and data visualization</p>
+                        </div>
+
+                        <!-- Reciprocal Swap Indicator -->
+                        <div class="text-center my-2">
+                            <div class="d-inline-flex align-items-center justify-content-center rounded-circle border border-2 border-dark bg-white" style="width: 36px; height: 36px; box-shadow: 2px 2px 0 #0f172a;">
+                                <i class="bi bi-arrow-down-up fs-6 text-dark"></i>
+                            </div>
+                        </div>
+
+                        <!-- Side 2: Skill Requested -->
+                        <div class="barter-side barter-side-learn">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="badge-mono bg-white text-dark" style="font-size:0.68rem;">WANTED SKILL</span>
+                                <span class="badge bg-white text-dark border border-dark small" style="font-size:0.65rem;">INTERMEDIATE</span>
+                            </div>
+                            <h5 class="fw-bold text-dark mb-1">
+                                <i class="bi bi-palette-fill text-danger me-1"></i> UI/UX Design & Figma
+                            </h5>
+                            <p class="small text-muted mb-0">Design systems, interactive prototypes, and wireframing</p>
+                        </div>
+
+                        <!-- Barter Summary -->
+                        <div class="d-flex align-items-center justify-content-between mt-3 pt-2 border-top border-2 border-dark">
+                            <span class="small fw-bold text-dark" style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem;">
+                                <i class="bi bi-check-circle-fill text-success me-1"></i> Mutual Agreement
+                            </span>
+                            <span class="small text-muted font-monospace" style="font-size: 0.72rem;">Online / In-Person</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===================================================================
+         3. WHAT STUDENTS CAN DO (Core Capabilities)
+         =================================================================== -->
+    <section class="py-5 border-bottom border-2 border-dark bg-white" id="what-you-can-do">
+        <div class="container py-4">
+            <div class="text-center max-w-xl mx-auto mb-5">
+                <span class="badge badge-mono mb-2" style="background: #ffe4e6; color: #0f172a;">CORE PILLARS</span>
+                <h2 class="fw-bold mb-2" style="font-family: 'Space Grotesk', sans-serif; font-size: 2.2rem; letter-spacing: -0.02em;">
+                    WHAT STUDENTS CAN DO
+                </h2>
+                <p class="text-muted">A collaborative platform designed entirely around student peer learning and skill sharing.</p>
+            </div>
+
+            <div class="row g-4">
+                <!-- 1. Learn Skills -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="neo-card" style="background: #ffffff;">
+                        <div class="icon-box-feature" style="background: #ede9fe; color: #4338ca;">
+                            <i class="bi bi-mortarboard-fill"></i>
+                        </div>
+                        <h4 class="fw-bold text-dark mb-2" style="font-family: 'Space Grotesk', sans-serif; font-size: 1.25rem;">
+                            Learn Skills
+                        </h4>
+                        <p class="text-muted small mb-0" style="line-height: 1.6;">
+                            Master programming languages, design tools, and academic topics directly from campus peers who have already built tangible projects.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 2. Teach Skills -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="neo-card" style="background: #ffffff;">
+                        <div class="icon-box-feature" style="background: #ffe4e6; color: #e11d48;">
+                            <i class="bi bi-lightbulb-fill"></i>
+                        </div>
+                        <h4 class="fw-bold text-dark mb-2" style="font-family: 'Space Grotesk', sans-serif; font-size: 1.25rem;">
+                            Teach Skills
+                        </h4>
+                        <p class="text-muted small mb-0" style="line-height: 1.6;">
+                            Reinforce your own knowledge by mentoring fellow students. Share your applied proficiency in software, multimedia, or coursework.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 3. Find Exchange Partners -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="neo-card" style="background: #ffffff;">
+                        <div class="icon-box-feature" style="background: #dbeafe; color: #1d4ed8;">
+                            <i class="bi bi-people-fill"></i>
+                        </div>
+                        <h4 class="fw-bold text-dark mb-2" style="font-family: 'Space Grotesk', sans-serif; font-size: 1.25rem;">
+                            Find Partners
+                        </h4>
+                        <p class="text-muted small mb-0" style="line-height: 1.6;">
+                            Discover peers whose learning desires match what you teach and whose teaching skills match what you want to master for reciprocal balance.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 4. Exchange Skills Reciprocally -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="neo-card" style="background: #ffffff;">
+                        <div class="icon-box-feature" style="background: #fef3c7; color: #d97706;">
+                            <i class="bi bi-arrow-left-right"></i>
+                        </div>
+                        <h4 class="fw-bold text-dark mb-2" style="font-family: 'Space Grotesk', sans-serif; font-size: 1.25rem;">
+                            Exchange Skills
+                        </h4>
+                        <p class="text-muted small mb-0" style="line-height: 1.6;">
+                            Submit structured exchange proposals, schedule learning milestones, coordinate through built-in chat, and earn verified badges.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===================================================================
+         4. HOW IT WORKS (4 Simple Steps)
+         =================================================================== -->
+    <section class="py-5 border-bottom border-2 border-dark" id="how-it-works" style="background: #fafafa;">
+        <div class="container py-4">
+            <div class="text-center max-w-xl mx-auto mb-5">
+                <span class="badge badge-mono mb-2" style="background: #ede9fe; color: #0f172a;">STEP-BY-STEP</span>
+                <h2 class="fw-bold mb-2" style="font-family: 'Space Grotesk', sans-serif; font-size: 2.2rem; letter-spacing: -0.02em;">
+                    HOW THE PLATFORM WORKS
+                </h2>
+                <p class="text-muted">A clear, simple 4-step path from creating your profile to sharing knowledge.</p>
+            </div>
+
+            <div class="row g-4">
+                <!-- Step 01 -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="neo-card">
+                        <div class="step-num-box">01</div>
+                        <h5 class="fw-bold text-dark mb-2" style="font-family: 'Space Grotesk', sans-serif;">Set Up Profile</h5>
+                        <p class="text-muted small mb-0">
+                            Register with your credentials and specify the skills you can teach alongside the skills you want to learn.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Step 02 -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="neo-card">
+                        <div class="step-num-box">02</div>
+                        <h5 class="fw-bold text-dark mb-2" style="font-family: 'Space Grotesk', sans-serif;">Discover Matches</h5>
+                        <p class="text-muted small mb-0">
+                            Search peer offerings by category and find students ready for reciprocal exchange in your department or college.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Step 03 -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="neo-card">
+                        <div class="step-num-box">03</div>
+                        <h5 class="fw-bold text-dark mb-2" style="font-family: 'Space Grotesk', sans-serif;">Propose Exchange</h5>
+                        <p class="text-muted small mb-0">
+                            Send a structured proposal detailing the skill offered, skill wanted, preferred mode (online/in-person), and note.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Step 04 -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="neo-card">
+                        <div class="step-num-box">04</div>
+                        <h5 class="fw-bold text-dark mb-2" style="font-family: 'Space Grotesk', sans-serif;">Collaborate & Learn</h5>
+                        <p class="text-muted small mb-0">
+                            Once accepted, coordinate via real-time chat, conduct mutual study sessions, and complete your learning milestones.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===================================================================
+         5. EVIDENCE-BASED VERIFICATION STANDARDS
+         =================================================================== -->
+    <section class="py-5 border-bottom border-2 border-dark bg-white" id="verification">
+        <div class="container py-4">
+            <div class="text-center max-w-xl mx-auto mb-5">
+                <span class="badge badge-mono mb-2" style="background: #ffe4e6; color: #0f172a;">PEER TRUST</span>
+                <h2 class="fw-bold mb-2" style="font-family: 'Space Grotesk', sans-serif; font-size: 2.2rem; letter-spacing: -0.02em;">
+                    SKILL VERIFICATION STANDARDS
+                </h2>
+                <p class="text-muted">
+                    We maintain trust through real evidence: peer teaching credentials are authenticated with practical work.
+                </p>
+            </div>
+
+            <div class="row g-4">
+                <!-- Projects -->
+                <div class="col-md-4">
+                    <div class="neo-card">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="badge badge-mono bg-danger text-white">COMPULSORY</span>
+                            <i class="bi bi-code-square fs-3 text-dark"></i>
+                        </div>
+                        <h4 class="fw-bold text-dark mb-2" style="font-family: 'Space Grotesk', sans-serif;">Practical Projects</h4>
+                        <p class="text-muted small mb-3">
+                            A tangible project demonstrating applied mastery is required for each skill you offer to teach.
+                        </p>
+                        <div class="p-2 border border-dark rounded bg-light small font-monospace" style="font-size: 0.72rem;">
+                            ✓ GitHub / Live Demo / Uploaded Proof
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Experience -->
+                <div class="col-md-4">
+                    <div class="neo-card">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="badge badge-mono bg-danger text-white">COMPULSORY</span>
+                            <i class="bi bi-briefcase-fill fs-3 text-dark"></i>
+                        </div>
+                        <h4 class="fw-bold text-dark mb-2" style="font-family: 'Space Grotesk', sans-serif;">Practical Experience</h4>
+                        <p class="text-muted small mb-3">
+                            Documented experience demonstrating practical application, student committees, or club roles.
+                        </p>
+                        <div class="p-2 border border-dark rounded bg-light small font-monospace" style="font-size: 0.72rem;">
+                            ✓ Role, Organization, & Responsibilities
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Certificates -->
+                <div class="col-md-4">
+                    <div class="neo-card">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="badge badge-mono bg-secondary text-white">OPTIONAL</span>
+                            <i class="bi bi-patch-check-fill fs-3 text-dark"></i>
+                        </div>
+                        <h4 class="fw-bold text-dark mb-2" style="font-family: 'Space Grotesk', sans-serif;">Certificates</h4>
+                        <p class="text-muted small mb-3">
+                            Optional course completion certificates, awards, or exam credentials provide supporting verification.
+                        </p>
+                        <div class="p-2 border border-dark rounded bg-light small font-monospace" style="font-size: 0.72rem;">
+                            ○ Supplementary supporting document
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===================================================================
+         6. CALL TO ACTION BANNER
+         =================================================================== -->
+    <section class="py-5" style="background: #fafafa;">
+        <div class="container py-4">
+            <div class="cta-banner-box">
+                <span class="badge badge-mono mb-3" style="background: #ffffff; color: #0f172a;">GET STARTED TODAY</span>
+                <h2 class="fw-bold mb-3" style="font-family: 'Space Grotesk', sans-serif; font-size: clamp(1.85rem, 3.8vw, 2.75rem); letter-spacing: -0.02em;">
+                    Ready to Exchange Knowledge on Campus?
+                </h2>
+                <p class="text-dark mx-auto mb-4" style="max-width: 600px; font-size: 1.1rem; line-height: 1.6;">
+                    Connect with fellow students sharing skills today. No fees, no commercial barriers — just reciprocal learning powered by university peer verification.
+                </p>
+
+                <div class="d-flex justify-content-center flex-wrap gap-3">
+                    <button type="button" class="btn-neo-primary py-3 px-4 fs-6" id="ctaSignUpBtn" onclick="enterAuthFlow('register.html')">
+                        <i class="bi bi-person-plus-fill"></i> Create Student Account
+                    </button>
+                    <button type="button" class="btn-neo-outline py-3 px-4 fs-6" id="ctaLoginBtn" onclick="enterAuthFlow('login.html')">
+                        <i class="bi bi-box-arrow-in-right"></i> Already Registered? Log In
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===================================================================
+         7. FOOTER
+         =================================================================== -->
+    <footer class="py-4 border-top border-2 border-dark bg-white">
+        <div class="container d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div class="d-flex align-items-center gap-2">
+                <span class="d-flex align-items-center justify-content-center rounded-2 border border-2 border-dark bg-dark text-white" style="width: 28px; height: 28px; box-shadow: 2px 2px 0 #0f172a;">
+                    <i class="bi bi-arrow-left-right" style="font-size: 0.8rem;"></i>
+                </span>
+                <strong class="text-dark small" style="font-family: 'Space Grotesk', sans-serif;">Student Skill Exchange Platform</strong>
+            </div>
+
+            <div class="d-flex align-items-center gap-3 small fw-bold">
+                <a href="javascript:void(0)" onclick="enterAuthFlow('login.html')" class="text-dark text-decoration-none">Log In</a>
+                <span class="text-muted">&bull;</span>
+                <a href="javascript:void(0)" onclick="enterAuthFlow('register.html')" class="text-dark text-decoration-none">Sign Up</a>
+                <span class="text-muted">&bull;</span>
+                <a href="links.html" class="text-dark text-decoration-none">All Links</a>
+            </div>
+
+            <small class="text-muted font-monospace" style="font-size: 0.72rem;">
+                Campus Peer Knowledge Exchange &bull; Student Network
+            </small>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

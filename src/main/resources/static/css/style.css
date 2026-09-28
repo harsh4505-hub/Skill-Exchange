@@ -3266,4 +3266,584 @@ footer {
     outline-offset: 1px;
 }
 
+/* ===================================================================
+   SKILLEXCHANGE LANDING PAGE (NEO-BRUTALIST ARCHITECTURE)
+   Synchronized from skill-exchange-website component design
+   =================================================================== */
+
+.grid-bg {
+    background-color: #f8f8fb;
+    background-image:
+        linear-gradient(to right, rgba(24, 24, 27, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(24, 24, 27, 0.05) 1px, transparent 1px);
+    background-size: 36px 36px;
+}
+
+.press {
+    transition: transform 120ms ease, box-shadow 120ms ease;
+}
+.press:hover {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 var(--border-color) !important;
+}
+.press:active {
+    transform: translate(3px, 3px);
+    box-shadow: 1px 1px 0 var(--border-color) !important;
+}
+
+.shadow-brutal-xs {
+    box-shadow: 2px 2px 0 0 var(--border-color) !important;
+}
+.shadow-brutal-sm {
+    box-shadow: 3px 3px 0 0 var(--border-color) !important;
+}
+.shadow-brutal {
+    box-shadow: 4px 4px 0 0 var(--border-color) !important;
+}
+.shadow-brutal-lg {
+    box-shadow: 6px 6px 0 0 var(--border-color) !important;
+}
+
+.chip-num {
+    display: inline-block;
+    border: 2px solid var(--border-color);
+    background-color: var(--border-color);
+    color: #ffffff;
+    font-family: var(--font-mono, monospace);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    padding: 0.35rem 0.75rem;
+    border-radius: 6px;
+    text-transform: uppercase;
+}
+
+.chip-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border: 2px solid var(--border-color);
+    font-family: var(--font-mono, monospace);
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.25rem 0.65rem;
+    border-radius: 6px;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--border-color);
+    background-color: #ffffff;
+}
+
+.chip-tag.tag-brand {
+    background-color: var(--primary-subtle);
+    color: var(--primary);
+}
+
+.chip-tag.tag-mint {
+    background-color: var(--success-subtle);
+    color: var(--success);
+}
+
+.chip-tag.tag-amber {
+    background-color: var(--warning-subtle);
+    color: var(--warning);
+}
+
+.chip-tag.tag-blush {
+    background-color: var(--pink-subtle);
+    color: var(--pink-accent);
+}
+
+.chip-tag.tag-surface {
+    background-color: #f4f4f7;
+    color: var(--dark-text);
+}
+
+.card-brutal {
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    background-color: #ffffff;
+    box-shadow: 4px 4px 0 0 var(--border-color);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.card-brutal-lg {
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    background-color: #ffffff;
+    box-shadow: 6px 6px 0 0 var(--border-color);
+}
+
+.btn-brutal-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    font-weight: 700;
+    background-color: var(--primary);
+    color: #ffffff !important;
+    padding: 0.75rem 1.5rem;
+    box-shadow: 4px 4px 0 0 var(--border-color);
+    text-decoration: none;
+    font-size: 0.95rem;
+    cursor: pointer;
+}
+.btn-brutal-primary:hover {
+    background-color: var(--primary-hover);
+    color: #ffffff !important;
+}
+
+.btn-brutal-outline {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    font-weight: 700;
+    background-color: #ffffff;
+    color: var(--border-color) !important;
+    padding: 0.75rem 1.5rem;
+    box-shadow: 4px 4px 0 0 var(--border-color);
+    text-decoration: none;
+    font-size: 0.95rem;
+    cursor: pointer;
+}
+.btn-brutal-outline:hover {
+    background-color: #f8f8fb;
+    color: var(--border-color) !important;
+}
+
+.btn-brutal-sm {
+    padding: 0.45rem 1rem;
+    font-size: 0.85rem;
+    box-shadow: 3px 3px 0 0 var(--border-color);
+}
+
+.hero-brutal-title {
+    font-size: clamp(2.35rem, 4.5vw, 3.85rem);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    text-transform: uppercase;
+    color: var(--border-color);
+}
+
+.hero-brutal-title .brand-accent {
+    color: var(--primary);
+}
+
+.section-head-brutal {
+    max-width: 680px;
+    margin: 0 auto 2.5rem auto;
+    text-align: center;
+}
+
+.section-head-brutal h2 {
+    font-size: clamp(1.85rem, 3.2vw, 2.35rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    color: var(--border-color);
+    margin-top: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.section-head-brutal p {
+    color: var(--muted-text);
+    font-size: 1.02rem;
+}
+
+.trending-pill {
+    display: inline-block;
+    padding: 0.25rem 0.65rem;
+    border: 2px solid var(--border-color);
+    border-radius: 6px;
+    background: #ffffff;
+    font-family: var(--font-mono, monospace);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--border-color);
+    text-decoration: underline;
+    transition: all 0.12s ease;
+}
+.trending-pill:hover {
+    background: var(--border-color);
+    color: #ffffff;
+    text-decoration: none;
+}
+
+/* ===================================================================
+   OFFLINE EXCHANGE PROGRESS TRACKING (NEO-BRUTALIST STYLING)
+   =================================================================== */
+.offline-progress-container {
+    background: #ffffff;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 3px 3px 0px var(--border-color);
+    margin-bottom: 1rem;
+}
+
+.offline-progress-bar-outer {
+    background: #f1f5f9;
+    border: 2px solid var(--border-color);
+    border-radius: 999px;
+    height: 14px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: inset 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+.offline-progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #6366f1, #10b981);
+    border-radius: 999px;
+    transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.badge-overdue-brutal {
+    background: #fef3c7 !important;
+    color: #92400e !important;
+    border: 1.5px solid #d97706 !important;
+    font-weight: 700;
+    font-size: 0.72rem;
+    padding: 0.25rem 0.65rem;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.badge-stage-brutal {
+    background: #ede9fe;
+    color: #4f46e5;
+    border: 1.5px solid var(--border-color);
+    font-weight: 700;
+    font-size: 0.72rem;
+    padding: 0.2rem 0.55rem;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    text-transform: uppercase;
+}
+
+.badge-stage-completed {
+    background: #dcfce7;
+    color: #065f46;
+    border-color: #059669;
+}
+
+.badge-stage-planned {
+    background: #e0f2fe;
+    color: #0369a1;
+    border-color: #0284c7;
+}
+
+/* Offline Vertical Progress Timeline */
+.offline-v-timeline {
+    position: relative;
+    padding-left: 2rem;
+    margin: 1.5rem 0;
+}
+
+.offline-v-timeline::before {
+    content: '';
+    position: absolute;
+    top: 6px;
+    bottom: 6px;
+    left: 11px;
+    width: 3px;
+    background: var(--border-color);
+}
+
+.offline-v-step {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.offline-v-step:last-child {
+    margin-bottom: 0;
+}
+
+.offline-v-dot {
+    position: absolute;
+    left: -2rem;
+    top: 2px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2.5px solid var(--border-color);
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 900;
+    z-index: 2;
+    box-shadow: 2px 2px 0px var(--border-color);
+}
+
+.offline-v-step.completed .offline-v-dot {
+    background: var(--success);
+    color: #ffffff;
+}
+
+.offline-v-step.current .offline-v-dot {
+    background: #6366f1;
+    color: #ffffff;
+}
+
+.offline-v-card {
+    background: #ffffff;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.9rem 1.1rem;
+    box-shadow: 3px 3px 0px var(--border-color);
+    transition: transform 0.15s ease;
+}
+
+.offline-v-card:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 4px 4px 0px var(--border-color);
+}
+
+.session-update-item {
+    background: #fbf9f5;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 3px 3px 0px var(--border-color);
+}
+
+/* ===================================================================
+   ONLINE SESSIONS, DOUBTS, NOTES & CHAT ENHANCEMENTS (NEO-BRUTALIST)
+   =================================================================== */
+
+.conversation-search-box {
+    padding: 0.65rem 0.85rem;
+    background: #ffffff;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.conversation-search-input {
+    width: 100%;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 0.35rem 0.65rem;
+    font-size: 0.82rem;
+    background: #fdf2f8;
+    color: var(--dark-text);
+    outline: none;
+    box-shadow: 1.5px 1.5px 0px var(--border-color);
+    transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.conversation-search-input:focus {
+    background: #ffffff;
+    box-shadow: 2.5px 2.5px 0px var(--border-color);
+    border-color: var(--primary);
+}
+
+.chat-subnav-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.45rem 1.25rem;
+    background: #fdf2f8;
+    border-bottom: 2px solid var(--border-color);
+    gap: 0.75rem;
+}
+
+.chat-tab-group {
+    display: inline-flex;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    box-shadow: 2px 2px 0px var(--border-color);
+    background: #ffffff;
+}
+
+.chat-tab-btn {
+    border: none;
+    background: transparent;
+    padding: 0.3rem 0.85rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    color: var(--dark-text);
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.chat-tab-btn.active {
+    background: var(--primary);
+    color: #ffffff;
+}
+
+.chat-tab-btn:not(.active):hover {
+    background: #f3e8ff;
+}
+
+/* Doubt Composer Mode & Banner */
+.chat-doubt-banner {
+    background: #fef3c7;
+    border-bottom: 1.5px solid #d97706;
+    color: #92400e;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.chat-icon-btn.doubt-active {
+    background: #f59e0b !important;
+    color: #ffffff !important;
+    border-color: #d97706 !important;
+}
+
+/* Doubt Message In Bubble */
+.chat-doubt-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #fef08a;
+    color: #854d0e;
+    border: 1.5px solid #ca8a04;
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.4rem;
+    box-shadow: 1.5px 1.5px 0px #ca8a04;
+}
+
+.chat-bubble.sent .chat-doubt-tag {
+    background: #fef08a;
+    color: #713f12;
+    border-color: #eab308;
+    box-shadow: 1.5px 1.5px 0px #000000;
+}
+
+/* Zoom Session Card Inside Chat Bubble */
+.chat-zoom-card {
+    background: #f3e8ff;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 0.75rem 0.85rem;
+    margin-bottom: 0.5rem;
+    box-shadow: 2px 2px 0px var(--border-color);
+    color: var(--dark-text);
+}
+
+.chat-bubble.sent .chat-zoom-card {
+    background: #ffffff;
+    color: #18181b;
+    border-color: #202225;
+    box-shadow: 2px 2px 0px rgba(0,0,0,0.4);
+}
+
+.chat-zoom-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.4rem;
+}
+
+.chat-zoom-badge {
+    background: #2563eb;
+    color: #ffffff;
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+    border: 1px solid #1e40af;
+}
+
+.chat-zoom-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0.4rem 0.85rem;
+    background: #2563eb;
+    color: #ffffff !important;
+    font-weight: 700;
+    font-size: 0.82rem;
+    border-radius: var(--radius-sm);
+    border: 1.5px solid #1e40af;
+    box-shadow: 2px 2px 0px var(--border-color);
+    text-decoration: none !important;
+    transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.1s ease;
+}
+
+.chat-zoom-btn:hover {
+    background: #1d4ed8;
+    transform: translate(-1px, -1px);
+    box-shadow: 3px 3px 0px var(--border-color);
+}
+
+/* Notes Pane */
+.chat-notes-pane {
+    flex: 1;
+    padding: 1.25rem;
+    overflow-y: auto;
+    background-color: #faf5ff;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.chat-note-card {
+    background: #ffffff;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 0.9rem 1.1rem;
+    box-shadow: 3px 3px 0px var(--border-color);
+    position: relative;
+    transition: transform 0.12s ease;
+}
+
+.chat-note-card:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 4px 4px 0px var(--border-color);
+}
+
+.chat-note-topic {
+    font-family: var(--font-heading);
+    font-weight: 800;
+    font-size: 0.95rem;
+    margin-bottom: 0.35rem;
+    color: var(--dark-text);
+}
+
+.chat-note-body {
+    font-size: 0.86rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    color: #374151;
+    margin-bottom: 0.5rem;
+}
+
+.chat-note-doubt-box {
+    background: #fef9c3;
+    border-left: 3px solid #ca8a04;
+    padding: 0.4rem 0.65rem;
+    font-size: 0.8rem;
+    color: #713f12;
+    border-radius: 3px;
+    margin-bottom: 0.5rem;
+}
+
+
+
 

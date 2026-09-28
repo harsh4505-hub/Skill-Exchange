@@ -67,9 +67,47 @@ async function checkCurrentUser() {
     if (res && res.success && res.data && res.data.authenticated) {
         CurrentUser = res.data;
         updateNavbarLoggedIn(CurrentUser);
+        enforceRouteProtection(true);
     } else {
         CurrentUser = null;
         updateNavbarLoggedOut();
+        enforceRouteProtection(false);
+    }
+}
+
+function enforceRouteProtection(isAuthenticated) {
+    const path = window.location.pathname.toLowerCase();
+    const page = path.split("/").pop() || "index.html";
+
+    // Public Pages (accessible without authentication)
+    const isPublic = page === "landing.html" || page === "landing" ||
+                     page === "login.html" || page === "login" ||
+                     page === "register.html" || page === "register" ||
+                     page === "verify-email.html" || page === "verify" ||
+                     page === "forgot-password.html" || page === "links.html";
+
+    const hasSeenLanding = localStorage.getItem("landingPageVisited") === "true" ||
+                           localStorage.getItem("se_landing_viewed") === "true";
+
+    if (isAuthenticated) {
+        // If already authenticated and accessing landing, login, or register
+        if (page === "landing.html" || page === "landing" ||
+            (page === "login.html" && !window.location.search.includes("logout=true")) ||
+            page === "register.html") {
+            window.location.replace("index.html");
+        }
+    } else {
+        // If unauthenticated and attempting to access a protected page
+        if (!isPublic) {
+            if (!hasSeenLanding) {
+                // New visitor on this browser/device -> Landing Page
+                window.location.replace("landing.html");
+            } else {
+                // Returning visitor -> Login / Sign Up
+                const redirectParam = page !== "index.html" ? `?redirect=${encodeURIComponent(page)}` : "";
+                window.location.replace(`login.html${redirectParam}`);
+            }
+        }
     }
 }
 
@@ -159,8 +197,14 @@ function updateNavbarLoggedOut() {
 }
 
 async function logout() {
-    await API.post("/api/auth/logout", {});
+    try {
+        await API.post("/api/auth/logout", {});
+    } catch (e) {}
     CurrentUser = null;
+    try {
+        localStorage.setItem("landingPageVisited", "true");
+        localStorage.setItem("se_landing_viewed", "true");
+    } catch (e) {}
     window.location.href = "login.html?logout=true";
 }
 
@@ -251,7 +295,7 @@ function getNotificationIconHtml(type) {
         case 'NEW_MESSAGE':
             return '<i class="bi bi-chat-dots-fill text-info"></i>';
         case 'NEW_REVIEW':
-            return '<i class="bi bi-star-fill text-warning"></i>';
+            return '<i class="bi bi-chat-square-quote-fill text-primary"></i>';
         case 'ANNOUNCEMENT':
             return '<i class="bi bi-megaphone-fill text-danger"></i>';
         default:
@@ -316,18 +360,10 @@ function showAlert(message, type = "success", containerId = "alertContainer") {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// Star rating UI helper
+// Score rating UI helper (Professional numerical format: 4.8 / 5)
 function renderStars(rating) {
-    let stars = '';
-    const rounded = Math.round(rating || 0);
-    for (let i = 1; i <= 5; i++) {
-        if (i <= rounded) {
-            stars += '<i class="bi bi-star-fill text-warning me-1"></i>';
-        } else {
-            stars += '<i class="bi bi-star text-muted me-1"></i>';
-        }
-    }
-    return `<span class="d-inline-flex align-items-center">${stars} <strong class="ms-1">${(rating || 0).toFixed(1)}</strong></span>`;
+    const score = Number(rating || 0).toFixed(1);
+    return `<span class="badge bg-light text-dark border border-dark" style="font-family: var(--font-mono); font-size: 0.78rem;">${score} / 5</span>`;
 }
 
 // Automatically load and initialize the educational decorations & subtle grid system

@@ -14,8 +14,8 @@
     <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container">
             <a class="navbar-brand" href="index.html">
-                <i class="bi bi-arrow-left-right text-gradient fs-3"></i>
-                <span class="text-gradient">SkillExchange</span>
+                <span class="brand-icon-box"><i class="bi bi-arrow-left-right"></i></span>
+                <span class="brand-title">Skill<strong>Exchange</strong></span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
                 <span class="navbar-toggler-icon"></span>
@@ -371,11 +371,11 @@
 
                 container.innerHTML = `
                     <div class="col-12 text-center py-5">
-                        <div class="card card-custom p-5 border-0 shadow-sm mx-auto" style="max-width: 580px;">
-                            <div class="mx-auto mb-3 p-3 rounded-circle bg-light text-muted d-flex align-items-center justify-content-center" style="width: 72px; height: 72px;">
-                                <i class="bi bi-search fs-2"></i>
+                        <div class="card card-custom p-5 mx-auto bg-white" style="max-width: 580px;">
+                            <div class="mx-auto mb-3 p-3 border border-2 border-dark rounded bg-light text-dark d-flex align-items-center justify-content-center" style="width: 64px; height: 64px; box-shadow: 2px 2px 0px var(--border-color);">
+                                <i class="bi bi-search fs-3"></i>
                             </div>
-                            <h4 class="fw-bold text-dark mb-2">${emptyTitle}</h4>
+                            <h4 class="fw-bold text-dark mb-2 text-uppercase">${emptyTitle}</h4>
                             <p class="text-muted small mb-4">No student exchange matches found with your current filter criteria.</p>
                             <div>
                                 <button class="btn btn-primary-custom px-4 py-2" onclick="resetFilters()">
@@ -390,17 +390,16 @@
 
             container.innerHTML = matches.map(m => `
                 <div class="col-md-6 col-lg-4">
-                    <div class="card card-custom p-4 h-100 d-flex flex-column justify-content-between">
+                    <div class="card card-custom p-4 h-100 d-flex flex-column justify-content-between bg-white">
                         <div>
                             <!-- Header with avatar, badge, and match percentage -->
-                            <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div class="d-flex justify-content-between align-items-start mb-3 pb-2 border-bottom border-2 border-dark">
                                 <div class="d-flex align-items-center gap-3">
                                     <img src="${m.avatarUrl || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + m.userId}" class="avatar-img" alt="${m.studentName}">
                                     <div>
-                                        <h5 class="fw-bold mb-0">${m.studentName}</h5>
-                                        <small class="text-muted d-block">${m.department} &bull; ${m.yearOfStudy}</small>
-                                        <div class="small text-warning mt-1">
-                                            ★ ${(m.averageRating || 0).toFixed(1)} / 5.0
+                                        <h5 class="fw-bold mb-0 text-dark">${m.studentName}</h5>
+                                        <div class="small text-dark fw-bold mt-1" style="font-family: var(--font-mono);">
+                                            Rating: ${(m.averageRating || 0).toFixed(1)} / 5
                                         </div>
                                     </div>
                                 </div>
@@ -410,37 +409,37 @@
                             <!-- Verification Badge -->
                             ${(m.skillTheyTeachYouVerified || m.verified) ? `
                             <div class="mb-2">
-                                <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1"><i class="bi bi-patch-check-fill me-1"></i>✓ Verified Skill</span>
+                                <span class="badge badge-verified"><i class="bi bi-patch-check-fill me-1"></i>✓ Verified Skill</span>
                             </div>
                             ` : ''}
 
                             <!-- Skills Exchange Offer Details -->
-                            <div class="p-3 rounded-3 mb-3" style="background-color: var(--light-bg); border: 1px solid var(--border-color);">
+                            <div class="p-3 rounded mb-3 border border-2 border-dark" style="background-color: var(--canvas-bg);">
                                 <div class="mb-2">
-                                    <span class="text-muted small d-block">They Can Teach:</span>
+                                    <span class="text-muted small d-block fw-bold text-uppercase" style="font-size:0.68rem;">They Can Teach:</span>
                                     <div class="d-flex align-items-center gap-1 flex-wrap">
-                                        <strong class="text-primary-custom fs-6"><i class="bi bi-mortarboard me-1"></i>${m.skillTheyTeachYou}</strong>
-                                        ${m.skillTheyTeachYouVerified ? '<span class="badge bg-success-subtle text-success border border-success-subtle ms-1" style="font-size:0.72rem;"><i class="bi bi-patch-check-fill me-1"></i>✓ Verified</span>' : ''}
+                                        <strong class="text-dark fs-6"><i class="bi bi-mortarboard me-1 text-primary"></i>${m.skillTheyTeachYou}</strong>
+                                        ${m.skillTheyTeachYouVerified ? '<span class="badge badge-verified ms-1" style="font-size:0.68rem;"><i class="bi bi-patch-check-fill me-1"></i>✓ Verified</span>' : ''}
                                     </div>
                                 </div>
                                 ${m.skillYouTeachThem ? `
                                 <div>
-                                    <span class="text-muted small d-block">They Want to Learn:</span>
-                                    <strong class="text-pink-custom fs-6"><i class="bi bi-lightbulb me-1"></i>${m.skillYouTeachThem}</strong>
-                                    ${m.isMutualMatch ? '<span class="badge badge-custom badge-mutual ms-1">2-Way Mutual Barter</span>' : ''}
+                                    <span class="text-muted small d-block fw-bold text-uppercase" style="font-size:0.68rem;">They Want to Learn:</span>
+                                    <strong class="text-dark fs-6"><i class="bi bi-lightbulb me-1 text-danger"></i>${m.skillYouTeachThem}</strong>
+                                    ${m.isMutualMatch ? '<span class="badge badge-mutual ms-1">2-Way Mutual Barter</span>' : ''}
                                 </div>
                                 ` : ''}
                             </div>
 
                             <!-- Algorithm Explainable Breakdown -->
                             <div class="mb-3">
-                                <small class="text-muted fw-semibold d-block mb-1">Match Reason Breakdown:</small>
+                                <span class="section-tag-light px-2 py-1 mb-1 d-inline-block small" style="font-size:0.68rem;">Match Breakdown</span>
                                 <p class="small text-muted mb-0" style="font-size:0.8rem; line-height:1.45;">${m.matchReason}</p>
                             </div>
                         </div>
 
                         <!-- Card Action Buttons -->
-                        <div class="d-flex gap-2 pt-3 border-top">
+                        <div class="d-flex gap-2 pt-3 border-top border-2 border-dark">
                             <button class="btn btn-primary-custom flex-grow-1" onclick="openRequestModal(${m.userId}, '${m.studentName}', '${m.skillTheyTeachYou}', ${m.skillTheyTeachYouId || 'null'}, '${m.skillYouTeachThem || ''}', ${m.skillYouTeachThemId || 'null'})">
                                 <i class="bi bi-send me-1"></i> Propose Exchange
                             </button>

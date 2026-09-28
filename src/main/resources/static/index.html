@@ -3,363 +3,581 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Skill Exchange Platform | Peer-to-Peer College Learning</title>
+    <title>SkillExchange — Trade Skills, Not Money | Campus Skill Barter</title>
+    <meta name="description" content="Swap skills with campus peers: teach what you know, learn what you don't. Verified skills, online & offline sessions, built-in chat, progress tracking and the Kitab Bhandar book marketplace. Free for 30 days.">
+    <meta property="og:title" content="SkillExchange — Trade Skills, Not Money">
+    <meta property="og:description" content="The campus peer barter platform. Verified skills, online or offline sessions, chat and Kitab Bhandar. Free for 30 days.">
+    <meta property="og:type" content="website">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <!-- Neo-Brutalist Theme CSS -->
     <link rel="stylesheet" href="css/style.css">
+
+    <!-- Official First-Visit Landing Page Gateway & Route Protection -->
+    <script>
+        (function() {
+            const hasSeenLanding = localStorage.getItem('landingPageVisited') === 'true' || 
+                                   localStorage.getItem('se_landing_viewed') === 'true';
+
+            if (!hasSeenLanding) {
+                // Brand new visitor on this browser/device: start at Landing Page
+                window.location.replace('landing.html');
+                return;
+            }
+
+            // Returning visitor who has already entered auth flow previously:
+            // Check if user has an active authenticated session
+            fetch('/api/auth/current-user')
+                .then(r => r.json())
+                .then(res => {
+                    if (!res || !res.success || !res.data || !res.data.authenticated) {
+                        // Returning unauthenticated visitor starts at Login / Sign Up (NOT Landing Page)
+                        window.location.replace('login.html');
+                    }
+                })
+                .catch(() => {
+                    window.location.replace('login.html');
+                });
+        })();
+    </script>
 </head>
-<body>
+<body class="bg-white">
 
     <!-- Navigation Header -->
-    <nav class="navbar navbar-expand-lg navbar-custom">
-        <div class="container">
-            <a class="navbar-brand" href="index.html">
-                <span class="brand-icon-box"><i class="bi bi-arrow-left-right"></i></span>
-                <span class="brand-title">Skill<strong>Exchange</strong></span>
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+    <header class="sticky-top bg-white border-bottom border-2 border-dark" style="z-index: 1030;">
+        <nav class="navbar navbar-expand-lg py-2">
+            <div class="container">
+                <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
+                    <span class="d-flex align-items-center justify-content-center rounded-2 border border-2 border-dark bg-dark text-white" style="width: 38px; height: 38px; box-shadow: 2px 2px 0 #18181b;">
+                        <i class="bi bi-arrow-left-right fs-6"></i>
+                    </span>
+                    <span class="fs-5 fw-bold tracking-tight text-dark" style="letter-spacing: -0.02em;">
+                        SKILL<span style="color: var(--primary);">EXCHANGE</span>
+                    </span>
+                </a>
 
-            <div class="collapse navbar-collapse" id="navMenu">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4 gap-1">
-                    <li class="nav-item"><a class="nav-link active" href="index.html">Home</a></li>
-                    <li class="nav-item nav-student-only d-none"><a class="nav-link" href="dashboard.html">Dashboard</a></li>
-                    <li class="nav-item nav-student-only d-none"><a class="nav-link" href="matches.html">Find Matches</a></li>
-                    <li class="nav-item nav-student-only d-none"><a class="nav-link" href="skills.html">Skill Directory</a></li>
-                    <li class="nav-item nav-student-only d-none"><a class="nav-link" href="requests.html">My Exchanges</a></li>
-                    <li class="nav-item nav-student-only d-none"><a class="nav-link" href="chat.html">Chat</a></li>
-                    <li class="nav-item nav-admin-only d-none"><a class="nav-link text-danger fw-bold" href="admin-dashboard.html">Admin Panel</a></li>
-                </ul>
+                <button class="navbar-toggler border-2 border-dark" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu" aria-controls="navMenu" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
 
-                <div id="navbarUserControls">
-                    <!-- Populated dynamically via app.js -->
-                    <div class="d-flex align-items-center gap-2">
-                        <a href="login.html" class="btn btn-outline-custom btn-sm">Sign In</a>
-                        <a href="register.html" class="btn btn-primary-custom btn-sm">Get Started</a>
+                <div class="collapse navbar-collapse" id="navMenu">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4 gap-lg-2">
+                        <li class="nav-item"><a class="nav-link fw-bold text-dark" href="#how-it-works">How It Works</a></li>
+                        <li class="nav-item"><a class="nav-link fw-bold text-dark" href="#modes">Learning Modes</a></li>
+                        <li class="nav-item"><a class="nav-link fw-bold text-dark" href="#verification">Verification</a></li>
+                        <li class="nav-item"><a class="nav-link fw-bold text-dark" href="#kitab-bhandar">Kitab Bhandar</a></li>
+                        <li class="nav-item"><a class="nav-link fw-bold text-dark" href="#pricing">Pricing</a></li>
+                        <li class="nav-item"><a class="nav-link fw-bold text-dark" href="skills.html">Skills Directory</a></li>
+                        <li class="nav-item"><a class="nav-link fw-bold text-muted small" href="links.html"><i class="bi bi-compass me-1"></i>All Links</a></li>
+
+                        <!-- Authenticated Student Links -->
+                        <li class="nav-item nav-student-only d-none"><a class="nav-link fw-bold text-primary" href="dashboard.html">Dashboard</a></li>
+                        <li class="nav-item nav-student-only d-none"><a class="nav-link fw-bold text-primary" href="matches.html">Find Matches</a></li>
+                        <li class="nav-item nav-student-only d-none"><a class="nav-link fw-bold text-primary" href="requests.html">My Exchanges</a></li>
+                        <li class="nav-item nav-student-only d-none"><a class="nav-link fw-bold text-primary" href="chat.html">Chat</a></li>
+                        <!-- Admin Link -->
+                        <li class="nav-item nav-admin-only d-none"><a class="nav-link fw-bold text-danger" href="admin-dashboard.html">Admin Panel</a></li>
+                    </ul>
+
+                    <div id="navbarUserControls">
+                        <!-- Populated dynamically via app.js -->
+                        <div class="d-flex align-items-center gap-2">
+                            <a href="login.html" class="btn-brutal-outline btn-brutal-sm press">Sign In</a>
+                            <a href="register.html" class="btn-brutal-primary btn-brutal-sm press">Join Free</a>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </nav>
+        </nav>
+    </header>
 
-    <!-- Hero Section -->
-    <section class="hero-section">
-        <div class="container py-3 py-md-4">
-            <div class="row align-items-center justify-content-center">
-                <div class="col-lg-10 text-center">
-                    <div class="d-inline-flex align-items-center gap-2 mb-3">
-                        <span class="section-tag-light px-3 py-1 fw-bold">
-                            <i class="bi bi-mortarboard-fill me-1"></i> Official College Peer-to-Peer Network
-                        </span>
-                    </div>
+    <!-- SECTION 01: HERO & CAMPUS SKILL BARTER -->
+    <section class="grid-bg border-bottom border-2 border-dark py-5 py-lg-6">
+        <div class="container py-3">
+            <div class="row align-items-center g-5">
+                <!-- Left Hero Column -->
+                <div class="col-lg-6">
+                    <span class="chip-num">01 / CAMPUS SKILL BARTER</span>
 
-                    <h1 class="hero-headline mb-3">
-                        LEARN A SKILL.<br>
-                        SHARE A SKILL.<br>
-                        <span class="highlight-word">EXCHANGE KNOWLEDGE.</span>
+                    <h1 class="hero-brutal-title mt-4 mb-3">
+                        Trade skills,<br>
+                        <span class="brand-accent">not money.</span>
                     </h1>
 
-                    <p class="hero-desc">
-                        A peer-to-peer university barter network where college students exchange technical, design, and academic skills on a mutual trade basis ΓÇö zero money, pure knowledge exchange.
+                    <p class="text-muted fs-5 mb-4" style="line-height: 1.6; max-width: 520px;">
+                        Two students. Two different skills. One swap. SkillExchange pairs you with campus peers so you teach what you know and learn what you don't — online, in person, or right in chat.
                     </p>
 
-                    <div class="d-flex flex-wrap justify-content-center gap-3 mb-5">
-                        <a href="matches.html" class="btn btn-primary-custom btn-lg">
-                            <i class="bi bi-compass me-2"></i>Explore Skills
+                    <div class="d-flex flex-wrap gap-3 mb-3">
+                        <a href="register.html" class="btn-brutal-primary press">
+                            Start Exchanging — Free <i class="bi bi-arrow-right ms-1"></i>
                         </a>
-                        <a href="skills.html" class="btn btn-outline-custom btn-lg">
-                            <i class="bi bi-plus-circle me-2"></i>Offer Your Skill
+                        <a href="#how-it-works" class="btn-brutal-outline press">
+                            See How It Works
                         </a>
                     </div>
 
-                    <!-- Live Mutual Exchange Preview Card -->
-                    <div class="card card-custom p-4 text-start mx-auto" style="max-width: 680px;">
-                        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-2 border-dark flex-wrap gap-2">
-                            <span class="fw-bold small text-uppercase" style="letter-spacing: 0.05em;">
-                                <i class="bi bi-arrow-repeat text-primary me-1"></i> Live Exchange Demonstration
-                            </span>
-                            <span class="match-score-badge">
-                                95% Compatibility Match
-                            </span>
-                        </div>
-                        <div class="row align-items-center g-3">
-                            <div class="col-sm-5">
-                                <div class="d-flex align-items-center gap-2 mb-2">
-                                    <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Harsh" class="avatar-img" alt="Harsh Vardhan">
-                                    <div>
-                                        <h6 class="mb-0 fw-bold">Harsh Vardhan</h6>
-                                        <small class="text-muted">2nd Year &bull; IT Dept</small>
-                                    </div>
-                                </div>
-                                <div class="p-2 border border-2 border-dark rounded bg-light">
-                                    <span class="d-block small text-muted text-uppercase fw-bold" style="font-size: 0.68rem;">Teaches</span>
-                                    <strong class="text-dark"><i class="bi bi-code-slash me-1 text-primary"></i>Core Java (Spring Boot)</strong>
-                                </div>
-                            </div>
-                            <div class="col-sm-2 text-center text-dark fs-3 py-2">
-                                <i class="bi bi-arrow-left-right"></i>
-                            </div>
-                            <div class="col-sm-5">
-                                <div class="d-flex align-items-center justify-content-sm-end gap-2 mb-2">
-                                    <div class="text-sm-end">
-                                        <h6 class="mb-0 fw-bold">Sejal Sharma</h6>
-                                        <small class="text-muted">2nd Year &bull; IT Dept</small>
-                                    </div>
-                                    <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Sejal" class="avatar-img" alt="Sejal Sharma">
-                                </div>
-                                <div class="p-2 border border-2 border-dark rounded bg-light text-sm-end">
-                                    <span class="d-block small text-muted text-uppercase fw-bold" style="font-size: 0.68rem;">Teaches</span>
-                                    <strong class="text-dark"><i class="bi bi-palette me-1 text-danger"></i>Adobe Photoshop & UI</strong>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mt-3 pt-2 border-top border-1 text-center">
-                            <span class="badge badge-verified me-2"><i class="bi bi-patch-check-fill me-1"></i>Verified Skills</span>
-                            <span class="badge badge-mutual"><i class="bi bi-shuffle me-1"></i>Reciprocal 2-Way Barter</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+                    <p class="font-monospace small fw-bold text-muted mb-4" style="letter-spacing: 0.08em; font-size: 0.72rem;">
+                        FREE FOR 30 DAYS &bull; THEN A SMALL PLATFORM FEE
+                    </p>
 
-    <!-- SECTION: FIND YOUR SKILL PARTNER -->
-    <section class="py-5 section-search-discovery border-bottom border-2 border-dark">
-        <div class="container py-2">
-            <div class="search-module-card" style="max-width: 820px;">
-                <div class="text-center mb-4">
-                    <span class="section-tag mb-2">01 / DISCOVERY SEARCH</span>
-                    <h2 class="fw-bold mb-1">WHAT DO YOU WANT TO LEARN?</h2>
-                    <p class="text-muted small mb-0">Search over pre-seeded campus skills to find peers ready for a mutual trade today</p>
-                </div>
-
-                <form action="matches.html" method="GET" class="row g-2 align-items-stretch" id="heroSearchForm">
-                    <div class="col-md-8 col-sm-12">
-                        <div class="input-group h-100">
-                            <span class="input-group-text"><i class="bi bi-search fs-5"></i></span>
-                            <input type="text" name="q" id="heroSearchInput" class="form-control neo-search-input" placeholder="Search skills (e.g. Java, Python, Photoshop, Public Speaking)..." required>
-                        </div>
+                    <!-- Trending Now Quick Tags -->
+                    <div class="d-flex flex-wrap align-items-center gap-2 mb-4">
+                        <span class="font-monospace small fw-bold text-dark text-uppercase" style="letter-spacing: 0.05em; font-size: 0.72rem;">TRENDING NOW:</span>
+                        <a href="matches.html?skill=Java" class="trending-pill">JAVA</a>
+                        <a href="matches.html?skill=Python" class="trending-pill">PYTHON</a>
+                        <a href="matches.html?skill=Photoshop" class="trending-pill">PHOTOSHOP</a>
+                        <a href="matches.html?skill=Public Speaking" class="trending-pill">PUBLIC SPEAKING</a>
+                        <a href="matches.html?skill=HTML/CSS/JS" class="trending-pill">WEB DEV</a>
                     </div>
-                    <div class="col-md-4 col-sm-12">
-                        <button type="submit" class="btn btn-primary-custom w-100 h-100 py-2">
-                            <i class="bi bi-person-check me-2"></i>Find Skill Partners
+
+                    <!-- Quick Skill Discovery Form -->
+                    <form action="matches.html" method="GET" class="card-brutal p-2 d-flex flex-column flex-sm-row gap-2" style="max-width: 520px; background: #ffffff;">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-0 text-muted"><i class="bi bi-search"></i></span>
+                            <input type="text" name="q" class="form-control border-0 shadow-none ps-0" placeholder="Search skill to learn (e.g. Python, Java)..." required>
+                        </div>
+                        <button type="submit" class="btn-brutal-primary btn-brutal-sm press px-3 text-nowrap">
+                            Find Peer
                         </button>
-                    </div>
-                </form>
+                    </form>
+                </div>
 
-                <!-- Popular Search Quick Tags -->
-                <div class="d-flex align-items-center gap-2 mt-3 pt-3 border-top border-2 border-dark flex-wrap">
-                    <span class="text-uppercase fw-bold small text-muted" style="letter-spacing: 0.05em; font-size: 0.75rem;">Trending Now:</span>
-                    <a href="matches.html?skill=Java" class="badge bg-light text-dark">Java</a>
-                    <a href="matches.html?skill=Python" class="badge bg-light text-dark">Python</a>
-                    <a href="matches.html?skill=Photoshop" class="badge bg-light text-dark">Photoshop</a>
-                    <a href="matches.html?skill=Public Speaking" class="badge bg-light text-dark">Public Speaking</a>
-                    <a href="matches.html?skill=HTML/CSS/JS" class="badge bg-light text-dark">Web Dev</a>
+                <!-- Right Live Exchange Preview Card -->
+                <div class="col-lg-6">
+                    <div class="card-brutal p-4 p-md-5 shadow-brutal-lg">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <span class="chip-num" style="font-size: 0.68rem; padding: 0.25rem 0.6rem;">LIVE EXCHANGE PREVIEW</span>
+                            <span class="chip-tag tag-mint" style="font-size: 0.68rem;"><i class="bi bi-stars"></i> 99% MATCH</span>
+                        </div>
+
+                        <!-- Student 1 Box (Harsh Vardhan) -->
+                        <div class="p-3 border border-2 border-dark rounded-3 mb-3" style="background-color: var(--light-bg, #f8f8fb);">
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="d-flex align-items-center justify-content-center rounded-2 border border-2 border-dark" style="width: 44px; height: 44px; background: #ffe4e6; box-shadow: 2px 2px 0 #18181b;">
+                                    <span class="d-flex align-items-center justify-content-center rounded-circle text-white fw-bold font-monospace" style="width: 28px; height: 28px; background: #e11d48; font-size: 0.85rem;">H</span>
+                                </span>
+                                <div>
+                                    <h6 class="fw-bold mb-0 text-dark">Harsh Vardhan</h6>
+                                    <small class="text-muted">Information Technology &bull; Rating: 4.8 / 5</small>
+                                </div>
+                            </div>
+                            <div class="mt-3 d-flex flex-wrap align-items-center gap-2">
+                                <span class="chip-tag tag-surface" style="font-size: 0.72rem;">OFFERS: JAVA</span>
+                                <span class="chip-tag tag-mint" style="font-size: 0.72rem;"><i class="bi bi-patch-check-fill"></i> VERIFIED</span>
+                            </div>
+                        </div>
+
+                        <!-- Reciprocal Swap Icon Center Box -->
+                        <div class="d-flex justify-content-center my-3">
+                            <span class="d-flex align-items-center justify-content-center rounded-3 border border-2 border-dark text-white" style="width: 44px; height: 44px; background: var(--primary); box-shadow: 3px 3px 0 #18181b;">
+                                <i class="bi bi-arrow-left-right fs-5"></i>
+                            </span>
+                        </div>
+
+                        <!-- Student 2 Box (Sejal Sharma) -->
+                        <div class="p-3 border border-2 border-dark rounded-3" style="background-color: var(--light-bg, #f8f8fb);">
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="d-flex align-items-center justify-content-center rounded-2 border border-2 border-dark" style="width: 44px; height: 44px; background: #dcfce7; box-shadow: 2px 2px 0 #18181b;">
+                                    <span class="d-flex align-items-center justify-content-center rounded-circle text-white fw-bold font-monospace" style="width: 28px; height: 28px; background: #059669; font-size: 0.85rem;">S</span>
+                                </span>
+                                <div>
+                                    <h6 class="fw-bold mb-0 text-dark">Sejal Sharma</h6>
+                                    <small class="text-muted">Information Technology &bull; Rating: 4.9 / 5</small>
+                                </div>
+                            </div>
+                            <div class="mt-3 d-flex flex-wrap align-items-center gap-2">
+                                <span class="chip-tag tag-blush" style="font-size: 0.72rem;">WANTS: PHOTOSHOP &bull; 2-WAY MUTUAL BARTER</span>
+                            </div>
+                        </div>
+
+                        <!-- Learning Mode Chips -->
+                        <div class="mt-4 pt-3 border-top border-2 border-dark d-flex flex-wrap gap-2">
+                            <span class="chip-tag tag-brand"><i class="bi bi-camera-video-fill"></i> ONLINE</span>
+                            <span class="chip-tag tag-amber"><i class="bi bi-geo-alt-fill"></i> OFFLINE</span>
+                            <span class="chip-tag tag-surface"><i class="bi bi-chat-dots-fill"></i> CHAT</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- SECTION: EXPLORE SKILL CATEGORIES -->
-    <section class="py-5 section-categories border-bottom border-2 border-dark">
+    <!-- SECTION 02: HOW IT WORKS -->
+    <section id="how-it-works" class="border-bottom border-2 border-dark bg-white py-5 py-lg-6">
+        <div class="container py-3">
+            <div class="section-head-brutal">
+                <span class="chip-num">02 / HOW IT WORKS</span>
+                <h2>Four Steps to Your First Swap</h2>
+                <p>From listing your skills to a finished exchange — all inside one dashboard.</p>
+            </div>
+
+            <div class="row g-4">
+                <!-- Step 1 -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="card-brutal p-4 h-100 d-flex flex-column">
+                        <span class="d-flex align-items-center justify-content-center rounded-3 border border-2 border-dark mb-4 text-primary" style="width: 48px; height: 48px; background: var(--primary-subtle); box-shadow: 3px 3px 0 #18181b;">
+                            <i class="bi bi-list-task fs-4"></i>
+                        </span>
+                        <h5 class="fw-bold mb-2">1. List What You Know</h5>
+                        <p class="text-muted small mb-0 flex-grow-1">
+                            Add the skills you can teach and the ones you want to learn — from Java and Python to Photoshop and public speaking.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="card-brutal p-4 h-100 d-flex flex-column">
+                        <span class="d-flex align-items-center justify-content-center rounded-3 border border-2 border-dark mb-4 text-primary" style="width: 48px; height: 48px; background: var(--primary-subtle); box-shadow: 3px 3px 0 #18181b;">
+                            <i class="bi bi-search fs-4"></i>
+                        </span>
+                        <h5 class="fw-bold mb-2">2. Get Matched</h5>
+                        <p class="text-muted small mb-0 flex-grow-1">
+                            We rank campus peers by mutual skills, department, college and rating — with a transparent match score on every profile.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="card-brutal p-4 h-100 d-flex flex-column">
+                        <span class="d-flex align-items-center justify-content-center rounded-3 border border-2 border-dark mb-4 text-primary" style="width: 48px; height: 48px; background: var(--primary-subtle); box-shadow: 3px 3px 0 #18181b;">
+                            <i class="bi bi-hand-thumbs-up fs-4"></i>
+                        </span>
+                        <h5 class="fw-bold mb-2">3. Propose the Swap</h5>
+                        <p class="text-muted small mb-0 flex-grow-1">
+                            Send an exchange offer: what you'll teach, what you want back, and how you'll meet. They accept in one click.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="card-brutal p-4 h-100 d-flex flex-column">
+                        <span class="d-flex align-items-center justify-content-center rounded-3 border border-2 border-dark mb-4 text-primary" style="width: 48px; height: 48px; background: var(--primary-subtle); box-shadow: 3px 3px 0 #18181b;">
+                            <i class="bi bi-calendar-check fs-4"></i>
+                        </span>
+                        <h5 class="fw-bold mb-2">4. Learn & Track</h5>
+                        <p class="text-muted small mb-0 flex-grow-1">
+                            Schedule sessions, track your learning progress and rate each other when the exchange is complete.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 03: LEARNING MODES -->
+    <section id="modes" class="grid-bg border-bottom border-2 border-dark py-5 py-lg-6">
+        <div class="container py-3">
+            <div class="section-head-brutal">
+                <span class="chip-num">03 / LEARNING MODES</span>
+                <h2>You Decide How to Meet</h2>
+                <p>Every exchange runs your way — online, offline, or purely over chat.</p>
+            </div>
+
+            <div class="row g-4">
+                <!-- Mode 1: Online -->
+                <div class="col-md-4">
+                    <div class="card-brutal p-4 h-100">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <span class="d-flex align-items-center justify-content-center rounded-3 border border-2 border-dark bg-white text-primary" style="width: 48px; height: 48px; box-shadow: 2px 2px 0 #18181b;">
+                                <i class="bi bi-camera-video-fill fs-4"></i>
+                            </span>
+                            <span class="chip-tag tag-brand">ONLINE</span>
+                        </div>
+                        <h4 class="fw-bold text-uppercase mb-2">Online Meets</h4>
+                        <p class="text-muted small mb-0">
+                            Pick a time, and a Google Meet or Zoom link is shared right in your chat. Learn from the hostel, home or holiday.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Mode 2: Campus Offline -->
+                <div class="col-md-4">
+                    <div class="card-brutal p-4 h-100">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <span class="d-flex align-items-center justify-content-center rounded-3 border border-2 border-dark bg-white text-warning" style="width: 48px; height: 48px; box-shadow: 2px 2px 0 #18181b;">
+                                <i class="bi bi-geo-alt-fill fs-4"></i>
+                            </span>
+                            <span class="chip-tag tag-amber">OFFLINE</span>
+                        </div>
+                        <h4 class="fw-bold text-uppercase mb-2">On Campus</h4>
+                        <p class="text-muted small mb-0">
+                            Meet face-to-face at the college library or a campus study room — perfect for hands-on skills, design, and live reviews.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Mode 3: Built-in Chat -->
+                <div class="col-md-4">
+                    <div class="card-brutal p-4 h-100">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <span class="d-flex align-items-center justify-content-center rounded-3 border border-2 border-dark bg-white text-dark" style="width: 48px; height: 48px; box-shadow: 2px 2px 0 #18181b;">
+                                <i class="bi bi-chat-dots-fill fs-4"></i>
+                            </span>
+                            <span class="chip-tag tag-surface">CHAT</span>
+                        </div>
+                        <h4 class="fw-bold text-uppercase mb-2">In-Platform Chat</h4>
+                        <p class="text-muted small mb-0">
+                            Share notes, files and doubts in built-in messaging. Coordinate timings, ask questions, keep everything in one thread.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION: EXPLORE SKILLS BY CATEGORY & POPULAR SKILLS IN DEMAND -->
+    <section id="categories" class="border-bottom border-2 border-dark bg-white py-5 py-lg-6">
         <div class="container py-3">
             <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-2">
                 <div>
-                    <span class="section-tag">02 / DOMAINS</span>
-                    <h2 class="fw-bold mb-1">EXPLORE SKILLS BY CATEGORY</h2>
+                    <span class="chip-num">03.5 / DOMAINS</span>
+                    <h2 class="hero-brutal-title mt-3 mb-1" style="font-size: clamp(1.85rem, 3.2vw, 2.35rem);">
+                        EXPLORE SKILLS BY CATEGORY
+                    </h2>
                     <p class="text-muted small mb-0">Browse student-offered expertise across all academic and creative faculties</p>
                 </div>
-                <a href="skills.html" class="btn btn-sm btn-outline-custom">
+                <a href="skills.html" class="btn-brutal-outline btn-brutal-sm press">
                     View Full Catalog <i class="bi bi-arrow-right ms-1"></i>
                 </a>
             </div>
 
-            <div class="row g-4" id="categoriesGrid">
+            <div class="row g-4 mb-5">
                 <!-- 1. Programming -->
                 <div class="col-lg-4 col-md-6">
-                    <a href="matches.html?category=Programming" class="category-card-link h-100" id="btnCategoryProgramming">
-                        <div class="category-icon-box bg-light text-dark">
-                            <i class="bi bi-code-slash"></i>
-                        </div>
-                        <h4 class="fw-bold mb-1 text-dark">Programming & IT</h4>
-                        <p class="text-muted small mb-3">Java OOP, Python scripting, DSA & automation</p>
-                        <div class="mt-auto d-flex justify-content-between align-items-center pt-2 border-top border-1">
-                            <span class="badge bg-light text-dark">2 Skills Listed</span>
-                            <span class="fw-bold small text-dark">Browse Domain &rarr;</span>
+                    <a href="matches.html?category=Programming" class="card-brutal p-4 h-100 d-flex flex-column text-decoration-none text-dark press">
+                        <span class="d-flex align-items-center justify-content-center rounded-2 border border-2 border-dark mb-3 text-primary" style="width: 44px; height: 44px; background: var(--primary-subtle); box-shadow: 2px 2px 0 #18181b;">
+                            <i class="bi bi-code-slash fs-5"></i>
+                        </span>
+                        <h5 class="fw-bold mb-1">Programming & IT</h5>
+                        <p class="text-muted small mb-3 flex-grow-1">Java OOP, Python scripting, DSA & automation</p>
+                        <div class="d-flex justify-content-between align-items-center pt-2 border-top border-1">
+                            <span class="chip-tag tag-surface" style="font-size: 0.68rem;">2 Skills Listed</span>
+                            <span class="fw-bold small text-primary">Browse Domain &rarr;</span>
                         </div>
                     </a>
                 </div>
 
                 <!-- 2. Web Development -->
                 <div class="col-lg-4 col-md-6">
-                    <a href="matches.html?category=Web Development" class="category-card-link h-100" id="btnCategoryWeb">
-                        <div class="category-icon-box bg-light text-primary">
-                            <i class="bi bi-globe"></i>
-                        </div>
-                        <h4 class="fw-bold mb-1 text-dark">Web Development</h4>
-                        <p class="text-muted small mb-3">HTML5, CSS3, modern JavaScript & Bootstrap</p>
-                        <div class="mt-auto d-flex justify-content-between align-items-center pt-2 border-top border-1">
-                            <span class="badge bg-light text-dark">1 Skill Listed</span>
-                            <span class="fw-bold small text-dark">Browse Domain &rarr;</span>
+                    <a href="matches.html?category=Web Development" class="card-brutal p-4 h-100 d-flex flex-column text-decoration-none text-dark press">
+                        <span class="d-flex align-items-center justify-content-center rounded-2 border border-2 border-dark mb-3 text-info" style="width: 44px; height: 44px; background: #e0f2fe; box-shadow: 2px 2px 0 #18181b;">
+                            <i class="bi bi-globe fs-5"></i>
+                        </span>
+                        <h5 class="fw-bold mb-1">Web Development</h5>
+                        <p class="text-muted small mb-3 flex-grow-1">HTML5, CSS3, modern JavaScript & Bootstrap</p>
+                        <div class="d-flex justify-content-between align-items-center pt-2 border-top border-1">
+                            <span class="chip-tag tag-surface" style="font-size: 0.68rem;">1 Skill Listed</span>
+                            <span class="fw-bold small text-info">Browse Domain &rarr;</span>
                         </div>
                     </a>
                 </div>
 
                 <!-- 3. Design & Creativity -->
                 <div class="col-lg-4 col-md-6">
-                    <a href="matches.html?category=Design" class="category-card-link h-100" id="btnCategoryDesign">
-                        <div class="category-icon-box bg-light text-danger">
-                            <i class="bi bi-palette"></i>
-                        </div>
-                        <h4 class="fw-bold mb-1 text-dark">Design & Creativity</h4>
-                        <p class="text-muted small mb-3">Photoshop editing, Figma UI/UX, typography & branding</p>
-                        <div class="mt-auto d-flex justify-content-between align-items-center pt-2 border-top border-1">
-                            <span class="badge bg-light text-dark">2 Skills Listed</span>
-                            <span class="fw-bold small text-dark">Browse Domain &rarr;</span>
+                    <a href="matches.html?category=Design" class="card-brutal p-4 h-100 d-flex flex-column text-decoration-none text-dark press">
+                        <span class="d-flex align-items-center justify-content-center rounded-2 border border-2 border-dark mb-3 text-danger" style="width: 44px; height: 44px; background: #ffe4e6; box-shadow: 2px 2px 0 #18181b;">
+                            <i class="bi bi-palette fs-5"></i>
+                        </span>
+                        <h5 class="fw-bold mb-1">Design & Creativity</h5>
+                        <p class="text-muted small mb-3 flex-grow-1">Photoshop editing, Figma UI/UX, typography & branding</p>
+                        <div class="d-flex justify-content-between align-items-center pt-2 border-top border-1">
+                            <span class="chip-tag tag-surface" style="font-size: 0.68rem;">2 Skills Listed</span>
+                            <span class="fw-bold small text-danger">Browse Domain &rarr;</span>
                         </div>
                     </a>
                 </div>
 
                 <!-- 4. Media & Editing -->
                 <div class="col-lg-4 col-md-6">
-                    <a href="matches.html?category=Photography & Video" class="category-card-link h-100" id="btnCategoryMedia">
-                        <div class="category-icon-box bg-light text-info">
-                            <i class="bi bi-camera-video"></i>
-                        </div>
-                        <h4 class="fw-bold mb-1 text-dark">Media & Editing</h4>
-                        <p class="text-muted small mb-3">Premiere Pro, DaVinci Resolve, post-production</p>
-                        <div class="mt-auto d-flex justify-content-between align-items-center pt-2 border-top border-1">
-                            <span class="badge bg-light text-dark">1 Skill Listed</span>
-                            <span class="fw-bold small text-dark">Browse Domain &rarr;</span>
+                    <a href="matches.html?category=Photography & Video" class="card-brutal p-4 h-100 d-flex flex-column text-decoration-none text-dark press">
+                        <span class="d-flex align-items-center justify-content-center rounded-2 border border-2 border-dark mb-3 text-warning" style="width: 44px; height: 44px; background: #fef3c7; box-shadow: 2px 2px 0 #18181b;">
+                            <i class="bi bi-camera-video fs-5"></i>
+                        </span>
+                        <h5 class="fw-bold mb-1">Media & Editing</h5>
+                        <p class="text-muted small mb-3 flex-grow-1">Premiere Pro, DaVinci Resolve, post-production</p>
+                        <div class="d-flex justify-content-between align-items-center pt-2 border-top border-1">
+                            <span class="chip-tag tag-surface" style="font-size: 0.68rem;">1 Skill Listed</span>
+                            <span class="fw-bold small text-warning">Browse Domain &rarr;</span>
                         </div>
                     </a>
                 </div>
 
                 <!-- 5. Communication & Languages -->
                 <div class="col-lg-4 col-md-6">
-                    <a href="matches.html?category=Communication" class="category-card-link h-100" id="btnCategoryCommunication">
-                        <div class="category-icon-box bg-light text-success">
-                            <i class="bi bi-chat-dots"></i>
-                        </div>
-                        <h4 class="fw-bold mb-1 text-dark">Communication & Soft Skills</h4>
-                        <p class="text-muted small mb-3">Public speaking, debate, presentations & interviews</p>
-                        <div class="mt-auto d-flex justify-content-between align-items-center pt-2 border-top border-1">
-                            <span class="badge bg-light text-dark">1 Skill Listed</span>
-                            <span class="fw-bold small text-dark">Browse Domain &rarr;</span>
+                    <a href="matches.html?category=Communication" class="card-brutal p-4 h-100 d-flex flex-column text-decoration-none text-dark press">
+                        <span class="d-flex align-items-center justify-content-center rounded-2 border border-2 border-dark mb-3 text-success" style="width: 44px; height: 44px; background: #dcfce7; box-shadow: 2px 2px 0 #18181b;">
+                            <i class="bi bi-chat-dots fs-5"></i>
+                        </span>
+                        <h5 class="fw-bold mb-1">Communication & Soft Skills</h5>
+                        <p class="text-muted small mb-3 flex-grow-1">Public speaking, debate, presentations & interviews</p>
+                        <div class="d-flex justify-content-between align-items-center pt-2 border-top border-1">
+                            <span class="chip-tag tag-surface" style="font-size: 0.68rem;">1 Skill Listed</span>
+                            <span class="fw-bold small text-success">Browse Domain &rarr;</span>
                         </div>
                     </a>
                 </div>
 
                 <!-- 6. Academic & Productivity -->
                 <div class="col-lg-4 col-md-6">
-                    <a href="matches.html?category=Academic & Productivity" class="category-card-link h-100" id="btnCategoryProductivity">
-                        <div class="category-icon-box bg-light text-warning">
-                            <i class="bi bi-journal-bookmark"></i>
-                        </div>
-                        <h4 class="fw-bold mb-1 text-dark">Academic & Productivity</h4>
-                        <p class="text-muted small mb-3">Advanced Excel formulas, pivot tables & data charts</p>
-                        <div class="mt-auto d-flex justify-content-between align-items-center pt-2 border-top border-1">
-                            <span class="badge bg-light text-dark">1 Skill Listed</span>
+                    <a href="matches.html?category=Academic & Productivity" class="card-brutal p-4 h-100 d-flex flex-column text-decoration-none text-dark press">
+                        <span class="d-flex align-items-center justify-content-center rounded-2 border border-2 border-dark mb-3 text-dark" style="width: 44px; height: 44px; background: #f4f4f7; box-shadow: 2px 2px 0 #18181b;">
+                            <i class="bi bi-journal-bookmark fs-5"></i>
+                        </span>
+                        <h5 class="fw-bold mb-1">Academic & Productivity</h5>
+                        <p class="text-muted small mb-3 flex-grow-1">Advanced Excel formulas, pivot tables & data charts</p>
+                        <div class="d-flex justify-content-between align-items-center pt-2 border-top border-1">
+                            <span class="chip-tag tag-surface" style="font-size: 0.68rem;">1 Skill Listed</span>
                             <span class="fw-bold small text-dark">Browse Domain &rarr;</span>
                         </div>
                     </a>
                 </div>
             </div>
+
+            <!-- POPULAR SKILLS IN DEMAND -->
+            <div class="card-brutal p-4 bg-light">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                    <h5 class="fw-bold mb-0 text-uppercase" style="letter-spacing: 0.04em;">
+                        <i class="bi bi-fire text-danger me-2"></i>POPULAR SKILLS IN DEMAND
+                    </h5>
+                    <span class="small font-monospace text-muted fw-bold">CLICK TO MATCH PEERS</span>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="matches.html?skill=Java" class="chip-tag tag-brand press text-decoration-none"><i class="bi bi-code-slash"></i> Java <span class="badge bg-dark text-white ms-1">2 Peers</span></a>
+                    <a href="matches.html?skill=Python" class="chip-tag tag-brand press text-decoration-none"><i class="bi bi-terminal"></i> Python <span class="badge bg-dark text-white ms-1">2 Peers</span></a>
+                    <a href="matches.html?skill=Photoshop" class="chip-tag tag-blush press text-decoration-none"><i class="bi bi-palette"></i> Photoshop <span class="badge bg-dark text-white ms-1">2 Peers</span></a>
+                    <a href="matches.html?skill=Public Speaking" class="chip-tag tag-mint press text-decoration-none"><i class="bi bi-megaphone"></i> Public Speaking <span class="badge bg-dark text-white ms-1">2 Peers</span></a>
+                    <a href="matches.html?skill=HTML/CSS/JS" class="chip-tag tag-surface press text-decoration-none"><i class="bi bi-globe"></i> Web Dev <span class="badge bg-dark text-white ms-1">2 Peers</span></a>
+                    <a href="matches.html?skill=Video Editing" class="chip-tag tag-amber press text-decoration-none"><i class="bi bi-camera-reels"></i> Video Editing <span class="badge bg-dark text-white ms-1">1 Peer</span></a>
+                    <a href="matches.html?skill=Graphic Design" class="chip-tag tag-blush press text-decoration-none"><i class="bi bi-vector-pen"></i> Graphic Design <span class="badge bg-dark text-white ms-1">1 Peer</span></a>
+                    <a href="matches.html?skill=Excel" class="chip-tag tag-mint press text-decoration-none"><i class="bi bi-table"></i> Excel & Data Analysis <span class="badge bg-dark text-white ms-1">2 Peers</span></a>
+                </div>
+            </div>
         </div>
     </section>
 
-    <!-- SECTION: POPULAR SKILLS & VERIFIED SYSTEM HIGHLIGHT -->
-    <section class="py-5 section-skills-highlight border-bottom border-2 border-dark">
+    <!-- SECTION 04: TRUST & VERIFICATION -->
+    <section id="verification" class="border-bottom border-2 border-dark bg-white py-5 py-lg-6">
+        <div class="container py-3">
+            <div class="row align-items-center g-5">
+                <div class="col-lg-6">
+                    <span class="chip-num">04 / TRUST & VERIFICATION</span>
+                    <h2 class="hero-brutal-title mt-4 mb-3" style="font-size: clamp(2rem, 3.8vw, 2.75rem);">
+                        Verified Skills, Real Trust
+                    </h2>
+                    <p class="text-muted fs-5 mb-4">
+                        Every skill can earn the coveted <strong>Verified</strong> badge through an administrative audit — so you always know who you're trading with.
+                    </p>
+
+                    <ul class="list-unstyled d-flex flex-column gap-3 mb-4">
+                        <li class="d-flex align-items-start gap-3">
+                            <i class="bi bi-shield-check text-success fs-5 mt-1"></i>
+                            <span class="text-dark"><strong>Upload certificates</strong> — like Adobe Certified or course completions</span>
+                        </li>
+                        <li class="d-flex align-items-start gap-3">
+                            <i class="bi bi-shield-check text-success fs-5 mt-1"></i>
+                            <span class="text-dark"><strong>Add project proof</strong> — repositories, portfolios, live working projects</span>
+                        </li>
+                        <li class="d-flex align-items-start gap-3">
+                            <i class="bi bi-shield-check text-success fs-5 mt-1"></i>
+                            <span class="text-dark"><strong>Record practical experience</strong> — campus committees, internships, roles</span>
+                        </li>
+                        <li class="d-flex align-items-start gap-3">
+                            <i class="bi bi-shield-check text-success fs-5 mt-1"></i>
+                            <span class="text-dark"><strong>Admin audit approves it</strong>, or returns clear resubmission feedback</span>
+                        </li>
+                    </ul>
+
+                    <a href="verification.html" class="btn-brutal-primary press">
+                        Explore Verification Workflow <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="card-brutal p-4 p-md-5 shadow-brutal-lg">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <span class="chip-num" style="font-size: 0.68rem; padding: 0.25rem 0.6rem;">AUDIT WORKFLOW</span>
+                            <span class="small font-monospace text-muted fw-bold">CAMPUS REVIEW</span>
+                        </div>
+
+                        <div class="d-flex flex-column gap-3">
+                            <!-- Approved Item -->
+                            <div class="p-3 border border-2 border-dark rounded-3" style="background-color: var(--light-bg, #f8f8fb);">
+                                <div class="d-flex justify-content-between align-items-center gap-2 mb-1">
+                                    <strong class="text-dark">Java Backend Architecture</strong>
+                                    <span class="chip-tag tag-mint" style="font-size: 0.68rem;"><i class="bi bi-patch-check-fill"></i> VERIFIED</span>
+                                </div>
+                                <p class="text-muted small mb-0">Spring Boot, Hibernate, MySQL, REST API</p>
+                            </div>
+
+                            <!-- Resubmission Feedback Item -->
+                            <div class="p-3 border border-2 border-dark rounded-3" style="background-color: var(--light-bg, #f8f8fb);">
+                                <div class="d-flex justify-content-between align-items-center gap-2 mb-1">
+                                    <strong class="text-dark">Graphic Design</strong>
+                                    <span class="chip-tag tag-blush" style="font-size: 0.68rem;">NEEDS RESUBMISSION</span>
+                                </div>
+                                <p class="text-muted small mb-0">
+                                    Feedback: add a complete design-system link with component variants and export proofs.
+                                </p>
+                            </div>
+                        </div>
+
+                        <p class="mt-4 pt-3 border-top border-2 border-dark font-monospace small fw-bold text-muted mb-0" style="letter-spacing: 0.08em; font-size: 0.72rem;">
+                            REQUIRES PROJECT & EXPERIENCE PROOF
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 05: PROGRESS & SCHEDULING -->
+    <section class="border-bottom border-2 border-dark py-5" style="background-color: #f4f4f7;">
         <div class="container py-2">
             <div class="row g-4">
-                <!-- Popular Skills Left Column -->
-                <div class="col-lg-6">
-                    <div class="card card-custom p-4 h-100">
-                        <span class="section-tag mb-2">03 / ACTIVE SKILLS</span>
-                        <h3 class="fw-bold mb-2">POPULAR SKILLS IN DEMAND</h3>
-                        <p class="text-muted small mb-4">Click any skill to instantly view students actively teaching or learning it right now:</p>
-
-                        <div class="d-flex flex-wrap gap-2">
-                            <a href="matches.html?skill=Java" class="skill-chip-neo">
-                                <i class="bi bi-code-slash text-primary"></i> Java
-                                <span class="badge bg-light text-dark ms-1">2 Peers</span>
-                            </a>
-                            <a href="matches.html?skill=Python" class="skill-chip-neo">
-                                <i class="bi bi-terminal text-primary"></i> Python
-                                <span class="badge bg-light text-dark ms-1">2 Peers</span>
-                            </a>
-                            <a href="matches.html?skill=Photoshop" class="skill-chip-neo">
-                                <i class="bi bi-palette text-danger"></i> Photoshop
-                                <span class="badge bg-light text-dark ms-1">2 Peers</span>
-                            </a>
-                            <a href="matches.html?skill=Public Speaking" class="skill-chip-neo">
-                                <i class="bi bi-megaphone text-success"></i> Public Speaking
-                                <span class="badge bg-light text-dark ms-1">2 Peers</span>
-                            </a>
-                            <a href="matches.html?skill=HTML/CSS/JS" class="skill-chip-neo">
-                                <i class="bi bi-globe text-info"></i> HTML/CSS/JS
-                                <span class="badge bg-light text-dark ms-1">2 Peers</span>
-                            </a>
-                            <a href="matches.html?skill=Video Editing" class="skill-chip-neo">
-                                <i class="bi bi-camera-reels text-warning"></i> Video Editing
-                                <span class="badge bg-light text-dark ms-1">1 Peer</span>
-                            </a>
-                            <a href="matches.html?skill=Graphic Design" class="skill-chip-neo">
-                                <i class="bi bi-vector-pen text-danger"></i> Graphic Design
-                                <span class="badge bg-light text-dark ms-1">1 Peer</span>
-                            </a>
-                            <a href="matches.html?skill=Excel & Data Analysis" class="skill-chip-neo">
-                                <i class="bi bi-table text-success"></i> Excel & Data Analysis
-                                <span class="badge bg-light text-dark ms-1">2 Peers</span>
-                            </a>
+                <div class="col-md-4">
+                    <div class="card-brutal p-4 h-100 d-flex align-items-start gap-3">
+                        <span class="d-flex align-items-center justify-content-center rounded-3 border border-2 border-dark text-warning shrink-0" style="width: 48px; height: 48px; background: #fef3c7; box-shadow: 2px 2px 0 #18181b;">
+                            <i class="bi bi-calendar2-range fs-4"></i>
+                        </span>
+                        <div>
+                            <h5 class="fw-bold text-uppercase mb-1">Session Scheduling</h5>
+                            <p class="text-muted small mb-0">Plan every session around your timetable — online or on campus.</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Verified Skills Right Column -->
-                <div class="col-lg-6">
-                    <div class="card card-custom p-4 h-100 bg-white">
-                        <span class="section-tag mb-2">04 / QUALITY AUDITING</span>
-                        <h3 class="fw-bold mb-2">VERIFIED SKILLS CREDENTIALS</h3>
-                        <p class="text-muted small mb-3">Our platform enforces an administrative audit workflow before a skill receives the coveted verified credential:</p>
-
-                        <div class="d-flex flex-column gap-3 mb-3">
-                            <div class="p-3 border border-2 border-dark rounded d-flex justify-content-between align-items-center">
-                                <div>
-                                    <strong class="d-block text-dark">Java Backend Architecture</strong>
-                                    <small class="text-muted">Spring Boot, Hibernate, MySQL, REST</small>
-                                </div>
-                                <span class="status-pill-verified">
-                                    <i class="bi bi-patch-check-fill me-1"></i>Γ£ô Verified
-                                </span>
-                            </div>
-                            <div class="p-3 border border-2 border-dark rounded d-flex justify-content-between align-items-center">
-                                <div>
-                                    <strong class="d-block text-dark">Adobe Photoshop Visual Design</strong>
-                                    <small class="text-muted">Brand identity, composition, multi-layer retouching</small>
-                                </div>
-                                <span class="status-pill-verified">
-                                    <i class="bi bi-patch-check-fill me-1"></i>Γ£ô Verified
-                                </span>
-                            </div>
-                            <div class="p-3 border border-2 border-dark rounded d-flex justify-content-between align-items-center">
-                                <div>
-                                    <strong class="d-block text-dark">Public Speaking & Debate</strong>
-                                    <small class="text-muted">Debate presidency, campus leadership & rhetoric</small>
-                                </div>
-                                <span class="status-pill-verified">
-                                    <i class="bi bi-patch-check-fill me-1"></i>Γ£ô Verified
-                                </span>
-                            </div>
+                <div class="col-md-4">
+                    <div class="card-brutal p-4 h-100 d-flex align-items-start gap-3">
+                        <span class="d-flex align-items-center justify-content-center rounded-3 border border-2 border-dark text-primary shrink-0" style="width: 48px; height: 48px; background: #ede9fe; box-shadow: 2px 2px 0 #18181b;">
+                            <i class="bi bi-graph-up-arrow fs-4"></i>
+                        </span>
+                        <div>
+                            <h5 class="fw-bold text-uppercase mb-1">Progress Tracking</h5>
+                            <p class="text-muted small mb-0">Your learning journey is tracked session by session, exchange by exchange.</p>
                         </div>
+                    </div>
+                </div>
 
-                        <div class="d-flex justify-content-between align-items-center pt-2 border-top border-2 border-dark">
-                            <span class="small fw-bold text-muted text-uppercase">Requires Project & Experience Proof</span>
-                            <a href="verification.html" class="fw-bold small text-dark">Learn About Audit &rarr;</a>
+                <div class="col-md-4">
+                    <div class="card-brutal p-4 h-100 d-flex align-items-start gap-3">
+                        <span class="d-flex align-items-center justify-content-center rounded-3 border border-2 border-dark text-dark shrink-0" style="width: 48px; height: 48px; background: #fef3c7; box-shadow: 2px 2px 0 #18181b;">
+                            <i class="bi bi-award-fill fs-4"></i>
+                        </span>
+                        <div>
+                            <h5 class="fw-bold text-uppercase mb-1">Peer Ratings & Reviews</h5>
+                            <p class="text-muted small mb-0">Rate peers after completion to keep the whole network trusted.</p>
                         </div>
                     </div>
                 </div>
@@ -367,315 +585,331 @@
         </div>
     </section>
 
-    <!-- SECTION: STUDENTS YOU MAY LEARN FROM -->
-    <section class="py-5 section-peers border-bottom border-2 border-dark">
+    <!-- SECTION 06: KITAB BHANDAR (THE MARKETPLACE) -->
+    <section id="kitab-bhandar" class="border-bottom border-2 border-dark py-5 py-lg-6" style="background-color: var(--primary-subtle, #ede9fe);">
         <div class="container py-3">
-            <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-2">
-                <div>
-                    <span class="section-tag">05 / CAMPUS PEERS</span>
-                    <h2 class="fw-bold mb-1">STUDENTS YOU MAY LEARN FROM</h2>
-                    <p class="text-muted small mb-0">Active student mentors from our university with real skills ready to barter</p>
+            <div class="row align-items-center g-5">
+                <div class="col-lg-6">
+                    <span class="chip-num">06 / THE MARKETPLACE</span>
+                    <h2 class="hero-brutal-title mt-4 mb-3" style="font-size: clamp(2.2rem, 4vw, 3.25rem);">
+                        Kitab Bhandar
+                    </h2>
+                    <p class="text-dark fs-5 mb-4" style="line-height: 1.6;">
+                        A student-run book & notes marketplace, built into SkillExchange. List your own written books, your notes, or pass on the books you no longer need — all within the same campus network you already trust.
+                    </p>
+                    <div class="d-flex flex-wrap gap-3">
+                        <button type="button" class="btn-brutal-primary press" data-bs-toggle="modal" data-bs-target="#kitabBhandarModal">
+                            Explore Kitab Bhandar <i class="bi bi-book ms-1"></i>
+                        </button>
+                        <a href="skills.html" class="btn-brutal-outline press">
+                            Browse Campus Skills
+                        </a>
+                    </div>
                 </div>
-                <a href="matches.html" class="btn btn-sm btn-primary-custom">
-                    <i class="bi bi-stars me-1"></i>View All Matching Students
+
+                <div class="col-lg-6">
+                    <div class="row g-3">
+                        <!-- Card 1 -->
+                        <div class="col-sm-4">
+                            <div class="card-brutal p-3 h-100 bg-white">
+                                <span class="d-flex align-items-center justify-content-center rounded-2 border border-2 border-dark mb-3 text-primary" style="width: 42px; height: 42px; box-shadow: 2px 2px 0 #18181b;">
+                                    <i class="bi bi-pencil-square fs-5"></i>
+                                </span>
+                                <h6 class="fw-bold mb-1">Your Own Books</h6>
+                                <p class="text-muted small mb-0" style="font-size: 0.8rem;">List books you've written and put your work in front of campus peers.</p>
+                            </div>
+                        </div>
+
+                        <!-- Card 2 -->
+                        <div class="col-sm-4">
+                            <div class="card-brutal p-3 h-100 bg-white">
+                                <span class="d-flex align-items-center justify-content-center rounded-2 border border-2 border-dark mb-3 text-primary" style="width: 42px; height: 42px; box-shadow: 2px 2px 0 #18181b;">
+                                    <i class="bi bi-journal-text fs-5"></i>
+                                </span>
+                                <h6 class="fw-bold mb-1">Handwritten Notes</h6>
+                                <p class="text-muted small mb-0" style="font-size: 0.8rem;">Turn your class notes into barter currency — best notes find eager readers.</p>
+                            </div>
+                        </div>
+
+                        <!-- Card 3 -->
+                        <div class="col-sm-4">
+                            <div class="card-brutal p-3 h-100 bg-white">
+                                <span class="d-flex align-items-center justify-content-center rounded-2 border border-2 border-dark mb-3 text-primary" style="width: 42px; height: 42px; box-shadow: 2px 2px 0 #18181b;">
+                                    <i class="bi bi-collection fs-5"></i>
+                                </span>
+                                <h6 class="fw-bold mb-1">Reference Books</h6>
+                                <p class="text-muted small mb-0" style="font-size: 0.8rem;">Give textbooks you've outgrown a second life with a junior who needs them.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 07: PRICING -->
+    <section id="pricing" class="border-bottom border-2 border-dark bg-white py-5 py-lg-6">
+        <div class="container py-3">
+            <div class="section-head-brutal">
+                <span class="chip-num">07 / PRICING</span>
+                <h2>Free for 30 Days. Seriously.</h2>
+                <p>Everything included during your trial — matching, chat, sessions, verification and Kitab Bhandar.</p>
+            </div>
+
+            <div class="row g-4 justify-content-center" style="max-width: 960px; margin: 0 auto;">
+                <!-- Trial Card -->
+                <div class="col-md-6">
+                    <div class="card-brutal p-4 p-md-5 h-100 d-flex flex-column">
+                        <span class="chip-tag tag-mint mb-3 align-self-start">YOUR FIRST 30 DAYS</span>
+                        <div class="display-4 fw-bold text-dark mb-1">₹0</div>
+                        <p class="font-monospace small fw-bold text-muted mb-4" style="letter-spacing: 0.08em; font-size: 0.72rem;">
+                            FULL ACCESS &bull; NO CARD NEEDED
+                        </p>
+
+                        <ul class="list-unstyled d-flex flex-column gap-3 mb-4 flex-grow-1">
+                            <li class="d-flex align-items-center gap-2">
+                                <i class="bi bi-shield-check text-success fs-5"></i>
+                                <span class="small text-dark">Unlimited skill listings & matches</span>
+                            </li>
+                            <li class="d-flex align-items-center gap-2">
+                                <i class="bi bi-shield-check text-success fs-5"></i>
+                                <span class="small text-dark">Online, offline & chat exchanges</span>
+                            </li>
+                            <li class="d-flex align-items-center gap-2">
+                                <i class="bi bi-shield-check text-success fs-5"></i>
+                                <span class="small text-dark">Verified skill submissions & audits</span>
+                            </li>
+                            <li class="d-flex align-items-center gap-2">
+                                <i class="bi bi-shield-check text-success fs-5"></i>
+                                <span class="small text-dark">Kitab Bhandar marketplace access</span>
+                            </li>
+                        </ul>
+
+                        <a href="register.html" class="btn-brutal-primary press w-100 text-center">
+                            Create Free Account
+                        </a>
+                    </div>
+                </div>
+
+                <!-- After Trial Card -->
+                <div class="col-md-6">
+                    <div class="card-brutal p-4 p-md-5 h-100 d-flex flex-column" style="background-color: var(--light-bg, #f8f8fb);">
+                        <span class="chip-tag tag-amber mb-3 align-self-start">AFTER YOUR TRIAL</span>
+                        <div class="display-4 fw-bold text-dark mb-1">Small fee</div>
+                        <p class="font-monospace small fw-bold text-muted mb-4" style="letter-spacing: 0.08em; font-size: 0.72rem;">
+                            PAY ONLY WHEN YOU EXCHANGE
+                        </p>
+
+                        <ul class="list-unstyled d-flex flex-column gap-3 mb-4 flex-grow-1">
+                            <li class="d-flex align-items-center gap-2">
+                                <i class="bi bi-lightbulb-fill text-warning fs-5"></i>
+                                <span class="small text-dark">A simple platform fee keeps SkillExchange running</span>
+                            </li>
+                            <li class="d-flex align-items-center gap-2">
+                                <i class="bi bi-lightbulb-fill text-warning fs-5"></i>
+                                <span class="small text-dark">Browsing and chatting stay permanently free</span>
+                            </li>
+                            <li class="d-flex align-items-center gap-2">
+                                <i class="bi bi-lightbulb-fill text-warning fs-5"></i>
+                                <span class="small text-dark">You'll always see the fee before it applies</span>
+                            </li>
+                            <li class="d-flex align-items-center gap-2">
+                                <i class="bi bi-lightbulb-fill text-warning fs-5"></i>
+                                <span class="small text-dark">Cancel your participation anytime without penalty</span>
+                            </li>
+                        </ul>
+
+                        <a href="register.html" class="btn-brutal-outline press w-100 text-center">
+                            Start Free Trial
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- LIVE PLATFORM METRICS -->
+    <section class="border-bottom border-2 border-dark py-4" style="background: #ffffff;">
+        <div class="container">
+            <div class="row g-3 text-center align-items-center justify-content-center">
+                <div class="col-6 col-md">
+                    <div class="p-3 border border-2 border-dark rounded-3" style="box-shadow: 2px 2px 0 #18181b;">
+                        <h3 class="fw-bold mb-0 text-dark" id="statStudents"><span class="spinner-border spinner-border-sm text-secondary"></span></h3>
+                        <span class="font-monospace small text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Students</span>
+                    </div>
+                </div>
+                <div class="col-6 col-md">
+                    <div class="p-3 border border-2 border-dark rounded-3" style="box-shadow: 2px 2px 0 #18181b;">
+                        <h3 class="fw-bold mb-0 text-primary" id="statSkills"><span class="spinner-border spinner-border-sm text-secondary"></span></h3>
+                        <span class="font-monospace small text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Skills Listed</span>
+                    </div>
+                </div>
+                <div class="col-6 col-md">
+                    <div class="p-3 border border-2 border-dark rounded-3" style="box-shadow: 2px 2px 0 #18181b;">
+                        <h3 class="fw-bold mb-0 text-success" id="statVerifiedSkills"><span class="spinner-border spinner-border-sm text-secondary"></span></h3>
+                        <span class="font-monospace small text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Verified Skills</span>
+                    </div>
+                </div>
+                <div class="col-6 col-md">
+                    <div class="p-3 border border-2 border-dark rounded-3" style="box-shadow: 2px 2px 0 #18181b;">
+                        <h3 class="fw-bold mb-0 text-warning" id="statActiveExchanges"><span class="spinner-border spinner-border-sm text-secondary"></span></h3>
+                        <span class="font-monospace small text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Active Swaps</span>
+                    </div>
+                </div>
+                <div class="col-6 col-md">
+                    <div class="p-3 border border-2 border-dark rounded-3" style="box-shadow: 2px 2px 0 #18181b;">
+                        <h3 class="fw-bold mb-0 text-danger" id="statCompletedExchanges"><span class="spinner-border spinner-border-sm text-secondary"></span></h3>
+                        <span class="font-monospace small text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Completed</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 08: FINAL CTA (YOUR MOVE) -->
+    <section class="grid-bg border-bottom border-2 border-dark py-5 py-lg-6 text-center">
+        <div class="container py-3" style="max-width: 680px;">
+            <span class="chip-num">08 / YOUR MOVE</span>
+            <h2 class="hero-brutal-title mt-4 mb-3" style="font-size: clamp(2.2rem, 4vw, 3.25rem);">
+                Ready to trade skills?
+            </h2>
+            <p class="text-muted fs-5 mb-4">
+                Join your campus peers on SkillExchange — teach what you know, learn what you don't.
+            </p>
+            <div class="d-flex justify-content-center">
+                <a href="register.html" class="btn-brutal-primary press px-5 py-3 fs-5">
+                    Start Free for 30 Days <i class="bi bi-arrow-right ms-2"></i>
                 </a>
             </div>
-
-            <div class="row g-4">
-                <!-- Student 1: Harsh Vardhan -->
-                <div class="col-lg-3 col-md-6">
-                    <div class="card card-custom p-3 h-100 d-flex flex-column justify-content-between">
-                        <div>
-                            <div class="d-flex align-items-center gap-3 mb-3">
-                                <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Harsh" class="avatar-img" alt="Harsh Vardhan">
-                                <div>
-                                    <h5 class="fw-bold mb-0">Harsh Vardhan</h5>
-                                    <small class="text-muted">2nd Year &bull; IT</small>
-                                    <div class="small text-warning fw-bold mt-1">Γÿà 4.8 / 5.0</div>
-                                </div>
-                            </div>
-                            <div class="mb-2">
-                                <span class="badge badge-verified w-100 justify-content-center py-1">
-                                    <i class="bi bi-patch-check-fill me-1"></i>Γ£ô Verified Skill Peer
-                                </span>
-                            </div>
-                            <div class="p-2 border border-2 border-dark rounded bg-light mb-3">
-                                <small class="text-muted d-block fw-bold text-uppercase" style="font-size:0.68rem;">Teaches:</small>
-                                <strong class="text-dark small d-block">Core Java & Web Dev</strong>
-                                <small class="text-muted d-block fw-bold text-uppercase mt-2" style="font-size:0.68rem;">Wants to Learn:</small>
-                                <span class="text-dark small d-block">Photoshop & Video Editing</span>
-                            </div>
-                        </div>
-                        <a href="matches.html?q=Harsh" class="btn btn-sm btn-outline-custom w-100 mt-2">
-                            View Profile & Exchange
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Student 2: Sejal Sharma -->
-                <div class="col-lg-3 col-md-6">
-                    <div class="card card-custom p-3 h-100 d-flex flex-column justify-content-between">
-                        <div>
-                            <div class="d-flex align-items-center gap-3 mb-3">
-                                <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Sejal" class="avatar-img" alt="Sejal Sharma">
-                                <div>
-                                    <h5 class="fw-bold mb-0">Sejal Sharma</h5>
-                                    <small class="text-muted">2nd Year &bull; IT</small>
-                                    <div class="small text-warning fw-bold mt-1">Γÿà 4.9 / 5.0</div>
-                                </div>
-                            </div>
-                            <div class="mb-2">
-                                <span class="badge badge-verified w-100 justify-content-center py-1">
-                                    <i class="bi bi-patch-check-fill me-1"></i>Γ£ô Verified Skill Peer
-                                </span>
-                            </div>
-                            <div class="p-2 border border-2 border-dark rounded bg-light mb-3">
-                                <small class="text-muted d-block fw-bold text-uppercase" style="font-size:0.68rem;">Teaches:</small>
-                                <strong class="text-dark small d-block">Photoshop & Graphic Design</strong>
-                                <small class="text-muted d-block fw-bold text-uppercase mt-2" style="font-size:0.68rem;">Wants to Learn:</small>
-                                <span class="text-dark small d-block">Java & Web Dev</span>
-                            </div>
-                        </div>
-                        <a href="matches.html?q=Sejal" class="btn btn-sm btn-outline-custom w-100 mt-2">
-                            View Profile & Exchange
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Student 3: Raza Khan -->
-                <div class="col-lg-3 col-md-6">
-                    <div class="card card-custom p-3 h-100 d-flex flex-column justify-content-between">
-                        <div>
-                            <div class="d-flex align-items-center gap-3 mb-3">
-                                <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Raza" class="avatar-img" alt="Raza Khan">
-                                <div>
-                                    <h5 class="fw-bold mb-0">Raza Khan</h5>
-                                    <small class="text-muted">3rd Year &bull; CS</small>
-                                    <div class="small text-warning fw-bold mt-1">Γÿà 4.5 / 5.0</div>
-                                </div>
-                            </div>
-                            <div class="mb-2">
-                                <span class="status-pill-pending w-100 d-inline-flex justify-content-center py-1">
-                                    <i class="bi bi-hourglass-split me-1"></i>Audit Pending
-                                </span>
-                            </div>
-                            <div class="p-2 border border-2 border-dark rounded bg-light mb-3">
-                                <small class="text-muted d-block fw-bold text-uppercase" style="font-size:0.68rem;">Teaches:</small>
-                                <strong class="text-dark small d-block">Python & Excel Analysis</strong>
-                                <small class="text-muted d-block fw-bold text-uppercase mt-2" style="font-size:0.68rem;">Wants to Learn:</small>
-                                <span class="text-dark small d-block">Public Speaking</span>
-                            </div>
-                        </div>
-                        <a href="matches.html?q=Raza" class="btn btn-sm btn-outline-custom w-100 mt-2">
-                            View Profile & Exchange
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Student 4: Udipti Sen -->
-                <div class="col-lg-3 col-md-6">
-                    <div class="card card-custom p-3 h-100 d-flex flex-column justify-content-between">
-                        <div>
-                            <div class="d-flex align-items-center gap-3 mb-3">
-                                <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Udipti" class="avatar-img" alt="Udipti Sen">
-                                <div>
-                                    <h5 class="fw-bold mb-0">Udipti Sen</h5>
-                                    <small class="text-muted">2nd Year &bull; IT</small>
-                                    <div class="small text-warning fw-bold mt-1">Γÿà 5.0 / 5.0</div>
-                                </div>
-                            </div>
-                            <div class="mb-2">
-                                <span class="badge badge-verified w-100 justify-content-center py-1">
-                                    <i class="bi bi-patch-check-fill me-1"></i>Γ£ô Verified Skill Peer
-                                </span>
-                            </div>
-                            <div class="p-2 border border-2 border-dark rounded bg-light mb-3">
-                                <small class="text-muted d-block fw-bold text-uppercase" style="font-size:0.68rem;">Teaches:</small>
-                                <strong class="text-dark small d-block">Public Speaking & Debate</strong>
-                                <small class="text-muted d-block fw-bold text-uppercase mt-2" style="font-size:0.68rem;">Wants to Learn:</small>
-                                <span class="text-dark small d-block">Python & Excel</span>
-                            </div>
-                        </div>
-                        <a href="matches.html?q=Udipti" class="btn btn-sm btn-outline-custom w-100 mt-2">
-                            View Profile & Exchange
-                        </a>
-                    </div>
-                </div>
-            </div>
         </div>
     </section>
 
-    <!-- SECTION: HOW IT WORKS (01 - 04 Process) -->
-    <section class="py-5 section-process border-bottom border-2 border-dark">
-        <div class="container py-3">
-            <div class="text-center mb-5">
-                <span class="section-tag mb-2">06 / WORKFLOW</span>
-                <h2 class="fw-bold mb-2">HOW IT WORKS</h2>
-                <p class="text-muted small mb-0" style="max-width: 580px; margin: 0 auto;">A transparent, zero-money exchange process built specifically for university peer learning</p>
-            </div>
-
-            <div class="row g-4">
-                <!-- Step 01 -->
-                <div class="col-lg-3 col-sm-6">
-                    <div class="process-step-card">
-                        <span class="process-step-number">01</span>
-                        <h4 class="fw-bold mb-2">CREATE PROFILE</h4>
-                        <p class="text-muted small mb-0">
-                            Register using your official university email domain (<code class="text-dark">@mgmmumbai.ac.in</code>) and specify your year of study and department.
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Step 02 -->
-                <div class="col-lg-3 col-sm-6">
-                    <div class="process-step-card">
-                        <span class="process-step-number">02</span>
-                        <h4 class="fw-bold mb-2">ADD YOUR SKILLS</h4>
-                        <p class="text-muted small mb-0">
-                            Catalog the skills you are capable of teaching and identify the wish-list of skills you need help learning from classmates.
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Step 03 -->
-                <div class="col-lg-3 col-sm-6">
-                    <div class="process-step-card">
-                        <span class="process-step-number">03</span>
-                        <h4 class="fw-bold mb-2">FIND A MATCH</h4>
-                        <p class="text-muted small mb-0">
-                            Our 5-factor explainable algorithm prioritizes mutual 2-way barter compatibility, verified badges, rating records, and campus proximity.
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Step 04 -->
-                <div class="col-lg-3 col-sm-6">
-                    <div class="process-step-card">
-                        <span class="process-step-number">04</span>
-                        <h4 class="fw-bold mb-2">EXCHANGE KNOWLEDGE</h4>
-                        <p class="text-muted small mb-0">
-                            Coordinate sessions via online video meeting, campus offline meet, or built-in chat, and complete the feedback loop with mutual star reviews.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- SECTION: PLATFORM STATISTICS (Real Database Data) -->
-    <section class="py-5 section-stats border-bottom border-2 border-dark" id="platformStatsSection">
-        <div class="container py-3">
-            <div class="text-center mb-5">
-                <span class="section-tag mb-2">07 / LIVE METRICS</span>
-                <h2 class="fw-bold mb-2">CAMPUS PLATFORM STATISTICS</h2>
-                <p class="text-muted small mb-0" style="max-width: 580px; margin: 0 auto;">Live verified metrics pulled directly from our database ΓÇö no artificial numbers.</p>
-            </div>
-
-            <div class="row g-4 justify-content-center text-center">
-                <!-- Students -->
-                <div class="col-lg-2 col-md-4 col-6">
-                    <div class="card card-custom p-3 h-100">
-                        <div class="d-inline-flex align-items-center justify-content-center border border-2 border-dark rounded mb-2 bg-light mx-auto" style="width: 44px; height: 44px;">
-                            <i class="bi bi-people-fill fs-4 text-primary"></i>
-                        </div>
-                        <h2 class="fw-bold mb-0 text-dark" id="statStudents"><span class="spinner-border spinner-border-sm text-secondary"></span></h2>
-                        <span class="text-muted small fw-bold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.05em;">Students</span>
-                    </div>
-                </div>
-
-                <!-- Skills -->
-                <div class="col-lg-2 col-md-4 col-6">
-                    <div class="card card-custom p-3 h-100">
-                        <div class="d-inline-flex align-items-center justify-content-center border border-2 border-dark rounded mb-2 bg-light mx-auto" style="width: 44px; height: 44px;">
-                            <i class="bi bi-award-fill fs-4 text-warning"></i>
-                        </div>
-                        <h2 class="fw-bold mb-0 text-dark" id="statSkills"><span class="spinner-border spinner-border-sm text-secondary"></span></h2>
-                        <span class="text-muted small fw-bold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.05em;">Skills Cataloged</span>
-                    </div>
-                </div>
-
-                <!-- Verified Skills -->
-                <div class="col-lg-2 col-md-4 col-6">
-                    <div class="card card-custom p-3 h-100">
-                        <div class="d-inline-flex align-items-center justify-content-center border border-2 border-dark rounded mb-2 bg-light mx-auto" style="width: 44px; height: 44px;">
-                            <i class="bi bi-patch-check-fill fs-4 text-success"></i>
-                        </div>
-                        <h2 class="fw-bold mb-0 text-dark" id="statVerifiedSkills"><span class="spinner-border spinner-border-sm text-secondary"></span></h2>
-                        <span class="text-muted small fw-bold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.05em;">Verified Skills</span>
-                    </div>
-                </div>
-
-                <!-- Active Exchanges -->
-                <div class="col-lg-2 col-md-4 col-6">
-                    <div class="card card-custom p-3 h-100">
-                        <div class="d-inline-flex align-items-center justify-content-center border border-2 border-dark rounded mb-2 bg-light mx-auto" style="width: 44px; height: 44px;">
-                            <i class="bi bi-arrow-repeat fs-4 text-info"></i>
-                        </div>
-                        <h2 class="fw-bold mb-0 text-dark" id="statActiveExchanges"><span class="spinner-border spinner-border-sm text-secondary"></span></h2>
-                        <span class="text-muted small fw-bold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.05em;">Active Trades</span>
-                    </div>
-                </div>
-
-                <!-- Completed Exchanges -->
-                <div class="col-lg-2 col-md-4 col-6">
-                    <div class="card card-custom p-3 h-100">
-                        <div class="d-inline-flex align-items-center justify-content-center border border-2 border-dark rounded mb-2 bg-light mx-auto" style="width: 44px; height: 44px;">
-                            <i class="bi bi-check-circle-fill fs-4 text-danger"></i>
-                        </div>
-                        <h2 class="fw-bold mb-0 text-dark" id="statCompletedExchanges"><span class="spinner-border spinner-border-sm text-secondary"></span></h2>
-                        <span class="text-muted small fw-bold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.05em;">Completed Trades</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- SECTION: FINAL CTA -->
-    <section class="py-5 section-final-cta border-bottom border-2 border-dark">
-        <div class="container py-3">
-            <div class="card card-custom p-4 p-md-5 text-center bg-white" style="border-width: 3px; max-width: 800px; margin: 0 auto;">
-                <span class="section-tag mb-2 d-inline-block">PARTICIPATE TODAY</span>
-                <h2 class="fw-bold mb-3 display-6">HAVE A SKILL TO SHARE?</h2>
-                <p class="text-muted mb-4 mx-auto" style="max-width: 540px;">
-                    Exchange your programming, design, media, or academic expertise with fellow students. Earn verified badges through project and experience validation.
-                </p>
-                <div class="d-flex flex-wrap gap-3 justify-content-center">
-                    <a href="skills.html" class="btn btn-primary-custom btn-lg">
-                        <i class="bi bi-plus-circle me-2"></i>Add Your Skill
-                    </a>
-                    <a href="matches.html" class="btn btn-outline-custom btn-lg">
-                        <i class="bi bi-search me-2"></i>Explore Campus Skills
-                    </a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer>
+    <!-- FOOTER -->
+    <footer class="bg-dark text-white border-top border-2 border-dark py-5">
         <div class="container">
-            <div class="row align-items-center g-3">
-                <div class="col-md-6 text-center text-md-start">
-                    <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-2 mb-1">
-                        <span class="brand-icon-box" style="width:28px; height:28px; font-size:0.85rem;"><i class="bi bi-arrow-left-right"></i></span>
-                        <strong class="text-dark">Student Skill Exchange Platform</strong>
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-4">
+                <div class="d-flex align-items-center gap-3">
+                    <span class="d-flex align-items-center justify-content-center rounded-2 border border-2 border-white bg-white text-dark" style="width: 38px; height: 38px; box-shadow: 2px 2px 0 rgba(255,255,255,0.3);">
+                        <i class="bi bi-arrow-left-right fs-6"></i>
+                    </span>
+                    <div>
+                        <div class="fw-bold text-white fs-5" style="letter-spacing: -0.02em;">
+                            SKILL<span style="color: #a5b4fc;">EXCHANGE</span>
+                        </div>
+                        <div class="font-monospace small text-white-50" style="letter-spacing: 0.08em; font-size: 0.7rem;">
+                            TRADE SKILLS, NOT MONEY
+                        </div>
                     </div>
-                    <p class="mb-0 text-muted small">Peer-to-peer university learning platform &bull; Department of Information Technology</p>
                 </div>
-                <div class="col-md-6 text-center text-md-end">
-                    <div class="d-flex justify-content-center justify-content-md-end gap-3 small fw-bold">
-                        <a href="matches.html" class="text-dark text-decoration-none">Matches</a>
-                        <a href="skills.html" class="text-dark text-decoration-none">Skills</a>
-                        <a href="verification.html" class="text-dark text-decoration-none">Verification</a>
-                        <a href="login.html" class="text-dark text-decoration-none">Sign In</a>
-                    </div>
-                    <small class="text-muted d-block mt-1">Built with Java Spring Boot 3, Spring Data JPA, Spring Security & Vanilla ES6</small>
+
+                <div class="d-flex flex-wrap justify-content-center gap-4 fw-bold small text-white-50">
+                    <a href="#how-it-works" class="text-white-50 text-decoration-none hover-white">How It Works</a>
+                    <a href="#modes" class="text-white-50 text-decoration-none hover-white">Learning Modes</a>
+                    <a href="#verification" class="text-white-50 text-decoration-none hover-white">Verification</a>
+                    <a href="#kitab-bhandar" class="text-white-50 text-decoration-none hover-white">Kitab Bhandar</a>
+                    <a href="#pricing" class="text-white-50 text-decoration-none hover-white">Pricing</a>
+                    <a href="skills.html" class="text-white-50 text-decoration-none hover-white">Skills</a>
+                    <a href="links.html" class="text-white-50 text-decoration-none hover-white">Links Hub</a>
+                    <a href="login.html" class="text-white text-decoration-none">Sign In</a>
+                </div>
+
+                <div class="font-monospace small text-white-50" style="font-size: 0.72rem;">
+                    &copy; 2026 SkillExchange
                 </div>
             </div>
         </div>
     </footer>
 
-    <!-- Bootstrap 5 JS -->
+    <!-- KITAB BHANDAR INTERACTIVE PREVIEW MODAL -->
+    <div class="modal fade" id="kitabBhandarModal" tabindex="-1" aria-labelledby="kitabBhandarModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content card-brutal border-2 border-dark" style="border-radius: 12px; box-shadow: 6px 6px 0 #18181b;">
+                <div class="modal-header border-bottom border-2 border-dark p-4 bg-light">
+                    <div>
+                        <span class="chip-num" style="font-size: 0.68rem; padding: 0.2rem 0.5rem;">CAMPUS MARKETPLACE</span>
+                        <h4 class="modal-title fw-bold mt-2" id="kitabBhandarModalLabel">Kitab Bhandar &bull; Student Book & Notes Barter</h4>
+                        <p class="text-muted small mb-0">Browse student books, class notes, and textbook copies available for mutual swap.</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="row g-3">
+                        <!-- Book Listing 1 -->
+                        <div class="col-md-6">
+                            <div class="p-3 border border-2 border-dark rounded-3 h-100 bg-white" style="box-shadow: 2px 2px 0 #18181b;">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span class="chip-tag tag-mint" style="font-size: 0.65rem;">HANDWRITTEN NOTES</span>
+                                    <span class="small fw-bold text-success">Barter Available</span>
+                                </div>
+                                <h6 class="fw-bold mb-1">Engineering Mathematics III</h6>
+                                <p class="text-muted small mb-2">Complete semester handwritten notes with solved previous year questions & formulas.</p>
+                                <div class="d-flex justify-content-between align-items-center pt-2 border-top border-1">
+                                    <small class="text-dark fw-bold">By Harsh Vardhan (IT)</small>
+                                    <a href="register.html" class="btn-brutal-primary btn-brutal-sm py-1 px-2" style="font-size: 0.72rem;">Request Trade</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Book Listing 2 -->
+                        <div class="col-md-6">
+                            <div class="p-3 border border-2 border-dark rounded-3 h-100 bg-white" style="box-shadow: 2px 2px 0 #18181b;">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span class="chip-tag tag-brand" style="font-size: 0.65rem;">AUTHORED COMPANION</span>
+                                    <span class="small fw-bold text-primary">Barter Available</span>
+                                </div>
+                                <h6 class="fw-bold mb-1">Clean Java & OOP Companion</h6>
+                                <p class="text-muted small mb-2">Self-authored quick review guide covering design patterns, collections, and multi-threading.</p>
+                                <div class="d-flex justify-content-between align-items-center pt-2 border-top border-1">
+                                    <small class="text-dark fw-bold">By Raza Khan (CS)</small>
+                                    <a href="register.html" class="btn-brutal-primary btn-brutal-sm py-1 px-2" style="font-size: 0.72rem;">Request Trade</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Book Listing 3 -->
+                        <div class="col-md-6">
+                            <div class="p-3 border border-2 border-dark rounded-3 h-100 bg-white" style="box-shadow: 2px 2px 0 #18181b;">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span class="chip-tag tag-amber" style="font-size: 0.65rem;">REFERENCE TEXTBOOK</span>
+                                    <span class="small fw-bold text-warning">2nd Year Copy</span>
+                                </div>
+                                <h6 class="fw-bold mb-1">Operating System Concepts (Silberschatz)</h6>
+                                <p class="text-muted small mb-2">Hardcover standard textbook in pristine condition. Seeking Database Management textbook.</p>
+                                <div class="d-flex justify-content-between align-items-center pt-2 border-top border-1">
+                                    <small class="text-dark fw-bold">By Udipti Sen (IT)</small>
+                                    <a href="register.html" class="btn-brutal-primary btn-brutal-sm py-1 px-2" style="font-size: 0.72rem;">Request Trade</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Book Listing 4 -->
+                        <div class="col-md-6">
+                            <div class="p-3 border border-2 border-dark rounded-3 h-100 bg-white" style="box-shadow: 2px 2px 0 #18181b;">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span class="chip-tag tag-blush" style="font-size: 0.65rem;">DESIGN WORKBOOK</span>
+                                    <span class="small fw-bold text-danger">Digital & Print</span>
+                                </div>
+                                <h6 class="fw-bold mb-1">UI/UX & Figma Component Workbook</h6>
+                                <p class="text-muted small mb-2">Comprehensive visual design reference workbook with color theory and layout grid templates.</p>
+                                <div class="d-flex justify-content-between align-items-center pt-2 border-top border-1">
+                                    <small class="text-dark fw-bold">By Sejal Sharma (IT)</small>
+                                    <a href="register.html" class="btn-brutal-primary btn-brutal-sm py-1 px-2" style="font-size: 0.72rem;">Request Trade</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top border-2 border-dark p-3 bg-light d-flex justify-content-between">
+                    <span class="small text-muted font-monospace">Exchange books or notes with campus peers without currency</span>
+                    <a href="register.html" class="btn-brutal-primary btn-brutal-sm press">
+                        List Your Book or Notes
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Custom Application JS -->
     <script src="js/app.js"></script>

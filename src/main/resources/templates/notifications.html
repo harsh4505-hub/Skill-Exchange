@@ -14,8 +14,8 @@
     <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container">
             <a class="navbar-brand" href="index.html">
-                <i class="bi bi-arrow-left-right text-gradient fs-3"></i>
-                <span class="text-gradient">SkillExchange</span>
+                <span class="brand-icon-box"><i class="bi bi-arrow-left-right"></i></span>
+                <span class="brand-title">SkillExchange</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
                 <span class="navbar-toggler-icon"></span>
@@ -40,20 +40,19 @@
     <div class="container py-4">
         <div id="alertContainer"></div>
 
-        <div class="card card-custom p-4 mb-4">
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <div>
-                    <h3 class="fw-bold mb-1"><i class="bi bi-bell-fill text-primary-custom me-2"></i>Notifications</h3>
-                    <p class="text-muted small mb-0">Stay updated on exchange requests, accepted trades, messages, and admin verification decisions</p>
-                </div>
-                <button class="btn btn-outline-custom btn-sm" onclick="markAllRead()">
-                    <i class="bi bi-check-all me-1"></i> Mark All as Read
-                </button>
+        <div class="mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <div class="text-uppercase fw-bold text-muted small mb-1" style="font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.06em;">Activity Feed</div>
+                <h2 class="fw-bold mb-1">Notifications & Activity</h2>
+                <p class="text-muted small mb-0">Stay updated on exchange requests, accepted trades, messages, and admin verification decisions</p>
             </div>
+            <button class="btn btn-outline-custom btn-sm" onclick="markAllRead()">
+                <i class="bi bi-check-all me-1"></i> Mark All as Read
+            </button>
         </div>
 
         <div class="card card-custom p-4">
-            <div id="notificationsList" class="d-flex flex-column gap-2">
+            <div id="notificationsList" class="d-flex flex-column gap-3">
                 <div class="text-center py-4 text-muted small">Loading alerts...</div>
             </div>
         </div>
@@ -109,7 +108,7 @@
                 case 'VERIFICATION_APPROVED': return 'bi-patch-check-fill text-success';
                 case 'VERIFICATION_REJECTED': return 'bi-shield-x text-danger';
                 case 'EXCHANGE_COMPLETED': return 'bi-trophy text-warning';
-                case 'NEW_REVIEW': return 'bi-star-fill text-warning';
+                case 'NEW_REVIEW': return 'bi-chat-square-quote-fill text-primary';
                 default: return 'bi-bell text-secondary';
             }
         }

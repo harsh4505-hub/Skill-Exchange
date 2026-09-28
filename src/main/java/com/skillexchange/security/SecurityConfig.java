@@ -54,8 +54,9 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/skills/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/students/public/**").permitAll()
 
-                // Admin-only Endpoints
-                .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
+                // Admin Endpoints with Role-Based Access Control
+                .requestMatchers(HttpMethod.PUT, "/api/admin/users/*/role").hasAuthority("ROLE_SUPER_ADMIN")
+                .requestMatchers("/api/admin/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPER_ADMIN")
 
                 // Student and General Authenticated API Endpoints
                 .requestMatchers("/api/students/**").authenticated()

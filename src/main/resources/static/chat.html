@@ -47,6 +47,9 @@
                     <div class="text-uppercase fw-bold text-muted small mb-1" style="font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.06em;">Coordination</div>
                     <h5 class="fw-bold mb-0">Active Peers</h5>
                 </div>
+                <div class="conversation-search-box">
+                    <input type="text" id="conversationSearchInput" class="conversation-search-input" placeholder="Search peers or messages..." oninput="handlePeerSearch(this.value)">
+                </div>
                 <div id="conversationPartnersList" class="flex-grow-1 overflow-auto">
                     <div class="text-center py-4 text-muted small">Loading conversations...</div>
                 </div>
@@ -85,6 +88,19 @@
                     </div>
                 </div>
 
+                <!-- Chat & Notes Subnav Bar -->
+                <div class="chat-subnav-bar" id="chatSubnavBar">
+                    <div class="chat-tab-group">
+                        <button type="button" class="chat-tab-btn active" id="tabChatBtn" onclick="switchConversationTab('chat')">
+                            <i class="bi bi-chat-dots me-1"></i>Chat
+                        </button>
+                        <button type="button" class="chat-tab-btn" id="tabNotesBtn" onclick="switchConversationTab('notes')">
+                            <i class="bi bi-journal-text me-1"></i>Notes
+                        </button>
+                    </div>
+                    <div id="headerOnlineSessionWidget" class="d-flex align-items-center gap-2"></div>
+                </div>
+
                 <!-- Messages Stream -->
                 <div class="chat-messages" id="chatMessagesBox">
                     <div class="text-center my-auto py-5">
@@ -93,6 +109,22 @@
                         </div>
                         <h5 class="fw-bold mb-1">Pick a Student Conversation</h5>
                         <p class="text-muted small mb-0">Choose an exchange partner from the left sidebar to coordinate timings or meeting locations.</p>
+                    </div>
+                </div>
+
+                <!-- Notes Pane -->
+                <div class="chat-notes-pane d-none" id="chatNotesBox">
+                    <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom border-dark border-1">
+                        <div>
+                            <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-journal-bookmark me-1 text-primary"></i> Exchange Session Notes</h6>
+                            <small class="text-muted" style="font-size: 0.75rem;">Save takeaways, key topics, and doubts discussed during your skill exchange</small>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-primary-custom" onclick="openCreateNoteModal()">
+                            <i class="bi bi-plus-lg me-1"></i>+ Add Note
+                        </button>
+                    </div>
+                    <div id="notesContainer" class="d-flex flex-column gap-3">
+                        <div class="text-center py-5 text-muted small">Select a peer conversation to view and write notes.</div>
                     </div>
                 </div>
 
@@ -105,6 +137,12 @@
 
                     <form onsubmit="handleSendMessage(event)" id="chatMessageForm">
                         <div class="chat-composer-box">
+                            <!-- Doubt Mode Banner -->
+                            <div id="chatDoubtBanner" class="chat-doubt-banner d-none">
+                                <span><i class="bi bi-question-circle-fill me-1"></i> <strong>DOUBT MODE ACTIVE:</strong> Your next message will be highlighted as a Doubt</span>
+                                <button type="button" class="btn-close" style="font-size: 0.65rem;" onclick="toggleDoubtMode(false)"></button>
+                            </div>
+
                             <!-- Quoted reply preview bar -->
                             <div id="chatReplyBar" class="chat-reply-bar d-none">
                                 <div class="d-flex align-items-center gap-2 overflow-hidden">
@@ -144,15 +182,20 @@
                                 <div id="emojiGrid" class="emoji-grid-area"></div>
                             </div>
 
-                            <!-- Main Composer Controls: [ Emoji ] [ Message input ] [ Attachment ] [ Send ] -->
+                            <!-- Main Composer Controls: [ Emoji ] [ Doubt ] [ Message input ] [ Attachment ] [ Send ] -->
                             <div class="chat-composer-row">
                                 <!-- 1. Emoji Button -->
                                 <button type="button" class="chat-icon-btn" id="chatEmojiBtn" onclick="toggleEmojiPicker(event)" title="Add emoji" disabled>
                                     <i class="bi bi-emoji-smile"></i>
                                 </button>
 
+                                <!-- Doubt Button -->
+                                <button type="button" class="chat-icon-btn" id="chatDoubtBtn" onclick="toggleDoubtMode()" title="Toggle Doubt mode: Highlight question/doubt" disabled>
+                                    <i class="bi bi-question-diamond"></i>
+                                </button>
+
                                 <!-- 2. Text Message Input / Textarea -->
-                                <textarea id="chatMessageInput" class="chat-composer-input" placeholder="Type a message or discuss meeting timings..." rows="1" disabled></textarea>
+                                <textarea id="chatMessageInput" class="chat-composer-input" placeholder="Type a message, discuss timings, or ask a doubt..." rows="1" disabled></textarea>
 
                                 <!-- 3. Separate Attachment Button & Dropdown Menu -->
                                 <div class="dropdown">
@@ -177,6 +220,39 @@
                     <!-- Hidden File Inputs -->
                     <input type="file" id="chatImageInput" accept="image/png,image/jpeg,image/webp" class="d-none" onchange="handleChatFileSelect(event, 'image')">
                     <input type="file" id="chatDocInput" accept=".pdf,.doc,.docx,.txt,.zip" class="d-none" onchange="handleChatFileSelect(event, 'document')">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create / Edit Session Note Modal -->
+    <div class="modal fade" id="createEditNoteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content border border-2 border-dark" style="box-shadow: 4px 4px 0 var(--border-color); background: #ffffff;">
+                <div class="modal-header py-2 px-3 bg-light border-bottom border-2 border-dark">
+                    <h6 class="modal-title fw-bold" id="noteModalTitle"><i class="bi bi-journal-plus me-1 text-primary"></i> Add Session Note</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-3">
+                    <form id="noteForm" onsubmit="handleSaveNoteSubmit(event)">
+                        <input type="hidden" id="noteIdInput" value="">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-uppercase small" style="font-family: var(--font-mono); font-size: 0.72rem;">Topic / Subject <span class="text-danger">*</span></label>
+                            <input type="text" id="noteTopicInput" class="form-control" placeholder="e.g. Java OOP Concepts, React Hooks" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-uppercase small" style="font-family: var(--font-mono); font-size: 0.72rem;">Notes & Key Takeaways <span class="text-danger">*</span></label>
+                            <textarea id="noteContentInput" class="form-control" rows="4" placeholder="- Classes and objects&#10;- Inheritance and polymorphism&#10;- Method overriding" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-uppercase small" style="font-family: var(--font-mono); font-size: 0.72rem;">Important Doubt / Question <span class="text-muted fw-normal">(Optional)</span></label>
+                            <textarea id="noteDoubtInput" class="form-control" rows="2" placeholder="e.g. How does method overriding work under the hood?"></textarea>
+                        </div>
+                        <div class="d-flex justify-content-end gap-2 pt-2">
+                            <button type="button" class="btn btn-sm btn-outline-custom" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" id="saveNoteBtn" class="btn btn-sm btn-primary-custom">Save Note</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -245,6 +321,12 @@
         let activeReply = null; // { id, senderName, text }
         let isSending = false;
         let lastFailedPayload = null;
+        let isDoubtMode = false;
+        let cachedPartners = [];
+        let currentActiveTab = 'chat';
+        let currentExchangeRequestId = null;
+        let activeOnlineSession = null;
+        let currentConversationNotes = [];
 
         // Emoji dataset for compact picker
         const EMOJI_CATEGORIES = {
@@ -280,7 +362,7 @@
         });
 
         // -------------------------------------------------------------------
-        // CONVERSATIONS LIST
+        // CONVERSATIONS LIST & SEARCH
         // -------------------------------------------------------------------
 
         async function loadConversations() {
@@ -310,12 +392,26 @@
                 }
             }
 
+            cachedPartners = partners;
+
             if (partners.length === 0) {
                 container.innerHTML = `<div class="p-3 text-center text-muted small">No active chat partners yet. Propose or accept an exchange from 'Find Matches'!</div>`;
                 return;
             }
 
-            container.innerHTML = partners.map(p => {
+            renderSidebarPartners(cachedPartners);
+        }
+
+        function renderSidebarPartners(list) {
+            const container = document.getElementById('conversationPartnersList');
+            if (!container) return;
+
+            if (!list || list.length === 0) {
+                container.innerHTML = `<div class="p-3 text-center text-muted small">No matching students found</div>`;
+                return;
+            }
+
+            container.innerHTML = list.map(p => {
                 const avatar = p.avatarUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=${p.userId}`;
                 const previewSnippet = p.lastMessage ? escapeHtml(p.lastMessage) : (p.department || 'Active Peer');
                 return `
@@ -334,6 +430,68 @@
                     </div>
                 `;
             }).join('');
+        }
+
+        function handlePeerSearch(query) {
+            const q = (query || '').toLowerCase().trim();
+            if (!q) {
+                renderSidebarPartners(cachedPartners);
+                return;
+            }
+            const filtered = cachedPartners.filter(p => {
+                const name = (p.fullName || '').toLowerCase();
+                const dept = (p.department || '').toLowerCase();
+                const lastMsg = (p.lastMessage || '').toLowerCase();
+                return name.includes(q) || dept.includes(q) || lastMsg.includes(q);
+            });
+            renderSidebarPartners(filtered);
+        }
+
+        // -------------------------------------------------------------------
+        // CHAT VS NOTES TAB SWITCHING
+        // -------------------------------------------------------------------
+
+        function switchConversationTab(tab) {
+            currentActiveTab = tab;
+            const chatBtn = document.getElementById('tabChatBtn');
+            const notesBtn = document.getElementById('tabNotesBtn');
+            const messagesBox = document.getElementById('chatMessagesBox');
+            const notesBox = document.getElementById('chatNotesBox');
+            const inputArea = document.getElementById('chatInputArea');
+
+            if (tab === 'chat') {
+                if (chatBtn) chatBtn.classList.add('active');
+                if (notesBtn) notesBtn.classList.remove('active');
+                if (messagesBox) messagesBox.classList.remove('d-none');
+                if (notesBox) notesBox.classList.add('d-none');
+                if (inputArea) inputArea.classList.remove('d-none');
+                fetchMessages(true);
+            } else {
+                if (notesBtn) notesBtn.classList.add('active');
+                if (chatBtn) chatBtn.classList.remove('active');
+                if (messagesBox) messagesBox.classList.add('d-none');
+                if (notesBox) notesBox.classList.remove('d-none');
+                if (inputArea) inputArea.classList.add('d-none');
+                loadNotesForCurrentPartner();
+            }
+        }
+
+        // -------------------------------------------------------------------
+        // DOUBT MODE TOGGLE
+        // -------------------------------------------------------------------
+
+        function toggleDoubtMode(force) {
+            isDoubtMode = typeof force === 'boolean' ? force : !isDoubtMode;
+            const doubtBtn = document.getElementById('chatDoubtBtn');
+            const doubtBanner = document.getElementById('chatDoubtBanner');
+
+            if (isDoubtMode) {
+                if (doubtBtn) doubtBtn.classList.add('doubt-active');
+                if (doubtBanner) doubtBanner.classList.remove('d-none');
+            } else {
+                if (doubtBtn) doubtBtn.classList.remove('doubt-active');
+                if (doubtBanner) doubtBanner.classList.add('d-none');
+            }
         }
 
         // -------------------------------------------------------------------
@@ -376,24 +534,124 @@
             const msgInput = document.getElementById('chatMessageInput');
             const attachBtn = document.getElementById('chatAttachBtn');
             const emojiBtn = document.getElementById('chatEmojiBtn');
+            const doubtBtn = document.getElementById('chatDoubtBtn');
 
             msgInput.disabled = isPartnerBlocked;
             attachBtn.disabled = isPartnerBlocked;
             emojiBtn.disabled = isPartnerBlocked;
+            if (doubtBtn) doubtBtn.disabled = isPartnerBlocked;
 
             updateSendButtonState();
             hideSendError();
             cancelReply();
             clearSelectedAttachment();
+            toggleDoubtMode(false);
+
+            // Fetch partner's exchange details and any active online sessions
+            await loadPartnerExchangeAndSession(partnerId);
 
             // Fetch messages and scroll
             await fetchMessages(true);
 
+            // Check if shareSessionId query parameter is present to prefill session invite
+            await checkShareSessionParam();
+
+            // Fetch notes for this partner / exchange
+            await loadNotesForCurrentPartner();
+
             // Real-time polling (every 2.5s) for responsive status updates
             if (pollTimer) clearInterval(pollTimer);
-            pollTimer = setInterval(() => fetchMessages(false), 2500);
+            pollTimer = setInterval(() => {
+                if (currentActiveTab === 'chat') {
+                    fetchMessages(false);
+                }
+            }, 2500);
 
             msgInput.focus();
+        }
+
+        async function loadPartnerExchangeAndSession(partnerId) {
+            currentExchangeRequestId = null;
+            activeOnlineSession = null;
+            const sessionWidget = document.getElementById('headerOnlineSessionWidget');
+            if (sessionWidget) sessionWidget.innerHTML = '';
+
+            try {
+                const exRes = await API.get('/api/exchange-requests');
+                if (exRes && exRes.success && CurrentUser) {
+                    const match = exRes.data.find(r => 
+                        (r.status === 'ACCEPTED' || r.status === 'COMPLETED') &&
+                        ((r.senderId === CurrentUser.userId && r.receiverId === partnerId) ||
+                         (r.receiverId === CurrentUser.userId && r.senderId === partnerId))
+                    );
+
+                    if (match) {
+                        currentExchangeRequestId = match.id;
+                        const offered = match.skillOfferedName || match.skillOffered || 'Skill';
+                        const requested = match.skillRequestedName || match.skillWanted || match.skillRequested || '';
+                        const skillStr = requested ? `${offered} ⇄ ${requested}` : offered;
+                        const detailEl = document.getElementById('chatPartnerDetails');
+                        if (detailEl) {
+                            detailEl.innerText = `Skill Exchange: ${skillStr}`;
+                        }
+                    }
+                }
+
+                // Check online sessions
+                const sesRes = await API.get('/api/online-sessions');
+                if (sesRes && sesRes.success && CurrentUser) {
+                    const session = sesRes.data.find(s => 
+                        ((s.teacherId === CurrentUser.userId && s.learnerId === partnerId) ||
+                         (s.learnerId === CurrentUser.userId && s.teacherId === partnerId)) &&
+                        s.status !== 'Cancelled'
+                    );
+
+                    if (session) {
+                        activeOnlineSession = session;
+                        if (sessionWidget) {
+                            sessionWidget.innerHTML = `
+                                <span class="badge bg-primary text-white" style="font-size:0.75rem;">
+                                    <i class="bi bi-camera-video me-1"></i>${escapeHtml(session.skillName)}: ${session.status}
+                                </span>
+                                <a href="${escapeHtml(session.zoomJoinUrl)}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-primary-custom py-0 px-2" style="font-size:0.75rem;">
+                                    <i class="bi bi-box-arrow-up-right me-1"></i>Join Zoom
+                                </a>
+                            `;
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error("Error loading exchange info or online session:", err);
+            }
+        }
+
+        async function checkShareSessionParam() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const shareSessionId = urlParams.get('shareSessionId');
+            if (!shareSessionId) return;
+
+            try {
+                const res = await API.get(`/api/online-sessions/${shareSessionId}`);
+                if (res && res.success && res.data) {
+                    const s = res.data;
+                    const prefilled = `Online skill session scheduled\n\nSkill: ${s.skillName || 'Skill Exchange'}\nDate: ${s.scheduledDate || 'Upcoming'}\nTime: ${s.scheduledTime || 'TBD'}\nDuration: ${s.durationMinutes || 60} minutes\n\nJoin Session:\n${s.zoomJoinUrl || 'https://zoom.us'}`;
+
+                    const input = document.getElementById('chatMessageInput');
+                    input.value = prefilled;
+                    input.style.height = 'auto';
+                    input.style.height = Math.min(input.scrollHeight, 110) + 'px';
+                    updateSendButtonState();
+
+                    // Switch back to chat tab if not active
+                    switchConversationTab('chat');
+
+                    // Remove shareSessionId from URL cleanly
+                    const cleanUrl = window.location.pathname + `?partnerId=${currentPartnerId}`;
+                    window.history.replaceState({}, document.title, cleanUrl);
+                }
+            } catch (err) {
+                console.error("Failed to load session for sharing in chat:", err);
+            }
         }
 
         async function checkPartnerBlockStatus() {
@@ -483,6 +741,34 @@
                     }
                 }
 
+                // Detect Zoom Meeting Link or Session Scheduled Text
+                const zoomRegex = /(https:\/\/[^\s]*zoom\.us\/[^\s]+)/i;
+                const zoomMatch = (m.messageText || '').match(zoomRegex);
+                let zoomCardMarkup = '';
+
+                if (zoomMatch || (m.messageText && m.messageText.includes('Online skill session scheduled'))) {
+                    const zoomUrl = zoomMatch ? zoomMatch[1] : '';
+                    zoomCardMarkup = `
+                        <div class="chat-zoom-card">
+                            <div class="chat-zoom-header">
+                                <div class="d-flex align-items-center gap-1">
+                                    <i class="bi bi-camera-video-fill text-primary"></i>
+                                    <strong style="font-size:0.85rem;">Online Skill Exchange Session</strong>
+                                </div>
+                                <span class="chat-zoom-badge">Zoom Meeting</span>
+                            </div>
+                            ${zoomUrl ? `
+                                <div class="mt-2 pt-2 border-top border-1 border-secondary-subtle d-flex justify-content-between align-items-center">
+                                    <span class="small text-muted font-monospace" style="font-size:0.72rem;">Live meeting room</span>
+                                    <a href="${zoomUrl}" target="_blank" rel="noopener noreferrer" class="chat-zoom-btn">
+                                        <i class="bi bi-box-arrow-up-right"></i> Join Session
+                                    </a>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                }
+
                 // Quoted Reply Context Rendering
                 let replyMarkup = '';
                 if (m.replyTo) {
@@ -523,8 +809,10 @@
                     <div class="chat-bubble-wrapper ${isSent ? 'sent' : 'received'}" id="msgRow_${m.id}">
                         ${actionsBar}
                         <div class="chat-bubble ${isSent ? 'sent' : 'received'}">
+                            ${m.isDoubt ? `<div class="chat-doubt-tag"><i class="bi bi-question-circle-fill"></i> DOUBT</div>` : ''}
                             ${replyMarkup}
                             ${attachmentMarkup}
+                            ${zoomCardMarkup}
                             ${safeText ? `<div class="chat-message-text">${safeText}</div>` : ''}
                             <div class="chat-timestamp">
                                 <span>${timeStr}</span>
@@ -630,6 +918,7 @@
             const payload = {
                 receiverId: currentPartnerId,
                 messageText: text,
+                isDoubt: isDoubtMode,
                 attachmentUrl: null,
                 attachmentType: null,
                 attachmentName: null,
@@ -676,6 +965,9 @@
                 input.style.height = 'auto';
                 clearSelectedAttachment();
                 cancelReply();
+                if (isDoubtMode) {
+                    toggleDoubtMode(false);
+                }
                 lastFailedPayload = null;
 
                 await fetchMessages(true);
@@ -1022,6 +1314,176 @@
                 } else {
                     showAlert(res.message || "Failed to unblock student.", "danger");
                 }
+            }
+        }
+
+        // -------------------------------------------------------------------
+        // SESSION NOTES MANAGEMENT
+        // -------------------------------------------------------------------
+
+        async function loadNotesForCurrentPartner() {
+            const container = document.getElementById('notesContainer');
+            if (!container) return;
+
+            if (!currentPartnerId) {
+                container.innerHTML = `<div class="text-center py-4 text-muted small">Select a peer conversation to view notes.</div>`;
+                return;
+            }
+
+            try {
+                const res = await API.get('/api/exchange-notes');
+                if (res && res.success) {
+                    const myId = CurrentUser ? CurrentUser.userId : null;
+                    currentConversationNotes = res.data.filter(n => {
+                        if (currentExchangeRequestId && n.exchangeRequestId === currentExchangeRequestId) return true;
+                        if (n.studentId === myId) return true;
+                        return false;
+                    });
+                    renderNotesList(currentConversationNotes);
+                } else {
+                    container.innerHTML = `<div class="text-center py-4 text-muted small">No session notes found.</div>`;
+                }
+            } catch (err) {
+                console.error("Failed to load notes:", err);
+                container.innerHTML = `<div class="text-center py-4 text-muted small">No notes saved yet.</div>`;
+            }
+        }
+
+        function renderNotesList(notes) {
+            const container = document.getElementById('notesContainer');
+            if (!container) return;
+
+            if (!notes || notes.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-5 text-muted small">
+                        <div class="stat-icon-box mx-auto mb-3" style="width: 48px; height: 48px;">
+                            <i class="bi bi-journal-text text-dark fs-4"></i>
+                        </div>
+                        <strong class="d-block text-dark">No session notes yet</strong>
+                        Click <strong>+ Add Note</strong> above to capture key takeaways, concepts, or doubts from your exchange.
+                    </div>
+                `;
+                return;
+            }
+
+            const myId = CurrentUser ? CurrentUser.userId : null;
+
+            container.innerHTML = notes.map(note => {
+                const isAuthor = note.studentId === myId;
+                const createdDate = note.createdAt ? new Date(note.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+                return `
+                    <div class="chat-note-card" id="noteCard_${note.id}">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h6 class="chat-note-topic mb-1">${escapeHtml(note.topic || 'Untitled Topic')}</h6>
+                                <small class="text-muted" style="font-size:0.72rem; font-family: var(--font-mono);">
+                                    <i class="bi bi-person me-1"></i>${isAuthor ? 'You' : escapeHtml(note.studentName || 'Peer')} • ${createdDate}
+                                </small>
+                            </div>
+                            ${isAuthor ? `
+                                <div class="d-flex align-items-center gap-1">
+                                    <button type="button" class="btn btn-sm btn-outline-custom py-0 px-2" style="font-size:0.75rem;" onclick="openEditNoteModal(${note.id})" title="Edit Note">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size:0.75rem;" onclick="deleteNote(${note.id})" title="Delete Note">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            ` : ''}
+                        </div>
+                        <div class="chat-note-body">${escapeHtml(note.content || '')}</div>
+                        ${note.doubt ? `
+                            <div class="chat-note-doubt-box">
+                                <i class="bi bi-question-circle-fill me-1"></i><strong>Important Doubt:</strong> ${escapeHtml(note.doubt)}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openCreateNoteModal() {
+            if (!currentPartnerId) {
+                showAlert("Please select a conversation partner first.", "warning");
+                return;
+            }
+            document.getElementById('noteIdInput').value = '';
+            document.getElementById('noteModalTitle').innerHTML = `<i class="bi bi-journal-plus me-1 text-primary"></i> Add Session Note`;
+            document.getElementById('noteTopicInput').value = '';
+            document.getElementById('noteContentInput').value = '';
+            document.getElementById('noteDoubtInput').value = '';
+            new bootstrap.Modal(document.getElementById('createEditNoteModal')).show();
+        }
+
+        function openEditNoteModal(noteId) {
+            const note = currentConversationNotes.find(n => n.id === noteId);
+            if (!note) return;
+
+            document.getElementById('noteIdInput').value = note.id;
+            document.getElementById('noteModalTitle').innerHTML = `<i class="bi bi-pencil-square me-1 text-primary"></i> Edit Session Note`;
+            document.getElementById('noteTopicInput').value = note.topic || '';
+            document.getElementById('noteContentInput').value = note.content || '';
+            document.getElementById('noteDoubtInput').value = note.doubt || '';
+            new bootstrap.Modal(document.getElementById('createEditNoteModal')).show();
+        }
+
+        async function handleSaveNoteSubmit(e) {
+            e.preventDefault();
+            const noteId = document.getElementById('noteIdInput').value;
+            const topic = document.getElementById('noteTopicInput').value.trim();
+            const content = document.getElementById('noteContentInput').value.trim();
+            const doubt = document.getElementById('noteDoubtInput').value.trim();
+
+            if (!topic || !content) return;
+
+            const modalEl = document.getElementById('createEditNoteModal');
+            const modalInstance = bootstrap.Modal.getInstance(modalEl);
+
+            try {
+                if (noteId) {
+                    const res = await API.put(`/api/exchange-notes/${noteId}`, { topic, content, doubt });
+                    if (res && res.success) {
+                        modalInstance.hide();
+                        showAlert("Note updated successfully.", "success");
+                        await loadNotesForCurrentPartner();
+                    } else {
+                        showAlert(res.message || "Failed to update note.", "danger");
+                    }
+                } else {
+                    const res = await API.post('/api/exchange-notes', {
+                        exchangeRequestId: currentExchangeRequestId,
+                        sessionId: activeOnlineSession ? activeOnlineSession.id : null,
+                        topic,
+                        content,
+                        doubt
+                    });
+                    if (res && res.success) {
+                        modalInstance.hide();
+                        showAlert("Note saved.", "success");
+                        await loadNotesForCurrentPartner();
+                    } else {
+                        showAlert(res.message || "Failed to save note.", "danger");
+                    }
+                }
+            } catch (err) {
+                console.error("Save note error:", err);
+                showAlert("Error saving note.", "danger");
+            }
+        }
+
+        async function deleteNote(noteId) {
+            if (!confirm("Are you sure you want to delete this session note?")) return;
+            try {
+                const res = await API.delete(`/api/exchange-notes/${noteId}`);
+                if (res && res.success) {
+                    showAlert("Note deleted.", "info");
+                    await loadNotesForCurrentPartner();
+                } else {
+                    showAlert(res.message || "Failed to delete note.", "danger");
+                }
+            } catch (err) {
+                console.error("Delete note error:", err);
+                showAlert("Failed to delete note.", "danger");
             }
         }
 

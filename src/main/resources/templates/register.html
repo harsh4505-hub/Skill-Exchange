@@ -14,8 +14,8 @@
     <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container">
             <a class="navbar-brand" href="index.html">
-                <i class="bi bi-arrow-left-right text-gradient fs-3"></i>
-                <span class="text-gradient">SkillExchange</span>
+                <span class="brand-icon-box"><i class="bi bi-arrow-left-right"></i></span>
+                <span class="brand-title">Skill<strong>Exchange</strong></span>
             </a>
             <div class="ms-auto">
                 <a href="login.html" class="btn btn-outline-custom btn-sm">Already Registered? Sign In</a>
@@ -31,30 +31,48 @@
 
                 <div class="card card-custom p-4 p-md-5">
                     <div class="text-center mb-4">
-                        <span class="badge badge-custom badge-mutual mb-2 px-3 py-2">Join Peer Network</span>
-                        <h2 class="fw-bold mb-1">Create Student Account</h2>
-                        <p class="text-muted small">Fill in your academic details to start exchanging skills with fellow students</p>
+                        <span class="section-tag mb-1">MEMBERSHIP</span>
+                        <h2 class="fw-bold mb-1">CREATE STUDENT ACCOUNT</h2>
+                        <p class="text-muted small">Register with your credentials or 1-click Google to start trading skills</p>
+                    </div>
+
+                    <!-- 1-Click Firebase Google Registration -->
+                    <button type="button" class="btn btn-outline-dark w-100 py-2 mb-3 fw-bold d-flex align-items-center justify-content-center shadow-sm" onclick="handleGoogleAuth(this)" style="border: 2px solid #0f172a; border-radius: 8px; background: #fff;">
+                        <svg class="me-2" width="20" height="20" viewBox="0 0 24 24">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                        </svg>
+                        Sign Up with Google (1-Click)
+                    </button>
+
+                    <div class="d-flex align-items-center my-3">
+                        <hr class="flex-grow-1 border-secondary">
+                        <span class="px-2 text-muted small fw-bold">OR REGISTER WITH FORM</span>
+                        <hr class="flex-grow-1 border-secondary">
                     </div>
 
                     <form id="registerForm" onsubmit="handleRegister(event)">
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">Full Name *</label>
+                                <label class="form-label">Full Name <span class="text-danger">*</span></label>
                                 <input type="text" id="fullName" class="form-control" placeholder="e.g. Rahul Sharma" required>
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">College Email *</label>
-                                <input type="email" id="email" class="form-control" placeholder="rahul@mgmmumbai.ac.in" required>
+                                <label class="form-label" for="email">College Email Address <span class="text-danger">*</span></label>
+                                <input type="email" id="email" class="form-control" placeholder="e.g. yourname@mgmmumbai.ac.in" required>
+                                <div id="emailHelp" class="small text-muted mt-1" style="font-size:0.75rem;">Official student email required (@mgmmumbai.ac.in)</div>
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">College / University *</label>
-                                <input type="text" id="college" class="form-control" placeholder="e.g. Institute of Engineering & Tech" required>
+                                <label class="form-label">College / Institute <span class="text-danger">*</span></label>
+                                <input type="text" id="college" class="form-control" placeholder="e.g. College of Engineering & Tech" required>
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">Department *</label>
+                                <label class="form-label">Department <span class="text-danger">*</span></label>
                                 <select id="department" class="form-select" required>
                                     <option value="" disabled selected>Select Department</option>
                                     <option value="Information Technology">Information Technology</option>
@@ -68,7 +86,7 @@
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">Year of Study *</label>
+                                <label class="form-label">Year of Study <span class="text-danger">*</span></label>
                                 <select id="yearOfStudy" class="form-select" required>
                                     <option value="" disabled selected>Select Year</option>
                                     <option value="1st Year">1st Year (Freshman)</option>
@@ -80,12 +98,12 @@
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">Phone Number</label>
+                                <label class="form-label">Phone Number</label>
                                 <input type="tel" id="phone" class="form-control" placeholder="e.g. 9876543210">
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold" for="password">Password *</label>
+                                <label class="form-label" for="password">Password <span class="text-danger">*</span></label>
                                 <div class="password-input-wrapper position-relative">
                                     <input type="password" id="password" class="form-control password-field-input" placeholder="At least 6 characters" minlength="6" required autocomplete="new-password">
                                     <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('password', this)" aria-label="Show password" title="Show password" tabindex="0">
@@ -95,7 +113,7 @@
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold" for="confirmPassword">Confirm Password *</label>
+                                <label class="form-label" for="confirmPassword">Confirm Password <span class="text-danger">*</span></label>
                                 <div class="password-input-wrapper position-relative">
                                     <input type="password" id="confirmPassword" class="form-control password-field-input" placeholder="Repeat password" required autocomplete="new-password">
                                     <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('confirmPassword', this)" aria-label="Show confirm password" title="Show confirm password" tabindex="0">
@@ -108,7 +126,7 @@
                         <div class="form-check mt-4 mb-4">
                             <input class="form-check-input" type="checkbox" id="termsCheck" required>
                             <label class="form-check-label small text-muted" for="termsCheck">
-                                I agree to the <a href="javascript:void(0)" class="text-primary-custom text-decoration-none">Community Guidelines</a> and verify that I am an enrolled college student.
+                                I agree to the <a href="javascript:void(0)" class="fw-bold text-dark text-decoration-underline">Community Guidelines</a> and verify that I am an actively enrolled college student.
                             </label>
                         </div>
 
@@ -119,7 +137,7 @@
 
                     <div class="text-center mt-4">
                         <span class="text-muted small">Already have an account? </span>
-                        <a href="login.html" class="small fw-semibold text-primary-custom text-decoration-none">Sign in here</a>
+                        <a href="login.html" class="small fw-bold text-dark text-decoration-underline">Sign in here</a>
                     </div>
                 </div>
             </div>
@@ -130,15 +148,33 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/app.js"></script>
     <script>
+        // Check if user is already authenticated
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const res = await API.get('/api/auth/current-user');
+                if (res && res.success && res.data && res.data.authenticated) {
+                    try {
+                        localStorage.setItem('landingPageVisited', 'true');
+                        localStorage.setItem('se_landing_viewed', 'true');
+                    } catch (e) {}
+                    window.location.replace('index.html');
+                }
+            } catch (e) {}
+        });
+
         async function handleRegister(e) {
             e.preventDefault();
             const emailInput = document.getElementById('email');
             const email = (emailInput.value || '').trim();
 
-            // Enforce official college domain ending with @mgmmumbai.ac.in
-            const collegeEmailPattern = /^[a-zA-Z0-9._%+-]+@mgmmumbai\.ac\.in$/i;
-            if (!collegeEmailPattern.test(email)) {
-                showAlert("Please use your official college email address ending with @mgmmumbai.ac.in.", "danger");
+            // College email validation
+            if (!email) {
+                showAlert("Enter your college email address.", "danger");
+                emailInput.focus();
+                return;
+            }
+            if (!email.toLowerCase().endsWith('@mgmmumbai.ac.in')) {
+                showAlert("Use your @mgmmumbai.ac.in email address.", "danger");
                 emailInput.focus();
                 return;
             }
@@ -147,7 +183,8 @@
             const confirm = document.getElementById('confirmPassword').value;
 
             if (pwd !== confirm) {
-                showAlert("Password and Confirm Password do not match!", "danger");
+                showAlert("Passwords do not match.", "danger");
+                document.getElementById('confirmPassword').focus();
                 return;
             }
 
@@ -168,10 +205,22 @@
 
             const res = await API.post('/api/auth/register', payload);
             if (res && res.success) {
-                showAlert("Account successfully created! Redirecting to your dashboard...", "success");
-                setTimeout(() => {
-                    window.location.href = "dashboard.html";
-                }, 1000);
+                try {
+                    localStorage.setItem('landingPageVisited', 'true');
+                    localStorage.setItem('se_landing_viewed', 'true');
+                } catch (e) {}
+                if (res.requiresVerification) {
+                    sessionStorage.setItem('pendingVerificationEmail', email);
+                    showAlert("Registration initiated! A 6-digit verification code has been dispatched to your email. Redirecting...", "success");
+                    setTimeout(() => {
+                        window.location.href = `verify-email.html?email=${encodeURIComponent(email)}`;
+                    }, 1200);
+                } else {
+                    showAlert("Account successfully created! Redirecting to your dashboard...", "success");
+                    setTimeout(() => {
+                        window.location.href = "dashboard.html";
+                    }, 1000);
+                }
             } else {
                 showAlert(res.message || "Registration failed. Please check your details.", "danger");
                 btn.disabled = false;
@@ -179,5 +228,6 @@
             }
         }
     </script>
+    <script type="module" src="js/firebase-auth.js"></script>
 </body>
 </html>

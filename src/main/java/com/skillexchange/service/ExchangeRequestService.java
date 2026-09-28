@@ -42,6 +42,12 @@ public class ExchangeRequestService {
     @Autowired
     private NotificationService notificationService;
 
+    @Autowired
+    private SkillVerificationRepository skillVerificationRepository;
+
+    @Autowired
+    private StudentProfileService studentProfileService;
+
     @Transactional
     public ExchangeRequestDto sendRequest(Long senderId, ExchangeRequestDto dto) {
         if (senderId.equals(dto.getReceiverId())) {
@@ -246,5 +252,221 @@ public class ExchangeRequestService {
         dto.setStatus(req.getStatus());
         dto.setCreatedAt(req.getCreatedAt());
         return dto;
+    }
+
+    public java.util.Map<String, Object> getRequestDetails(Long requestId, Long currentUserId) {
+        ExchangeRequest req = requestRepository.findById(requestId)
+                .orElseThrow(() -> new ResourceNotFoundException("Exchange proposal not found: " + requestId));
+
+        User currentUser = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("Current user not found: " + currentUserId));
+
+        boolean isAdmin = "ROLE_ADMIN".equals(currentUser.getRole());
+        boolean isParticipant = req.getSender().getId().equals(currentUserId) || req.getReceiver().getId().equals(currentUserId);
+
+        if (!isParticipant && !isAdmin) {
+            throw new UnauthorizedException("Access Denied: You are not authorized to view the details of this exchange request.");
+        }
+
+        java.util.Map<String, Object> senderDetails = buildStudentQualificationDetails(req.getSender().getId(), req.getSkillOffered().getId());
+        java.util.Map<String, Object> receiverDetails = buildStudentQualificationDetails(req.getReceiver().getId(), req.getSkillRequested().getId());
+
+        boolean isIncoming = req.getReceiver().getId().equals(currentUserId);
+        boolean isSender = req.getSender().getId().equals(currentUserId);
+
+        java.util.Map<String, Object> requestMap = new java.util.HashMap<>();
+        requestMap.put("id", req.getId());
+        requestMap.put("senderId", req.getSender().getId());
+        requestMap.put("senderName", req.getSender().getStudentProfile() != null ? req.getSender().getStudentProfile().getFullName() : req.getSender().getEmail());
+        requestMap.put("senderEmail", req.getSender().getEmail());
+        requestMap.put("receiverId", req.getReceiver().getId());
+        requestMap.put("receiverName", req.getReceiver().getStudentProfile() != null ? req.getReceiver().getStudentProfile().getFullName() : req.getReceiver().getEmail());
+        requestMap.put("receiverEmail", req.getReceiver().getEmail());
+        requestMap.put("skillOfferedId", req.getSkillOffered().getId());
+        requestMap.put("skillOfferedName", req.getSkillOffered().getName());
+        requestMap.put("skillRequestedId", req.getSkillRequested().getId());
+        requestMap.put("skillRequestedName", req.getSkillRequested().getName());
+        requestMap.put("learningMode", req.getLearningMode());
+        requestMap.put("message", req.getMessage());
+        requestMap.put("status", req.getStatus());
+        requestMap.put("createdAt", req.getCreatedAt() != null ? req.getCreatedAt().toString() : java.time.LocalDateTime.now().toString());
+        requestMap.put("isIncoming", isIncoming);
+        requestMap.put("isSender", isSender);
+
+        java.util.Map<String, Object> offeredSkillDetails = new java.util.HashMap<>();
+        offeredSkillDetails.put("skillId", req.getSkillOffered().getId());
+        offeredSkillDetails.put("skillName", req.getSkillOffered().getName());
+        offeredSkillDetails.put("categoryName", req.getSkillOffered().getCategory() != null ? req.getSkillOffered().getCategory().getName() : "General");
+        offeredSkillDetails.put("proficiencyLevel", "Competent");
+        @SuppressWarnings("unchecked")
+        java.util.Map<String, Object> senderVerSummary = (java.util.Map<String, Object>) senderDetails.get("verification");
+        offeredSkillDetails.put("isVerified", senderVerSummary != null && Boolean.TRUE.equals(senderVerSummary.get("offeredSkillVerified")));
+        offeredSkillDetails.put("verificationStatus", senderVerSummary != null ? senderVerSummary.get("offeredSkillStatus") : "NOT_VERIFIED");
+        offeredSkillDetails.put("adminComment", senderVerSummary != null ? senderVerSummary.get("adminComment") : "");
+
+        java.util.Map<String, Object> requestedSkillDetails = new java.util.HashMap<>();
+        requestedSkillDetails.put("skillId", req.getSkillRequested().getId());
+        requestedSkillDetails.put("skillName", req.getSkillRequested().getName());
+        requestedSkillDetails.put("categoryName", req.getSkillRequested().getCategory() != null ? req.getSkillRequested().getCategory().getName() : "General");
+        requestedSkillDetails.put("urgencyLevel", "Standard");
+
+        java.util.Map<String, Object> viewer = new java.util.HashMap<>();
+        viewer.put("userId", currentUserId);
+        viewer.put("role", currentUser.getRole());
+        viewer.put("isParticipant", isParticipant);
+        viewer.put("isSender", isSender);
+        viewer.put("isIncoming", isIncoming);
+        viewer.put("canAcceptOrReject", isIncoming && "PENDING".equals(req.getStatus()));
+        viewer.put("canChat", "ACCEPTED".equals(req.getStatus()));
+        viewer.put("canComplete", isParticipant && "ACCEPTED".equals(req.getStatus()));
+        viewer.put("canRate", isParticipant && "COMPLETED".equals(req.getStatus()));
+
+        java.util.Map<String, Object> result = new java.util.HashMap<>();
+        result.put("request", requestMap);
+        result.put("sender", senderDetails.get("profile"));
+        result.put("receiver", receiverDetails.get("profile"));
+        result.put("projects", senderDetails.get("projects"));
+        result.put("experiences", senderDetails.get("experiences"));
+        result.put("certificates", senderDetails.get("certificates"));
+        result.put("verification", senderDetails.get("verification"));
+        result.put("senderDetails", senderDetails);
+        result.put("receiverDetails", receiverDetails);
+        result.put("receiverProjects", receiverDetails.get("projects"));
+        result.put("receiverExperiences", receiverDetails.get("experiences"));
+        result.put("receiverCertificates", receiverDetails.get("certificates"));
+        result.put("receiverVerification", receiverDetails.get("verification"));
+        result.put("offeredSkillDetails", offeredSkillDetails);
+        result.put("requestedSkillDetails", requestedSkillDetails);
+        result.put("viewer", viewer);
+
+        return result;
+    }
+
+    private java.util.Map<String, Object> buildStudentQualificationDetails(Long userId, Long focusSkillId) {
+        com.skillexchange.dto.StudentProfileDto prof = studentProfileService.getProfileDto(userId);
+        List<SkillVerification> verifications = skillVerificationRepository.findByStudentIdOrderBySubmissionDateDesc(userId);
+
+        List<java.util.Map<String, Object>> projects = new java.util.ArrayList<>();
+        List<java.util.Map<String, Object>> experiences = new java.util.ArrayList<>();
+        List<java.util.Map<String, Object>> certificates = new java.util.ArrayList<>();
+
+        SkillVerification focusVer = null;
+        for (SkillVerification v : verifications) {
+            if (v.getSkill().getId().equals(focusSkillId)) {
+                focusVer = v;
+                break;
+            }
+        }
+
+        for (SkillVerification v : verifications) {
+            if (v.getProjectTitle() != null && !v.getProjectTitle().trim().isEmpty()) {
+                java.util.Map<String, Object> p = new java.util.HashMap<>();
+                p.put("id", v.getId());
+                p.put("studentId", userId);
+                p.put("title", v.getProjectTitle());
+                p.put("description", v.getProjectDescription());
+                p.put("technologies", v.getProjectTechnologies());
+                p.put("link", v.getProjectLink());
+                p.put("proofUrl", v.getProjectProofUrl());
+                p.put("reviewStatus", v.getStatus());
+                p.put("isOfferedSkillProject", v.getSkill().getId().equals(focusSkillId));
+                projects.add(p);
+            }
+
+            if (v.getExperienceTitle() != null && !v.getExperienceTitle().trim().isEmpty()) {
+                java.util.Map<String, Object> e = new java.util.HashMap<>();
+                e.put("id", v.getId());
+                e.put("studentId", userId);
+                e.put("title", v.getExperienceTitle());
+                e.put("organization", v.getExperienceOrganization());
+                e.put("description", v.getExperienceDescription());
+                e.put("duration", v.getExperienceDuration());
+                e.put("startDate", v.getExperienceStartDate());
+                e.put("endDate", v.getExperienceEndDate());
+                e.put("reviewStatus", v.getStatus());
+                e.put("isOfferedSkillExperience", v.getSkill().getId().equals(focusSkillId));
+                experiences.add(e);
+            }
+
+            if (v.getCertificateName() != null || v.getCertificateUrl() != null) {
+                java.util.Map<String, Object> c = new java.util.HashMap<>();
+                c.put("title", v.getCertificateName() != null ? v.getCertificateName() : v.getSkill().getName() + " Certificate");
+                c.put("issuingOrganization", v.getExperienceOrganization() != null ? v.getExperienceOrganization() : "Accredited Certification Authority");
+                c.put("skillId", v.getSkill().getId());
+                c.put("skillName", v.getSkill().getName());
+                c.put("documentUrl", v.getCertificateUrl() != null ? v.getCertificateUrl() : "");
+                c.put("verificationStatus", v.getStatus());
+                c.put("reviewedDate", v.getReviewedDate() != null ? v.getReviewedDate().toString() : null);
+                c.put("isOfferedSkill", v.getSkill().getId().equals(focusSkillId));
+                certificates.add(c);
+            }
+        }
+
+        // Also add any teaching skill proof document as a certificate if not already present
+        if (prof != null && prof.getTeachingSkills() != null) {
+            for (com.skillexchange.dto.UserSkillDto ts : prof.getTeachingSkills()) {
+                if (ts.getProofDocumentUrl() != null && !ts.getProofDocumentUrl().trim().isEmpty()) {
+                    boolean alreadyExists = false;
+                    for (java.util.Map<String, Object> c : certificates) {
+                        if (ts.getProofDocumentUrl().equals(c.get("documentUrl"))) {
+                            alreadyExists = true;
+                            break;
+                        }
+                    }
+                    if (!alreadyExists) {
+                        java.util.Map<String, Object> c = new java.util.HashMap<>();
+                        c.put("title", ts.getSkillName() + " Verification Certificate");
+                        c.put("issuingOrganization", "Recognized Certification / Academic Review");
+                        c.put("skillId", ts.getSkillId());
+                        c.put("skillName", ts.getSkillName());
+                        c.put("documentUrl", ts.getProofDocumentUrl());
+                        c.put("verificationStatus", ts.getVerificationStatus() != null ? ts.getVerificationStatus() : (ts.isVerified() ? "VERIFIED" : "PENDING"));
+                        c.put("reviewedDate", null);
+                        c.put("isOfferedSkill", ts.getSkillId().equals(focusSkillId));
+                        certificates.add(c);
+                    }
+                }
+            }
+        }
+
+        java.util.Map<String, Object> verificationSummary = new java.util.HashMap<>();
+        verificationSummary.put("isStudentVerified", prof != null && prof.isVerified());
+        boolean offeredSkillVerified = false;
+        String offeredSkillStatus = "NOT_VERIFIED";
+        if (prof != null && prof.getTeachingSkills() != null) {
+            for (com.skillexchange.dto.UserSkillDto ts : prof.getTeachingSkills()) {
+                if (ts.getSkillId().equals(focusSkillId)) {
+                    offeredSkillVerified = ts.isVerified() || "VERIFIED".equals(ts.getVerificationStatus());
+                    offeredSkillStatus = ts.getVerificationStatus() != null ? ts.getVerificationStatus() : (ts.isVerified() ? "VERIFIED" : "NOT_VERIFIED");
+                    break;
+                }
+            }
+        }
+        verificationSummary.put("offeredSkillVerified", offeredSkillVerified);
+        verificationSummary.put("offeredSkillStatus", offeredSkillStatus);
+        boolean hasRevProjects = false;
+        for (java.util.Map<String, Object> p : projects) {
+            if ("VERIFIED".equals(p.get("reviewStatus"))) { hasRevProjects = true; break; }
+        }
+        boolean hasRevExp = false;
+        for (java.util.Map<String, Object> e : experiences) {
+            if ("VERIFIED".equals(e.get("reviewStatus"))) { hasRevExp = true; break; }
+        }
+        boolean hasVerCert = false;
+        for (java.util.Map<String, Object> c : certificates) {
+            if ("VERIFIED".equals(c.get("verificationStatus"))) { hasVerCert = true; break; }
+        }
+        verificationSummary.put("hasReviewedProjects", hasRevProjects);
+        verificationSummary.put("hasReviewedExperience", hasRevExp);
+        verificationSummary.put("hasVerifiedCertificate", hasVerCert);
+        verificationSummary.put("adminComment", focusVer != null && focusVer.getAdminComment() != null ? focusVer.getAdminComment() : "");
+
+        java.util.Map<String, Object> out = new java.util.HashMap<>();
+        out.put("profile", prof);
+        out.put("projects", projects);
+        out.put("experiences", experiences);
+        out.put("certificates", certificates);
+        out.put("verification", verificationSummary);
+        return out;
     }
 }

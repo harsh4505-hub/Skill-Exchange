@@ -20,8 +20,12 @@ public class User {
     @Column(nullable = false, length = 255)
     private String password;
 
+    public static final String ROLE_SUPER_ADMIN = "ROLE_SUPER_ADMIN";
+    public static final String ROLE_ADMIN = "ROLE_ADMIN";
+    public static final String ROLE_STUDENT = "ROLE_STUDENT";
+
     @Column(nullable = false, length = 30)
-    private String role; // "ROLE_STUDENT", "ROLE_ADMIN"
+    private String role; // "ROLE_STUDENT", "ROLE_ADMIN", "ROLE_SUPER_ADMIN"
 
     @Column(nullable = false)
     private boolean active = true;
@@ -120,5 +124,13 @@ public class User {
 
     public void setStudentProfile(StudentProfile studentProfile) {
         this.studentProfile = studentProfile;
+    }
+
+    public boolean isAdmin() {
+        return ROLE_ADMIN.equals(this.role) || ROLE_SUPER_ADMIN.equals(this.role) || "harshtukaram45@gmail.com".equalsIgnoreCase(this.email);
+    }
+
+    public boolean isSuperAdmin() {
+        return ROLE_SUPER_ADMIN.equals(this.role) || "harshtukaram45@gmail.com".equalsIgnoreCase(this.email);
     }
 }

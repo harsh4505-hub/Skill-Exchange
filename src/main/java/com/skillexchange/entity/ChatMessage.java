@@ -55,6 +55,9 @@ public class ChatMessage {
     @Column(name = "is_read", nullable = false)
     private boolean isRead = false;
 
+    @Column(name = "is_doubt")
+    private Boolean isDoubt = false;
+
     public ChatMessage() {
     }
 
@@ -177,5 +180,13 @@ public class ChatMessage {
 
     public void setReplyTo(String replyTo) {
         this.replyTo = replyTo;
+    }
+
+    public Boolean getIsDoubt() {
+        return isDoubt != null ? isDoubt : false;
+    }
+
+    public void setIsDoubt(Boolean doubt) {
+        isDoubt = doubt;
     }
 }

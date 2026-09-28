@@ -85,8 +85,12 @@ public class DataInitializer implements CommandLineRunner {
 
         String encodedPwd = passwordEncoder.encode("password123");
 
-        // 3. Admin Account
-        User adminUser = new User("admin@mgmmumbai.ac.in", encodedPwd, "ROLE_ADMIN");
+        // 3. Permanent Super Admin Account
+        User superAdminUser = new User("harshtukaram45@gmail.com", encodedPwd, User.ROLE_SUPER_ADMIN);
+        userRepository.save(superAdminUser);
+
+        // 3.B Staff Admin Account
+        User adminUser = new User("admin@mgmmumbai.ac.in", encodedPwd, User.ROLE_ADMIN);
         userRepository.save(adminUser);
 
         // 4. Student 1: Harsh (Teaches: Java, Web; Wants: Photoshop, Video Editing)

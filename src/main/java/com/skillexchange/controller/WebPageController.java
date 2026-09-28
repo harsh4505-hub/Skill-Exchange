@@ -14,6 +14,16 @@ public class WebPageController {
         return "forward:/index.html";
     }
 
+    @GetMapping("/landing")
+    public String landing() {
+        return "forward:/landing.html";
+    }
+
+    @GetMapping("/home")
+    public String homeAlias() {
+        return "forward:/index.html";
+    }
+
     @GetMapping("/login")
     public String login() {
         return "forward:/login.html";
@@ -49,6 +59,21 @@ public class WebPageController {
         return "forward:/requests.html";
     }
 
+    @GetMapping("/exchange-proposals")
+    public String exchangeProposals() {
+        return "forward:/requests.html";
+    }
+
+    @GetMapping("/verify")
+    public String verifyEmail() {
+        return "forward:/verify-email.html";
+    }
+
+    @GetMapping("/history")
+    public String historyAlias() {
+        return "forward:/exchange-history.html";
+    }
+
     @GetMapping("/chat")
     public String chat() {
         return "forward:/chat.html";
@@ -69,7 +94,7 @@ public class WebPageController {
         return "forward:/exchange-history.html";
     }
 
-    @GetMapping("/admin-dashboard")
+    @GetMapping({"/admin", "/admin/**", "/admin-dashboard"})
     public String adminDashboard() {
         return "forward:/admin-dashboard.html";
     }

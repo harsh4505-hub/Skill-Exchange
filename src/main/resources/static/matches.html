@@ -398,9 +398,8 @@
                                     <img src="${m.avatarUrl || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + m.userId}" class="avatar-img" alt="${m.studentName}">
                                     <div>
                                         <h5 class="fw-bold mb-0 text-dark">${m.studentName}</h5>
-                                        <small class="text-muted d-block">${m.department} &bull; ${m.yearOfStudy}</small>
-                                        <div class="small text-warning fw-bold mt-1">
-                                            ★ ${(m.averageRating || 0).toFixed(1)} / 5.0
+                                        <div class="small text-dark fw-bold mt-1" style="font-family: var(--font-mono);">
+                                            Rating: ${(m.averageRating || 0).toFixed(1)} / 5
                                         </div>
                                     </div>
                                 </div>
