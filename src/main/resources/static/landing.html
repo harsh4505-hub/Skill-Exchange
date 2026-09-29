@@ -42,16 +42,12 @@
                         } else {
                             window.location.replace('index.html');
                         }
-                    } else if (hasSeenLanding) {
-                        // Returning visitor who already completed/left the landing page
+                    }
+                    if (window.location.search.includes('redirect_returning=true') && hasSeenLanding) {
                         window.location.replace('login.html');
                     }
                 })
-                .catch(() => {
-                    if (hasSeenLanding) {
-                        window.location.replace('login.html');
-                    }
-                });
+                .catch(() => {});
         })();
 
         // Handler to mark landing page as seen ONLY when user enters authentication flow
