@@ -64,26 +64,46 @@ function isValidEmail(email) {
 }
 
 /**
+ * Retrieves designated Super Admin email addresses.
+ * Includes harshtukaram45@gmail.com and any email configured in process.env.SUPER_ADMIN_EMAIL.
+ */
+function getSuperAdminEmails() {
+    const list = ['harshtukaram45@gmail.com'];
+    if (process.env.SUPER_ADMIN_EMAIL) {
+        process.env.SUPER_ADMIN_EMAIL.split(',').forEach(e => {
+            const clean = e.trim().toLowerCase();
+            if (clean && !list.includes(clean)) list.push(clean);
+        });
+    }
+    return list;
+}
+
+function isSuperAdminEmail(email) {
+    if (!email || typeof email !== 'string') return false;
+    return getSuperAdminEmails().includes(email.trim().toLowerCase());
+}
+
+/**
  * Validates student college email domain.
  * Enforces @mgmmumbai.ac.in for regular student registrations.
- * harshtukaram45@gmail.com is the permanent Super Admin administrative exception.
+ * Designated Super Admin emails are administrative exceptions.
  */
 function isValidCollegeEmail(email) {
     if (!email || typeof email !== 'string') return false;
     const trimmed = email.trim().toLowerCase();
-    if (trimmed === 'harshtukaram45@gmail.com') return true;
+    if (isSuperAdminEmail(trimmed)) return true;
     return COLLEGE_EMAIL_REGEX.test(trimmed);
 }
 
 /**
  * Server-side RBAC check for Super Admin.
- * Identifies the permanent Super Admin account and ROLE_SUPER_ADMIN.
+ * Identifies designated Super Admin accounts and ROLE_SUPER_ADMIN.
  */
 function isSuperAdmin(user) {
     if (!user) return false;
     const email = (user.email || '').trim().toLowerCase();
     const role = (user.role || '').toUpperCase();
-    return email === 'harshtukaram45@gmail.com' || role === 'ROLE_SUPER_ADMIN' || role === 'SUPER_ADMIN';
+    return isSuperAdminEmail(email) || role === 'ROLE_SUPER_ADMIN' || role === 'SUPER_ADMIN';
 }
 
 /**
@@ -94,6 +114,7 @@ function isAdmin(user) {
     const role = (user.role || '').toUpperCase();
     return role === 'ROLE_ADMIN' || role === 'ADMIN' || isSuperAdmin(user);
 }
+
 
 
 // ===================================================================
@@ -456,7 +477,16 @@ const state = {
             completedExchangesCount: 0,
             blocked: false,
             teachingSkills: [],
-            learningSkills: []
+            learningSkills: [],
+            membership: {
+                status: "STAFF",
+                plan: "Staff Administrator",
+                trialStartDate: null,
+                trialEndDate: null,
+                trialDaysRemaining: 9999,
+                isPremium: true,
+                renewalDate: null
+            }
         },
         {
             id: 6,
@@ -474,7 +504,16 @@ const state = {
             completedExchangesCount: 0,
             blocked: false,
             teachingSkills: [],
-            learningSkills: []
+            learningSkills: [],
+            membership: {
+                status: "SUPER_ADMIN",
+                plan: "Platform Governance",
+                trialStartDate: null,
+                trialEndDate: null,
+                trialDaysRemaining: 9999,
+                isPremium: true,
+                renewalDate: null
+            }
         },
         {
             id: 2,
@@ -491,6 +530,15 @@ const state = {
             averageRating: 4.8,
             completedExchangesCount: 2,
             blocked: false,
+            membership: {
+                status: "TRIAL",
+                plan: "30-Day Free Trial",
+                trialStartDate: new Date(Date.now() - 9 * 86400000).toISOString(),
+                trialEndDate: new Date(Date.now() + 21 * 86400000).toISOString(),
+                trialDaysRemaining: 21,
+                isPremium: false,
+                renewalDate: null
+            },
             teachingSkills: [
                 { id: 1, skillId: 1, skillName: "Java", categoryId: 1, categoryName: "Programming", levelOrUrgency: "Advanced", verified: true, verificationStatus: "VERIFIED", proofDocumentUrl: "uploads/certificates/harsh_java.pdf" },
                 { id: 2, skillId: 3, skillName: "HTML/CSS/JS", categoryId: 2, categoryName: "Web Development", levelOrUrgency: "Intermediate", verified: false, verificationStatus: "NOT_VERIFIED" }
@@ -515,6 +563,15 @@ const state = {
             averageRating: 4.9,
             completedExchangesCount: 3,
             blocked: false,
+            membership: {
+                status: "PREMIUM",
+                plan: "Pro Scholar (Annual)",
+                trialStartDate: new Date(Date.now() - 60 * 86400000).toISOString(),
+                trialEndDate: new Date(Date.now() - 30 * 86400000).toISOString(),
+                trialDaysRemaining: 0,
+                isPremium: true,
+                renewalDate: new Date(Date.now() + 305 * 86400000).toISOString()
+            },
             teachingSkills: [
                 { id: 3, skillId: 4, skillName: "Photoshop", categoryId: 3, categoryName: "Design", levelOrUrgency: "Expert", verified: true, verificationStatus: "VERIFIED", proofDocumentUrl: "uploads/certificates/sejal_photoshop.pdf" },
                 { id: 4, skillId: 5, skillName: "Graphic Design", categoryId: 3, categoryName: "Design", levelOrUrgency: "Advanced", verified: false, verificationStatus: "NEEDS_RESUBMISSION" }
@@ -539,6 +596,15 @@ const state = {
             averageRating: 4.5,
             completedExchangesCount: 1,
             blocked: false,
+            membership: {
+                status: "TRIAL",
+                plan: "30-Day Free Trial",
+                trialStartDate: new Date(Date.now() - 25 * 86400000).toISOString(),
+                trialEndDate: new Date(Date.now() + 5 * 86400000).toISOString(),
+                trialDaysRemaining: 5,
+                isPremium: false,
+                renewalDate: null
+            },
             teachingSkills: [
                 { id: 5, skillId: 2, skillName: "Python", categoryId: 1, categoryName: "Programming", levelOrUrgency: "Advanced", verified: false, verificationStatus: "PENDING" },
                 { id: 6, skillId: 8, skillName: "Excel & Data Analysis", categoryId: 6, categoryName: "Academic & Productivity", levelOrUrgency: "Intermediate", verified: false, verificationStatus: "NOT_VERIFIED" }
@@ -562,6 +628,15 @@ const state = {
             averageRating: 5.0,
             completedExchangesCount: 4,
             blocked: false,
+            membership: {
+                status: "PREMIUM",
+                plan: "Pro Scholar (Monthly)",
+                trialStartDate: new Date(Date.now() - 45 * 86400000).toISOString(),
+                trialEndDate: new Date(Date.now() - 15 * 86400000).toISOString(),
+                trialDaysRemaining: 0,
+                isPremium: true,
+                renewalDate: new Date(Date.now() + 15 * 86400000).toISOString()
+            },
             teachingSkills: [
                 { id: 7, skillId: 7, skillName: "Public Speaking", categoryId: 5, categoryName: "Communication", levelOrUrgency: "Expert", verified: true, verificationStatus: "VERIFIED", proofDocumentUrl: "uploads/certificates/debate.pdf" }
             ],
@@ -1202,6 +1277,69 @@ const state = {
             content: "1. Classes and objects\n2. Inheritance and super keyword\n3. Dynamic method dispatch\n4. Interface vs abstract classes",
             createdAt: new Date(Date.now() - 86400000).toISOString(),
             updatedAt: new Date(Date.now() - 86400000).toISOString()
+        }
+    ],
+
+    kitabBhandar: [
+        {
+            id: 1,
+            title: "Introduction to Algorithms (CLRS 3rd Edition)",
+            author: "Thomas H. Cormen",
+            category: "Computer Science & IT",
+            condition: "Like New (Few highlights)",
+            ownerId: 2,
+            ownerName: "Harsh Vardhan",
+            ownerEmail: "harsh@mgmmumbai.ac.in",
+            department: "Information Technology",
+            barterFor: "Discrete Mathematics notes or Java book",
+            status: "AVAILABLE",
+            imageUrl: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80",
+            createdAt: new Date(Date.now() - 14 * 86400000).toISOString()
+        },
+        {
+            id: 2,
+            title: "Engineering Mechanics & Dynamics",
+            author: "R.C. Hibbeler",
+            category: "Mechanical & Civil",
+            condition: "Gently Used",
+            ownerId: 4,
+            ownerName: "Raza Khan",
+            ownerEmail: "raza@mgmmumbai.ac.in",
+            department: "Mechanical Engineering",
+            barterFor: "Python for Data Analysis or AutoCAD reference",
+            status: "AVAILABLE",
+            imageUrl: "https://images.unsplash.com/photo-1532012164546-f432f2e3777a?w=400&q=80",
+            createdAt: new Date(Date.now() - 10 * 86400000).toISOString()
+        },
+        {
+            id: 3,
+            title: "Digital Logic Design & Microprocessors",
+            author: "M. Morris Mano",
+            category: "Electronics & Electrical",
+            condition: "Good",
+            ownerId: 5,
+            ownerName: "Udipti Sen",
+            ownerEmail: "udipti@mgmmumbai.ac.in",
+            department: "Electronics & Telecom",
+            barterFor: "Data Structures handwritten notes",
+            status: "RESERVED",
+            imageUrl: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&q=80",
+            createdAt: new Date(Date.now() - 7 * 86400000).toISOString()
+        },
+        {
+            id: 4,
+            title: "Adobe Photoshop Classroom in a Book (2024 Release)",
+            author: "Conrad Chavez & Andrew Faulkner",
+            category: "Design & Arts",
+            condition: "Mint Condition",
+            ownerId: 3,
+            ownerName: "Sejal Sharma",
+            ownerEmail: "sejal@mgmmumbai.ac.in",
+            department: "Information Technology",
+            barterFor: "Spring Boot Microservices in Action",
+            status: "AVAILABLE",
+            imageUrl: "https://images.unsplash.com/photo-1507842229451-7f01be7fe8e7?w=400&q=80",
+            createdAt: new Date(Date.now() - 3 * 86400000).toISOString()
         }
     ]
 };
@@ -4063,6 +4201,13 @@ const server = http.createServer(async (req, res) => {
             const disputedExchanges = state.exchanges.filter(e => e.status === 'DISPUTED').length;
             const avgRating = (state.profiles.reduce((acc, p) => acc + (p.averageRating || 0), 0) / (state.profiles.length || 1)).toFixed(1);
 
+            // Free Trial & Premium Membership Analytics
+            const totalTrials = state.profiles.filter(p => p.membership && p.membership.status === 'TRIAL').length;
+            const activeTrials = state.profiles.filter(p => p.membership && p.membership.status === 'TRIAL' && (p.membership.trialDaysRemaining > 0)).length;
+            const premiumMembers = state.profiles.filter(p => p.membership && p.membership.isPremium).length;
+            const expiredTrials = state.profiles.filter(p => p.membership && p.membership.status === 'EXPIRED').length;
+            const booksListingsCount = (state.kitabBhandar || []).length;
+
             return sendJson(res, 200, {
                 success: true,
                 data: {
@@ -4077,6 +4222,11 @@ const server = http.createServer(async (req, res) => {
                     disputedExchanges,
                     pendingVerifications,
                     pendingReports,
+                    totalTrials,
+                    activeTrials,
+                    premiumMembers,
+                    expiredTrials,
+                    booksListingsCount,
                     averageRating: parseFloat(avgRating) || 4.8,
                     hoursSavedEstimate: completedExchanges * 6,
                     barterSavingsValue: "₹" + (completedExchanges * 4500).toLocaleString()
@@ -4095,9 +4245,19 @@ const server = http.createServer(async (req, res) => {
                 const learnCount = p.learningSkills ? p.learningSkills.length : 0;
                 const exchangeCount = state.exchanges.filter(e => e.student1Id === p.userId || e.student2Id === p.userId).length;
 
-                const isSuper = user.role === 'ROLE_SUPER_ADMIN' || user.email.toLowerCase() === 'harshtukaram45@gmail.com';
-                const isAdm = user.role === 'ROLE_ADMIN' || isSuper;
+                const isSuper = isSuperAdmin(user) || isSuperAdminEmail(p.email);
+                const isAdm = isAdmin(user) || isSuper;
                 const displayRole = isSuper ? 'SUPER_ADMIN' : (isAdm ? 'ADMIN' : 'STUDENT');
+
+                const userMembership = p.membership || {
+                    status: isSuper ? 'SUPER_ADMIN' : (isAdm ? 'STAFF' : 'TRIAL'),
+                    plan: isSuper ? 'Platform Governance' : (isAdm ? 'Staff Administrator' : '30-Day Free Trial'),
+                    trialStartDate: new Date(Date.now() - 5 * 86400000).toISOString(),
+                    trialEndDate: new Date(Date.now() + 25 * 86400000).toISOString(),
+                    trialDaysRemaining: 25,
+                    isPremium: isSuper || isAdm,
+                    renewalDate: null
+                };
 
                 return {
                     id: p.id,
@@ -4118,11 +4278,14 @@ const server = http.createServer(async (req, res) => {
                     verified: p.verified,
                     active: user.active !== false && !p.blocked,
                     suspended: p.blocked || user.active === false,
+                    membership: userMembership,
                     averageRating: p.averageRating,
                     completedExchangesCount: p.completedExchangesCount,
                     totalExchanges: exchangeCount,
                     teachingSkillsCount: teachCount,
                     learningSkillsCount: learnCount,
+                    teachingSkills: p.teachingSkills || [],
+                    learningSkills: p.learningSkills || [],
                     joinedAt: "2026-08-20T10:00:00Z"
                 };
             });
@@ -4132,6 +4295,7 @@ const server = http.createServer(async (req, res) => {
                     u.fullName.toLowerCase().includes(q) || 
                     u.email.toLowerCase().includes(q) || 
                     u.department.toLowerCase().includes(q) || 
+                    (u.membership && u.membership.plan && u.membership.plan.toLowerCase().includes(q)) ||
                     String(u.userId).includes(q)
                 );
             }
@@ -4142,6 +4306,9 @@ const server = http.createServer(async (req, res) => {
             if (statusFilter === 'SUSPENDED') usersList = usersList.filter(u => u.suspended);
             if (statusFilter === 'ADMINS') usersList = usersList.filter(u => u.isAdmin);
             if (statusFilter === 'STUDENTS') usersList = usersList.filter(u => !u.isAdmin);
+            if (statusFilter === 'TRIAL') usersList = usersList.filter(u => u.membership && u.membership.status === 'TRIAL');
+            if (statusFilter === 'PREMIUM') usersList = usersList.filter(u => u.membership && (u.membership.isPremium || u.membership.status === 'PREMIUM'));
+            if (statusFilter === 'EXPIRED') usersList = usersList.filter(u => u.membership && u.membership.status === 'EXPIRED');
 
             return sendJson(res, 200, { success: true, data: usersList });
         }
@@ -4790,6 +4957,283 @@ const server = http.createServer(async (req, res) => {
                 });
             }
             return sendJson(res, 200, { success: true, data: report, message: "Report updated." });
+        }
+
+        // 11.14 Skill Verification Direct Award & Revocation
+        if (pathname.match(/^\/api\/admin\/users\/(\d+)\/skills\/(\d+)\/verify$/) && req.method === 'PUT') {
+            const userId = Number(pathname.split('/')[4]);
+            const skillListingId = Number(pathname.split('/')[6]);
+            const prof = state.profiles.find(p => p.userId === userId || p.id === userId);
+            if (!prof) return sendJson(res, 404, { success: false, message: "User profile not found." });
+
+            const body = await parseBody(req);
+            const shouldVerify = body.verified !== undefined ? (body.verified === true || body.verified === 'true') : (body.verify !== false && body.verify !== 'false');
+
+            const skill = (prof.teachingSkills || []).find(t => t.id === skillListingId || t.skillId === skillListingId);
+            if (!skill) return sendJson(res, 404, { success: false, message: "Skill listing not found on user profile." });
+
+            skill.verified = shouldVerify;
+            skill.verificationStatus = shouldVerify ? 'VERIFIED' : 'NOT_VERIFIED';
+
+            // User gets official verified status if at least one skill is verified
+            if (shouldVerify) {
+                prof.verified = true;
+            } else {
+                prof.verified = (prof.teachingSkills || []).some(t => t.verified);
+            }
+
+            // Sync with verifications queue if present
+            const vEntry = state.verifications.find(v => v.studentId === userId && (v.skillId === skill.skillId || v.skillName === skill.skillName));
+            if (vEntry) {
+                vEntry.status = shouldVerify ? 'VERIFIED' : 'REJECTED';
+                vEntry.reviewedDate = new Date().toISOString();
+                vEntry.adminComment = shouldVerify ? "Verified & awarded verification badge by Administrator." : "Verification badge revoked by Administrator.";
+            }
+
+            state.auditLogs.unshift({
+                id: Date.now(),
+                action: shouldVerify ? "SKILL_BADGE_AWARDED" : "SKILL_BADGE_REVOKED",
+                performedBy: state.currentUser ? state.currentUser.email : "Admin",
+                target: `${prof.fullName} (${skill.skillName})`,
+                timestamp: new Date().toISOString(),
+                status: "SUCCESS",
+                details: `Skill verification badge ${shouldVerify ? 'awarded' : 'revoked'} for ${skill.skillName}.`
+            });
+
+            state.notifications.unshift({
+                id: Date.now(),
+                recipientId: userId,
+                title: shouldVerify ? "Skill Verification Badge Awarded! ✓" : "Skill Badge Status Updated",
+                message: shouldVerify
+                    ? `Congratulations! An administrator has verified your skill "${skill.skillName}" and awarded you the official ✓ Verified badge.`
+                    : `Your verification status for "${skill.skillName}" was updated.`,
+                type: "SKILL_VERIFIED",
+                linkUrl: "profile.html",
+                isRead: false,
+                createdAt: new Date().toISOString()
+            });
+
+            return sendJson(res, 200, {
+                success: true,
+                message: shouldVerify ? `Verification badge awarded to ${prof.fullName} for ${skill.skillName}!` : `Verification badge revoked for ${skill.skillName}.`,
+                data: {
+                    skillListingId,
+                    skillName: skill.skillName,
+                    verified: skill.verified,
+                    verificationStatus: skill.verificationStatus,
+                    userVerified: prof.verified
+                }
+            });
+        }
+
+        // 11.15 Memberships & Subscriptions Management
+        if (pathname === '/api/admin/subscriptions' && req.method === 'GET') {
+            const list = state.profiles.map(p => {
+                const user = state.users.find(u => u.id === p.userId) || { active: true, email: p.email, role: 'ROLE_STUDENT' };
+                const userExchanges = state.exchanges.filter(e => e.student1Id === p.userId || e.student2Id === p.userId);
+                const isSuper = isSuperAdmin(user) || isSuperAdminEmail(p.email);
+                const isAdm = isAdmin(user) || isSuper;
+
+                const defaultMembership = {
+                    status: isSuper ? 'SUPER_ADMIN' : (isAdm ? 'STAFF' : 'TRIAL'),
+                    plan: isSuper ? 'Platform Governance' : (isAdm ? 'Staff Administrator' : '30-Day Free Trial'),
+                    trialStartDate: new Date(Date.now() - 5 * 86400000).toISOString(),
+                    trialEndDate: new Date(Date.now() + 25 * 86400000).toISOString(),
+                    trialDaysRemaining: 25,
+                    isPremium: isSuper || isAdm,
+                    renewalDate: null
+                };
+
+                return {
+                    id: p.id,
+                    userId: p.userId,
+                    fullName: p.fullName,
+                    email: p.email,
+                    avatarUrl: p.avatarUrl,
+                    department: p.department,
+                    college: p.college,
+                    role: isSuper ? 'SUPER_ADMIN' : (isAdm ? 'ADMIN' : 'STUDENT'),
+                    membership: p.membership || defaultMembership,
+                    totalExchanges: userExchanges.length,
+                    completedExchanges: userExchanges.filter(e => e.status === 'COMPLETED').length,
+                    teachingSkillsCount: p.teachingSkills ? p.teachingSkills.length : 0,
+                    verified: p.verified
+                };
+            });
+
+            const activeTrials = list.filter(u => u.membership?.status === 'TRIAL').length;
+            const premiumMembers = list.filter(u => u.membership?.status === 'PREMIUM').length;
+            const expiredTrials = list.filter(u => u.membership?.status === 'EXPIRED').length;
+
+            return sendJson(res, 200, {
+                success: true,
+                data: {
+                    users: list,
+                    summary: {
+                        totalUsers: list.length,
+                        activeTrials,
+                        premiumMembers,
+                        expiredTrials
+                    }
+                }
+            });
+        }
+
+        if (pathname.match(/^\/api\/admin\/users\/(\d+)\/subscription$/) && req.method === 'PUT') {
+            const userId = Number(pathname.split('/')[4]);
+            const prof = state.profiles.find(p => p.userId === userId || p.id === userId);
+            if (!prof) return sendJson(res, 404, { success: false, message: "User profile not found." });
+
+            const body = await parseBody(req);
+            if (!prof.membership) {
+                prof.membership = {
+                    status: 'TRIAL',
+                    plan: '30-Day Free Trial',
+                    trialStartDate: new Date().toISOString(),
+                    trialEndDate: new Date(Date.now() + 30 * 86400000).toISOString(),
+                    trialDaysRemaining: 30,
+                    isPremium: false,
+                    renewalDate: null
+                };
+            }
+
+            if (body.action === 'EXTEND_TRIAL') {
+                const days = Number(body.days) || Number(body.additionalDays) || 30;
+                prof.membership.status = 'TRIAL';
+                prof.membership.trialDaysRemaining = (prof.membership.trialDaysRemaining || 0) + days;
+                prof.membership.trialEndDate = new Date(Date.now() + prof.membership.trialDaysRemaining * 86400000).toISOString();
+                prof.membership.isPremium = false;
+
+                state.auditLogs.unshift({
+                    id: Date.now(),
+                    action: "FREE_TRIAL_EXTENDED",
+                    performedBy: state.currentUser ? state.currentUser.email : "Admin",
+                    target: prof.email,
+                    timestamp: new Date().toISOString(),
+                    status: "SUCCESS",
+                    details: `Extended 30-day free trial by +${days} days (Now ${prof.membership.trialDaysRemaining} days remaining).`
+                });
+
+                state.notifications.unshift({
+                    id: Date.now(),
+                    recipientId: userId,
+                    title: "Free Trial Extended! 🎁",
+                    message: `An administrator extended your free trial by ${days} days! Enjoy uninterrupted skill swaps.`,
+                    type: "TRIAL_EXTENDED",
+                    isRead: false,
+                    createdAt: new Date().toISOString()
+                });
+            } else if (body.action === 'UPGRADE_PREMIUM') {
+                prof.membership.status = 'PREMIUM';
+                prof.membership.plan = body.plan || 'Pro Scholar (Annual)';
+                prof.membership.isPremium = true;
+                prof.membership.trialDaysRemaining = 0;
+                prof.membership.renewalDate = new Date(Date.now() + 365 * 86400000).toISOString();
+
+                state.auditLogs.unshift({
+                    id: Date.now(),
+                    action: "UPGRADE_TO_PREMIUM",
+                    performedBy: state.currentUser ? state.currentUser.email : "Admin",
+                    target: prof.email,
+                    timestamp: new Date().toISOString(),
+                    status: "SUCCESS",
+                    details: `Granted complimentary ${prof.membership.plan} membership.`
+                });
+
+                state.notifications.unshift({
+                    id: Date.now(),
+                    recipientId: userId,
+                    title: "Upgraded to Premium Member! ⭐",
+                    message: `You now have full Premium access with unlimited skill exchanges, verified badge audits, and priority matching!`,
+                    type: "PREMIUM_UPGRADE",
+                    isRead: false,
+                    createdAt: new Date().toISOString()
+                });
+            } else if (body.action === 'DOWNGRADE_FREE') {
+                prof.membership.status = 'EXPIRED';
+                prof.membership.plan = 'Free / Basic Tier';
+                prof.membership.isPremium = false;
+                prof.membership.trialDaysRemaining = 0;
+
+                state.auditLogs.unshift({
+                    id: Date.now(),
+                    action: "MEMBERSHIP_RESET_FREE",
+                    performedBy: state.currentUser ? state.currentUser.email : "Admin",
+                    target: prof.email,
+                    timestamp: new Date().toISOString(),
+                    status: "SUCCESS",
+                    details: "Set user membership to basic tier."
+                });
+            }
+
+            return sendJson(res, 200, {
+                success: true,
+                message: "Membership updated successfully.",
+                data: prof.membership
+            });
+        }
+
+        // 11.16 Kitab Bhandar (Student Book & Notes Barter) Admin Oversight
+        if (pathname === '/api/admin/kitab-bhandar' && req.method === 'GET') {
+            return sendJson(res, 200, { success: true, data: state.kitabBhandar || [] });
+        }
+
+        if (pathname.match(/^\/api\/admin\/kitab-bhandar\/(\d+)\/status$/) && req.method === 'PUT') {
+            const bookId = Number(pathname.split('/')[4]);
+            const body = await parseBody(req);
+            const book = (state.kitabBhandar || []).find(b => b.id === bookId);
+            if (!book) return sendJson(res, 404, { success: false, message: "Book listing not found." });
+
+            book.status = body.status || 'AVAILABLE';
+            state.auditLogs.unshift({
+                id: Date.now(),
+                action: "KITAB_LISTING_MODERATED",
+                performedBy: state.currentUser ? state.currentUser.email : "Admin",
+                target: book.title,
+                timestamp: new Date().toISOString(),
+                status: "SUCCESS",
+                details: `Listing status updated to ${book.status}. Note: ${body.reason || 'Admin audited'}`
+            });
+
+            return sendJson(res, 200, { success: true, message: `Listing marked as ${book.status}.`, data: book });
+        }
+
+        if (pathname.match(/^\/api\/admin\/kitab-bhandar\/(\d+)$/) && req.method === 'DELETE') {
+            const bookId = Number(pathname.split('/')[4]);
+            const idx = (state.kitabBhandar || []).findIndex(b => b.id === bookId);
+            if (idx === -1) return sendJson(res, 404, { success: false, message: "Book listing not found." });
+
+            const removed = state.kitabBhandar.splice(idx, 1)[0];
+            state.auditLogs.unshift({
+                id: Date.now(),
+                action: "KITAB_LISTING_DELETED",
+                performedBy: state.currentUser ? state.currentUser.email : "Admin",
+                target: removed.title,
+                timestamp: new Date().toISOString(),
+                status: "SUCCESS",
+                details: `Removed book listing: ${removed.title}`
+            });
+
+            return sendJson(res, 200, { success: true, message: "Book listing removed from marketplace." });
+        }
+
+        // 11.17 Admin Platform Configuration
+        if (pathname === '/api/admin/config' && req.method === 'GET') {
+            const userIsSuper = isSuperAdmin(state.currentUser);
+            return sendJson(res, 200, {
+                success: true,
+                data: {
+                    isSuperAdmin: userIsSuper,
+                    isAdmin: isAdmin(state.currentUser),
+                    superAdminEmails: getSuperAdminEmails(),
+                    currentAdmin: state.currentUser ? {
+                        userId: state.currentUser.userId,
+                        email: state.currentUser.email,
+                        role: state.currentUser.role,
+                        isSuperAdmin: userIsSuper
+                    } : null
+                }
+            });
         }
 
         return sendJson(res, 404, { success: false, message: "Endpoint not found" });

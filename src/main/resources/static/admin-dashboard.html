@@ -48,6 +48,11 @@
                         <span class="sidebar-text">Users</span>
                         <span class="badge bg-light text-dark border ms-auto badge-pill-count" id="badgeUsersCount">0</span>
                     </a>
+                    <a href="/admin/memberships" class="admin-nav-link" data-view="memberships" onclick="navigateToAdminRoute('memberships', event)">
+                        <i class="bi bi-gem text-warning"></i>
+                        <span class="sidebar-text">Free Trial & Premium</span>
+                        <span class="badge bg-warning text-dark border ms-auto badge-pill-count" id="badgeMembershipsCount">0</span>
+                    </a>
                     <a href="/admin/skills" class="admin-nav-link" data-view="skills" onclick="navigateToAdminRoute('skills', event)">
                         <i class="bi bi-mortarboard text-primary"></i>
                         <span class="sidebar-text">Skill Listings</span>
@@ -66,6 +71,11 @@
                         <i class="bi bi-geo-alt text-warning"></i>
                         <span class="sidebar-text">Offline Progress</span>
                         <span class="badge bg-warning text-dark border ms-auto badge-pill-count" id="badgeOfflineCount">0</span>
+                    </a>
+                    <a href="/admin/kitab-bhandar" class="admin-nav-link" data-view="kitab-bhandar" onclick="navigateToAdminRoute('kitab-bhandar', event)">
+                        <i class="bi bi-book text-success"></i>
+                        <span class="sidebar-text">Kitab Bhandar</span>
+                        <span class="badge bg-light text-dark border ms-auto badge-pill-count" id="badgeKitabCount">0</span>
                     </a>
                     <a href="/admin/requests" class="admin-nav-link" data-view="requests" onclick="navigateToAdminRoute('requests', event)">
                         <i class="bi bi-inbox text-info"></i>
@@ -336,6 +346,55 @@
                         </div>
                     </div>
 
+                    <!-- Ecosystem Subscriptions & Kitab Bhandar Highlights -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <div class="admin-stat-card border-warning" style="background: linear-gradient(135deg, #fffdf0 0%, #ffffff 100%);">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span class="text-warning small fw-bold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.05em;">30-Day Free Trials</span>
+                                    <div class="stat-icon-wrapper bg-warning text-dark">
+                                        <i class="bi bi-clock-history"></i>
+                                    </div>
+                                </div>
+                                <h3 class="fw-bold mb-1 text-dark" id="dashActiveTrialsCount">0</h3>
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <small class="text-muted">Ongoing campus free passes</small>
+                                    <button class="btn btn-sm btn-outline-custom py-0 px-2" style="font-size: 0.75rem;" onclick="navigateToAdminRoute('memberships', event)">Manage</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="admin-stat-card border-primary" style="background: linear-gradient(135deg, #f0f7ff 0%, #ffffff 100%);">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span class="text-primary small fw-bold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.05em;">Premium Members</span>
+                                    <div class="stat-icon-wrapper bg-primary text-white">
+                                        <i class="bi bi-gem"></i>
+                                    </div>
+                                </div>
+                                <h3 class="fw-bold mb-1 text-dark" id="dashPremiumMembersCount">0</h3>
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <small class="text-muted">Unlimited barter subscribers</small>
+                                    <button class="btn btn-sm btn-outline-custom py-0 px-2" style="font-size: 0.75rem;" onclick="navigateToAdminRoute('memberships', event)">Subscribers</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="admin-stat-card border-success" style="background: linear-gradient(135deg, #f0fff4 0%, #ffffff 100%);">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span class="text-success small fw-bold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.05em;">Kitab Bhandar Inventory</span>
+                                    <div class="stat-icon-wrapper bg-success text-white">
+                                        <i class="bi bi-book"></i>
+                                    </div>
+                                </div>
+                                <h3 class="fw-bold mb-1 text-dark" id="dashKitabCount">0</h3>
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <small class="text-muted">Textbooks listed for barter</small>
+                                    <button class="btn btn-sm btn-outline-custom py-0 px-2" style="font-size: 0.75rem;" onclick="navigateToAdminRoute('kitab-bhandar', event)">Marketplace</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Charts Row: User Growth & Exchange Activity -->
                     <div class="row g-3 mb-4">
                         <div class="col-lg-6">
@@ -514,10 +573,13 @@
                                 </div>
                             </div>
                             <div class="col-md-7 d-flex gap-2 justify-content-md-end flex-wrap">
-                                <div class="btn-group" role="group">
+                                <div class="btn-group flex-wrap" role="group">
                                     <button class="btn btn-sm btn-outline-custom active" data-user-filter="ALL" onclick="setUserFilter('ALL', this)">All</button>
                                     <button class="btn btn-sm btn-outline-custom" data-user-filter="STUDENTS" onclick="setUserFilter('STUDENTS', this)">Students</button>
                                     <button class="btn btn-sm btn-outline-custom" data-user-filter="ADMINS" onclick="setUserFilter('ADMINS', this)"><i class="bi bi-shield-check me-1"></i>Admins</button>
+                                    <button class="btn btn-sm btn-outline-custom" data-user-filter="TRIAL" onclick="setUserFilter('TRIAL', this)"><i class="bi bi-clock-history me-1 text-warning"></i>Free Trial</button>
+                                    <button class="btn btn-sm btn-outline-custom" data-user-filter="PREMIUM" onclick="setUserFilter('PREMIUM', this)"><i class="bi bi-gem me-1 text-primary"></i>Premium</button>
+                                    <button class="btn btn-sm btn-outline-custom" data-user-filter="EXPIRED" onclick="setUserFilter('EXPIRED', this)"><i class="bi bi-x-circle me-1 text-danger"></i>Expired</button>
                                     <button class="btn btn-sm btn-outline-custom" data-user-filter="VERIFIED" onclick="setUserFilter('VERIFIED', this)">Verified</button>
                                     <button class="btn btn-sm btn-outline-custom" data-user-filter="SUSPENDED" onclick="setUserFilter('SUSPENDED', this)">Suspended</button>
                                 </div>
@@ -536,6 +598,7 @@
                                         <th>Department & College</th>
                                         <th>Year</th>
                                         <th>Verified</th>
+                                        <th>Membership / Trial</th>
                                         <th>Skills</th>
                                         <th>Trades</th>
                                         <th>Rating</th>
@@ -1099,9 +1162,14 @@
                             <h2 class="fw-bold mb-0">Admin Management</h2>
                             <p class="text-muted small mb-0">Manage university staff administrators, role privileges, and moderation team</p>
                         </div>
-                        <button class="btn btn-sm btn-primary-custom" onclick="openInviteAdminModal()">
-                            <i class="bi bi-person-plus me-1"></i> Add Staff Admin
-                        </button>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-custom" onclick="openPromoteStudentModal()">
+                                <i class="bi bi-shield-plus me-1 text-primary"></i> Promote Student to Admin
+                            </button>
+                            <button class="btn btn-sm btn-primary-custom" onclick="openInviteAdminModal()">
+                                <i class="bi bi-person-plus me-1"></i> Add Staff Admin
+                            </button>
+                        </div>
                     </div>
 
                     <div class="card card-custom p-4 bg-white mb-4">
@@ -1109,12 +1177,13 @@
                             <table class="table table-hover align-middle border mb-0">
                                 <thead class="table-light border-bottom" style="font-size: 0.75rem; text-transform: uppercase;">
                                     <tr>
-                                        <th>Staff Name</th>
+                                        <th>Staff / User</th>
                                         <th>Email</th>
                                         <th>Assigned Role</th>
                                         <th>Status</th>
                                         <th>Last Active</th>
                                         <th>Created</th>
+                                        <th class="text-end">Role Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="adminsTableTbody">
@@ -1224,6 +1293,214 @@
                                 </thead>
                                 <tbody id="auditLogsTableTbody">
                                     <tr><td colspan="6" class="text-center py-4 text-muted">Loading audit logs...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===================================================================
+                     VIEW: MEMBERSHIPS & FREE TRIALS
+                     =================================================================== -->
+                <div class="admin-view-pane" id="pane-memberships">
+                    <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-2">
+                        <div>
+                            <span class="section-tag mb-1">SUBSCRIPTION & ACCESS</span>
+                            <h2 class="fw-bold mb-0">Free Trial & Premium Membership</h2>
+                            <p class="text-muted small mb-0">Track 30-day trial countdowns, premium tiers, renewals, and grant complimentary access</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-custom" onclick="loadMembershipsList()">
+                                <i class="bi bi-arrow-clockwise me-1"></i> Refresh Subscriptions
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 4 Subscription KPI Cards -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-xl-3 col-sm-6">
+                            <div class="admin-stat-card border-warning" style="background: linear-gradient(135deg, #fffcf0 0%, #ffffff 100%);">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span class="text-warning small fw-bold text-uppercase" style="font-size: 0.72rem;">Active Free Trials</span>
+                                    <div class="stat-icon-wrapper bg-warning text-dark"><i class="bi bi-clock-history"></i></div>
+                                </div>
+                                <h3 class="fw-bold mb-1 text-dark" id="memKpiActiveTrials">0</h3>
+                                <small class="text-muted">Currently in 30-day campus trial</small>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-sm-6">
+                            <div class="admin-stat-card border-primary" style="background: linear-gradient(135deg, #f0f7ff 0%, #ffffff 100%);">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span class="text-primary small fw-bold text-uppercase" style="font-size: 0.72rem;">Premium Members</span>
+                                    <div class="stat-icon-wrapper bg-primary text-white"><i class="bi bi-gem"></i></div>
+                                </div>
+                                <h3 class="fw-bold mb-1 text-dark" id="memKpiPremiumMembers">0</h3>
+                                <small class="text-muted">Active unlimited barter plans</small>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-sm-6">
+                            <div class="admin-stat-card border-danger" style="background: linear-gradient(135deg, #fff5f5 0%, #ffffff 100%);">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span class="text-danger small fw-bold text-uppercase" style="font-size: 0.72rem;">Expired Trials</span>
+                                    <div class="stat-icon-wrapper bg-danger text-white"><i class="bi bi-hourglass-bottom"></i></div>
+                                </div>
+                                <h3 class="fw-bold mb-1 text-dark" id="memKpiExpiredTrials">0</h3>
+                                <small class="text-muted">Trials completed, needs upgrade</small>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-sm-6">
+                            <div class="admin-stat-card border-dark">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span class="text-muted small fw-bold text-uppercase" style="font-size: 0.72rem;">Total Students Tracked</span>
+                                    <div class="stat-icon-wrapper bg-dark text-white"><i class="bi bi-people"></i></div>
+                                </div>
+                                <h3 class="fw-bold mb-1 text-dark" id="memKpiTotalSubs">0</h3>
+                                <small class="text-muted">Campus platform users</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Search & Filter Controls -->
+                    <div class="card card-custom p-3 mb-4 bg-white">
+                        <div class="row g-2 align-items-center">
+                            <div class="col-md-5">
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-2 border-dark"><i class="bi bi-search"></i></span>
+                                    <input type="text" id="membershipSearchInput" class="form-control neo-search-input" placeholder="Search subscriber by student, email, department..." onkeyup="filterMembershipsTable()">
+                                </div>
+                            </div>
+                            <div class="col-md-7 d-flex gap-2 justify-content-md-end flex-wrap">
+                                <div class="btn-group flex-wrap" role="group">
+                                    <button class="btn btn-sm btn-outline-custom active" data-mem-filter="ALL" onclick="setMembershipFilter('ALL', this)">All</button>
+                                    <button class="btn btn-sm btn-outline-custom" data-mem-filter="TRIAL" onclick="setMembershipFilter('TRIAL', this)"><i class="bi bi-clock-history me-1 text-warning"></i>Active Trial (30-Day)</button>
+                                    <button class="btn btn-sm btn-outline-custom" data-mem-filter="PREMIUM" onclick="setMembershipFilter('PREMIUM', this)"><i class="bi bi-gem me-1 text-primary"></i>Premium Plan</button>
+                                    <button class="btn btn-sm btn-outline-custom" data-mem-filter="EXPIRED" onclick="setMembershipFilter('EXPIRED', this)"><i class="bi bi-x-circle me-1 text-danger"></i>Expired</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Memberships Table -->
+                    <div class="card card-custom p-4 bg-white">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle border mb-0">
+                                <thead class="table-light border-bottom" style="font-size: 0.75rem; text-transform: uppercase;">
+                                    <tr>
+                                        <th>Student / User</th>
+                                        <th>Department & College</th>
+                                        <th>Current Plan</th>
+                                        <th>Membership Status</th>
+                                        <th>Trial Days Remaining</th>
+                                        <th>Period Dates</th>
+                                        <th class="text-end">Membership Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="membershipsTableTbody">
+                                    <tr><td colspan="7" class="text-center py-4 text-muted"><span class="spinner-border spinner-border-sm me-2"></span>Loading memberships and trials...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===================================================================
+                     VIEW: KITAB BHANDAR BOOK BARTER MARKETPLACE
+                     =================================================================== -->
+                <div class="admin-view-pane" id="pane-kitab-bhandar">
+                    <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-2">
+                        <div>
+                            <span class="section-tag mb-1">MARKETPLACE & TEXTBOOKS</span>
+                            <h2 class="fw-bold mb-0">Kitab Bhandar Book Barter Hub</h2>
+                            <p class="text-muted small mb-0">Manage course textbook inventory, syllabus books, semester exchanges, and barter requests</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-custom" onclick="loadKitabBhandarList()">
+                                <i class="bi bi-arrow-clockwise me-1"></i> Refresh Catalog
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Kitab Bhandar KPIs -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-xl-3 col-sm-6">
+                            <div class="admin-stat-card border-success" style="background: linear-gradient(135deg, #f0fff4 0%, #ffffff 100%);">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span class="text-success small fw-bold text-uppercase" style="font-size: 0.72rem;">Total Textbooks</span>
+                                    <div class="stat-icon-wrapper bg-success text-white"><i class="bi bi-book"></i></div>
+                                </div>
+                                <h3 class="fw-bold mb-1 text-dark" id="kitabKpiTotal">0</h3>
+                                <small class="text-muted">Books cataloged in college portal</small>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-sm-6">
+                            <div class="admin-stat-card border-primary" style="background: linear-gradient(135deg, #f0f7ff 0%, #ffffff 100%);">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span class="text-primary small fw-bold text-uppercase" style="font-size: 0.72rem;">Available for Barter</span>
+                                    <div class="stat-icon-wrapper bg-primary text-white"><i class="bi bi-arrow-left-right"></i></div>
+                                </div>
+                                <h3 class="fw-bold mb-1 text-dark" id="kitabKpiAvailable">0</h3>
+                                <small class="text-muted">Open to immediate student exchange</small>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-sm-6">
+                            <div class="admin-stat-card border-warning" style="background: linear-gradient(135deg, #fffcf0 0%, #ffffff 100%);">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span class="text-warning small fw-bold text-uppercase" style="font-size: 0.72rem;">Exchanged / Given</span>
+                                    <div class="stat-icon-wrapper bg-warning text-dark"><i class="bi bi-check2-all"></i></div>
+                                </div>
+                                <h3 class="fw-bold mb-1 text-dark" id="kitabKpiExchanged">0</h3>
+                                <small class="text-muted">Successful student handovers</small>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-sm-6">
+                            <div class="admin-stat-card border-dark">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span class="text-muted small fw-bold text-uppercase" style="font-size: 0.72rem;">Savings Generated</span>
+                                    <div class="stat-icon-wrapper bg-dark text-white"><i class="bi bi-currency-rupee"></i></div>
+                                </div>
+                                <h3 class="fw-bold mb-1 text-dark" id="kitabKpiSavings">₹12,400</h3>
+                                <small class="text-muted">Zero-cost book reuse benefit</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filters & Search -->
+                    <div class="card card-custom p-3 mb-4 bg-white">
+                        <div class="row g-2 align-items-center">
+                            <div class="col-md-5">
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-2 border-dark"><i class="bi bi-search"></i></span>
+                                    <input type="text" id="kitabSearchInput" class="form-control neo-search-input" placeholder="Search title, author, course, edition, student..." onkeyup="filterKitabTable()">
+                                </div>
+                            </div>
+                            <div class="col-md-7 d-flex gap-2 justify-content-md-end flex-wrap">
+                                <div class="btn-group flex-wrap" role="group">
+                                    <button class="btn btn-sm btn-outline-custom active" data-kitab-filter="ALL" onclick="setKitabFilter('ALL', this)">All Books</button>
+                                    <button class="btn btn-sm btn-outline-custom" data-kitab-filter="AVAILABLE" onclick="setKitabFilter('AVAILABLE', this)"><i class="bi bi-check-circle me-1 text-success"></i>Available</button>
+                                    <button class="btn btn-sm btn-outline-custom" data-kitab-filter="EXCHANGED" onclick="setKitabFilter('EXCHANGED', this)"><i class="bi bi-arrow-repeat me-1 text-primary"></i>Bartered / Done</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Books Table -->
+                    <div class="card card-custom p-4 bg-white">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle border mb-0">
+                                <thead class="table-light border-bottom" style="font-size: 0.75rem; text-transform: uppercase;">
+                                    <tr>
+                                        <th>Book Title & Edition</th>
+                                        <th>Course / Branch</th>
+                                        <th>Semester</th>
+                                        <th>Donor / Lister</th>
+                                        <th>Condition</th>
+                                        <th>Desired Exchange</th>
+                                        <th>Status</th>
+                                        <th class="text-end">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="kitabTableTbody">
+                                    <tr><td colspan="8" class="text-center py-4 text-muted"><span class="spinner-border spinner-border-sm me-2"></span>Loading Kitab Bhandar marketplace...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -1524,6 +1801,92 @@
         </div>
     </div>
 
+    <!-- Promote Registered Student to Admin Modal -->
+    <div class="modal fade" id="adminPromoteStudentModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-2 border-dark" style="border-radius: var(--radius-lg); box-shadow: var(--shadow-xl);">
+                <div class="modal-header border-bottom border-2 border-dark">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-shield-plus me-2 text-primary"></i>Promote Student to Admin</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="small text-muted mb-3">Select any registered student in the platform to promote them to an Administrator. They will receive access to the Admin Panel.</p>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Select Student</label>
+                        <select id="promoteStudentSelect" class="form-select border border-2 border-dark">
+                            <option value="">-- Choose student account --</option>
+                        </select>
+                    </div>
+                    <div class="alert alert-info border border-2 border-dark small mb-0">
+                        <i class="bi bi-info-circle me-1"></i> As a Super Admin, you can also promote users directly from the <strong>Users Directory</strong> table or revert them at any time.
+                    </div>
+                </div>
+                <div class="modal-footer border-top border-2 border-dark">
+                    <button type="button" class="btn btn-outline-custom" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary-custom" onclick="submitPromoteStudentModal()">
+                        <i class="bi bi-shield-check me-1"></i> Promote to Admin
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manage Subscription & Free Trial Modal -->
+    <div class="modal fade" id="adminSubscriptionModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-2 border-dark" style="border-radius: var(--radius-lg); box-shadow: var(--shadow-xl);">
+                <div class="modal-header border-bottom border-2 border-dark">
+                    <h5 class="modal-title fw-bold" id="adminSubModalTitle"><i class="bi bi-gem me-2 text-warning"></i>Manage Student Membership</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <input type="hidden" id="subModalUserId">
+                    <div class="p-3 border border-2 border-dark rounded bg-light mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <strong class="text-dark" id="subModalUserName">Student Name</strong>
+                            <span class="badge bg-warning text-dark border" id="subModalStatusBadge">TRIAL</span>
+                        </div>
+                        <small class="text-muted d-block" id="subModalUserEmail">student@mgmmumbai.ac.in</small>
+                        <div class="mt-2 text-dark small" id="subModalCurrentInfo">
+                            Current Plan: <strong>Free 30-Day Campus Pass</strong> &bull; <strong>28 days remaining</strong>
+                        </div>
+                    </div>
+
+                    <label class="form-label fw-bold small mb-2">Select Administrative Action</label>
+                    <div class="d-flex flex-column gap-2 mb-3">
+                        <div class="form-check p-3 border rounded">
+                            <input class="form-check-input" type="radio" name="subActionRadio" id="subActExtend" value="EXTEND_TRIAL" checked>
+                            <label class="form-check-label fw-bold text-dark d-block" for="subActExtend">
+                                <i class="bi bi-plus-circle text-success me-1"></i> Extend Free Trial (+30 Days)
+                                <small class="text-muted fw-normal d-block">Adds 30 days to student's ongoing trial without charging them.</small>
+                            </label>
+                        </div>
+                        <div class="form-check p-3 border rounded">
+                            <input class="form-check-input" type="radio" name="subActionRadio" id="subActUpgrade" value="UPGRADE_PREMIUM">
+                            <label class="form-check-label fw-bold text-dark d-block" for="subActUpgrade">
+                                <i class="bi bi-star-fill text-warning me-1"></i> Upgrade to Campus Premium Unlimited
+                                <small class="text-muted fw-normal d-block">Grants permanent unlimited barter & offline sessions pass.</small>
+                            </label>
+                        </div>
+                        <div class="form-check p-3 border rounded">
+                            <input class="form-check-input" type="radio" name="subActionRadio" id="subActReset" value="DOWNGRADE_FREE">
+                            <label class="form-check-label fw-bold text-dark d-block" for="subActReset">
+                                <i class="bi bi-arrow-counterclockwise text-secondary me-1"></i> Reset to Fresh 30-Day Trial
+                                <small class="text-muted fw-normal d-block">Resets membership back to Day 1 of the free trial.</small>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top border-2 border-dark">
+                    <button type="button" class="btn btn-outline-custom" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary-custom" onclick="submitSubscriptionModal()">
+                        <i class="bi bi-check-circle me-1"></i> Save Changes
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Core Application API and System Utilities -->
@@ -1538,6 +1901,8 @@
         let adminData = {
             stats: null,
             users: [],
+            subscriptions: [],
+            kitabBhandar: [],
             skills: [],
             categories: [],
             exchanges: [],
@@ -1553,23 +1918,27 @@
 
         let currentActiveView = 'dashboard';
         let currentUserFilter = 'ALL';
+        let currentMembershipFilter = 'ALL';
+        let currentKitabFilter = 'ALL';
         let currentSkillFilter = 'ALL';
         let currentExchangeFilter = 'ALL';
         let currentOfflineFilter = 'ALL';
 
         const VALID_ADMIN_VIEWS = [
-            'dashboard', 'users', 'skills', 'categories', 'exchanges', 'offline-exchanges',
-            'requests', 'verification', 'reports', 'reviews', 'messages', 
+            'dashboard', 'users', 'memberships', 'skills', 'categories', 'exchanges', 'offline-exchanges',
+            'kitab-bhandar', 'requests', 'verification', 'reports', 'reviews', 'messages', 
             'notifications', 'analytics', 'settings', 'admins', 'activity'
         ];
 
         const VIEW_TITLES = {
             dashboard: 'Dashboard Overview',
             users: 'User Accounts Directory',
+            memberships: 'Free Trial & Premium Memberships',
             skills: 'Skill Listings Oversight',
             categories: 'Skill Categories',
             exchanges: 'Peer Exchanges Pipeline',
             'offline-exchanges': 'Offline Exchanges Progress',
+            'kitab-bhandar': 'Kitab Bhandar Book Barter Hub',
             requests: 'Exchange Requests Queue',
             verification: 'Skill Verification Queue',
             reports: 'Safety & Abuse Reports',
@@ -1746,10 +2115,12 @@
         // Lazy load specific view dataset
         function lazyLoadViewData(view) {
             if (view === 'users' && adminData.users.length === 0) loadUsersList();
+            if (view === 'memberships') loadMembershipsList();
             if (view === 'skills' && adminData.skills.length === 0) loadSkillsList();
             if (view === 'categories' && adminData.categories.length === 0) loadCategoriesList();
             if (view === 'exchanges' && adminData.exchanges.length === 0) loadExchangesList();
             if (view === 'offline-exchanges') loadOfflineExchangesList();
+            if (view === 'kitab-bhandar') loadKitabBhandarList();
             if (view === 'requests' && adminData.requests.length === 0) loadRequestsList();
             if (view === 'verification') loadVerificationsList();
             if (view === 'reports') loadReportsList();
@@ -1790,8 +2161,15 @@
                     document.getElementById('kpiAvgRating').textContent = (d.averageRating ?? 4.8) + " / 5";
                     document.getElementById('kpiPendingReports').textContent = d.pendingReports ?? 0;
 
+                    // Update Subscriptions & Kitab Highlights
+                    if (document.getElementById('dashActiveTrialsCount')) document.getElementById('dashActiveTrialsCount').textContent = d.activeTrials ?? 0;
+                    if (document.getElementById('dashPremiumMembersCount')) document.getElementById('dashPremiumMembersCount').textContent = d.premiumMembers ?? 0;
+                    if (document.getElementById('dashKitabCount')) document.getElementById('dashKitabCount').textContent = d.booksListingsCount ?? 0;
+
                     // Update sidebar badges
                     document.getElementById('badgeUsersCount').textContent = d.totalStudents ?? 0;
+                    if (document.getElementById('badgeMembershipsCount')) document.getElementById('badgeMembershipsCount').textContent = (d.activeTrials ?? 0) + (d.premiumMembers ?? 0);
+                    if (document.getElementById('badgeKitabCount')) document.getElementById('badgeKitabCount').textContent = d.booksListingsCount ?? 0;
                     document.getElementById('badgeSkillsCount').textContent = d.activeSkillListings ?? 0;
                     document.getElementById('badgeExchangesCount').textContent = d.totalExchanges ?? 0;
                     document.getElementById('badgePendingVerif').textContent = d.pendingVerifications ?? 0;
@@ -1932,6 +2310,9 @@
 
             if (currentUserFilter === 'STUDENTS') filtered = filtered.filter(u => !u.isAdmin);
             if (currentUserFilter === 'ADMINS') filtered = filtered.filter(u => u.isAdmin);
+            if (currentUserFilter === 'TRIAL') filtered = filtered.filter(u => u.membership?.status === 'TRIAL');
+            if (currentUserFilter === 'PREMIUM') filtered = filtered.filter(u => u.membership?.status === 'PREMIUM');
+            if (currentUserFilter === 'EXPIRED') filtered = filtered.filter(u => u.membership?.status === 'EXPIRED');
             if (currentUserFilter === 'VERIFIED') filtered = filtered.filter(u => u.verified);
             if (currentUserFilter === 'UNVERIFIED') filtered = filtered.filter(u => !u.verified);
             if (currentUserFilter === 'ACTIVE') filtered = filtered.filter(u => u.active);
@@ -1953,13 +2334,14 @@
         function renderUsersTable(users) {
             const tbody = document.getElementById('usersTableTbody');
             if (users.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="10" class="text-center py-4 text-muted">No user accounts matched your search/filter.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="11" class="text-center py-4 text-muted">No user accounts matched your search/filter.</td></tr>`;
                 return;
             }
 
             const currentUserIsSuperAdmin = window.currentAdminUser && 
                 (window.currentAdminUser.role === 'ROLE_SUPER_ADMIN' || 
                  window.currentAdminUser.role === 'SUPER_ADMIN' || 
+                 window.currentAdminUser.isSuperAdmin ||
                  (window.currentAdminUser.email && window.currentAdminUser.email.toLowerCase() === 'harshtukaram45@gmail.com'));
 
             tbody.innerHTML = users.map(u => {
@@ -1973,6 +2355,20 @@
                     roleBadge = '<span class="badge bg-danger text-white"><i class="bi bi-shield-shaded me-1"></i>ADMIN</span>';
                 } else {
                     roleBadge = '<span class="badge bg-light text-dark border">STUDENT</span>';
+                }
+
+                let memBadge = '<span class="badge bg-light text-muted border">None</span>';
+                const m = u.membership;
+                if (m) {
+                    if (m.status === 'PREMIUM') {
+                        memBadge = `<span class="badge bg-warning text-dark border border-dark"><i class="bi bi-star-fill me-1"></i>Premium</span>`;
+                    } else if (m.status === 'TRIAL') {
+                        memBadge = `<span class="badge bg-info text-dark border border-dark" title="${m.trialDaysRemaining} days remaining"><i class="bi bi-clock-history me-1"></i>Trial (${m.trialDaysRemaining ?? 30}d)</span>`;
+                    } else if (m.status === 'EXPIRED') {
+                        memBadge = `<span class="badge bg-danger text-white"><i class="bi bi-x-circle me-1"></i>Expired</span>`;
+                    } else if (m.status === 'STAFF') {
+                        memBadge = `<span class="badge bg-dark text-white"><i class="bi bi-shield-fill me-1"></i>Staff</span>`;
+                    }
                 }
 
                 let roleActionBtn = '';
@@ -2010,6 +2406,7 @@
                     <td>
                         ${u.verified ? '<span class="status-pill-verified"><i class="bi bi-patch-check-fill me-1"></i>Verified</span>' : '<span class="badge bg-light text-muted border">Unverified</span>'}
                     </td>
+                    <td>${memBadge}</td>
                     <td><span class="badge bg-light text-dark border">${u.teachingSkillsCount || 0} teach / ${u.learningSkillsCount || 0} learn</span></td>
                     <td><span class="badge bg-light text-dark border">${u.completedExchangesCount || 0} completed</span></td>
                     <td><strong class="text-dark">${(u.averageRating || 5.0).toFixed(1)} / 5</strong></td>
@@ -2044,8 +2441,10 @@
                 const res = await API.get(`/api/admin/users/${userId}`);
                 if (res && res.success && res.data) {
                     const u = res.data;
+                    const m = u.membership || { status: 'TRIAL', trialDaysRemaining: 30, plan: 'Free 30-Day Campus Pass' };
+
                     modalBody.innerHTML = `
-                        <div class="d-flex align-items-center gap-3 mb-4 p-3 border rounded bg-light">
+                        <div class="d-flex align-items-center gap-3 mb-3 p-3 border rounded bg-light">
                             <img src="${u.avatarUrl || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + u.userId}" class="rounded-circle border border-2 border-dark" width="64" height="64" alt="${escapeHtml(u.fullName)}">
                             <div>
                                 <h4 class="fw-bold mb-0">${escapeHtml(u.fullName)}</h4>
@@ -2055,6 +2454,29 @@
                                     ${u.blocked ? '<span class="badge bg-danger text-white">Account Suspended</span>' : '<span class="badge bg-success text-white">Active</span>'}
                                     <span class="badge bg-light text-dark fw-bold border ms-1">${(u.averageRating || 5.0).toFixed(1)} / 5 Rating</span>
                                 </div>
+                            </div>
+                        </div>
+
+                        <!-- Membership & Free Trial Control Box -->
+                        <div class="p-3 border border-2 border-dark rounded mb-3 bg-white d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <div>
+                                <div class="d-flex align-items-center gap-2 mb-1">
+                                    <span class="badge ${m.status === 'PREMIUM' ? 'bg-warning text-dark' : (m.status === 'TRIAL' ? 'bg-info text-dark' : 'bg-secondary text-white')}">
+                                        <i class="bi ${m.status === 'PREMIUM' ? 'bi-star-fill' : 'bi-clock-history'} me-1"></i>${m.status || 'TRIAL'}
+                                    </span>
+                                    <strong class="text-dark small">${escapeHtml(m.plan || 'Campus Pass')}</strong>
+                                </div>
+                                <div class="small text-muted">
+                                    ${m.status === 'TRIAL' ? `Free Trial Days Left: <strong class="text-primary">${m.trialDaysRemaining ?? 30} days</strong>` : (m.status === 'PREMIUM' ? 'Unlimited Barters & Offline Meets' : 'Trial Expired')}
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-outline-custom" onclick="openSubscriptionModal(${u.userId}, '${escapeHtml(u.fullName)}', '${escapeHtml(u.email)}', '${m.status}', '${escapeHtml(m.plan || '')}', ${m.trialDaysRemaining || 0})">
+                                    <i class="bi bi-sliders me-1"></i>Manage Subscription
+                                </button>
+                                <button class="btn btn-sm btn-outline-success" onclick="quickExtendTrial(${u.userId})">
+                                    <i class="bi bi-plus-circle me-1"></i>+30 Days Free Trial
+                                </button>
                             </div>
                         </div>
 
@@ -2070,10 +2492,17 @@
                                 ${u.teachingSkills && u.teachingSkills.length > 0 ? u.teachingSkills.map(t => `
                                     <div class="p-2 border rounded mb-2 d-flex justify-content-between align-items-center">
                                         <div>
-                                            <strong class="text-dark">${escapeHtml(t.skillName)}</strong>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <strong class="text-dark">${escapeHtml(t.skillName)}</strong>
+                                                ${t.verified ? '<span class="status-pill-verified" style="font-size: 0.72rem; padding: 2px 6px;"><i class="bi bi-patch-check-fill me-1"></i>Verified Badge</span>' : ''}
+                                            </div>
                                             <small class="text-muted d-block">${escapeHtml(t.categoryName || 'General')} &bull; Level: ${escapeHtml(t.levelOrUrgency || 'Intermediate')}</small>
                                         </div>
-                                        <span class="badge ${t.verified ? 'bg-success text-white' : 'bg-light text-muted border'}">${t.verified ? 'Verified' : 'Unverified'}</span>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <button class="btn btn-sm ${t.verified ? 'btn-outline-danger' : 'btn-outline-success'}" onclick="toggleIndividualSkillVerify(${u.userId}, ${t.id}, ${!t.verified})">
+                                                ${t.verified ? '<i class="bi bi-x-circle me-1"></i>Revoke Skill Badge' : '<i class="bi bi-patch-check me-1"></i>Verify & Award Badge'}
+                                            </button>
+                                        </div>
                                     </div>
                                 `).join('') : '<span class="text-muted small">No teaching skills offered.</span>'}
                             </div>
@@ -2302,7 +2731,10 @@
                     <td>${s.verified ? '<span class="status-pill-verified"><i class="bi bi-patch-check-fill me-1"></i>Verified</span>' : '<span class="badge bg-light text-muted border">Unverified</span>'}</td>
                     <td>${renderStatusPill(s.status)}</td>
                     <td class="text-end">
-                        <div class="d-inline-flex gap-1">
+                        <div class="d-inline-flex gap-1 align-items-center">
+                            <button class="btn btn-sm ${s.verified ? 'btn-outline-custom' : 'btn-outline-success'}" onclick="toggleSkillBadgeFromCatalog(${s.userId || s.providerId || 1}, ${s.id}, ${!s.verified})" title="${s.verified ? 'Revoke Verification Badge' : 'Award Official Verification Badge'}">
+                                <i class="bi ${s.verified ? 'bi-patch-check-fill text-success' : 'bi-patch-check'}"></i>
+                            </button>
                             <button class="btn btn-sm btn-outline-success" onclick="updateSkillStatus(${s.id}, 'APPROVED')" title="Approve Skill">
                                 <i class="bi bi-check-lg"></i>
                             </button>
@@ -2547,6 +2979,15 @@
                 if (res && res.success) {
                     bootstrap.Modal.getInstance(document.getElementById('adminExchangeModal')).hide();
                     showAdminAlert("Exchange status updated.", "success");
+                    loadAdminExchangesList();
+                    loadAdminStats();
+                } else {
+                    showAdminAlert(res?.message || "Failed to update exchange status", "danger");
+                }
+            } catch (err) {
+                console.error("Failed to override exchange status:", err);
+                showAdminAlert("Network error updating exchange status", "danger");
+            }
         }
 
         // ===================================================================
@@ -3386,13 +3827,30 @@
         // ===================================================================
         async function loadAdminsList() {
             const tbody = document.getElementById('adminsTableTbody');
-            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted"><span class="spinner-border spinner-border-sm me-2"></span>Loading team...</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted"><span class="spinner-border spinner-border-sm me-2"></span>Loading team...</td></tr>`;
 
             try {
                 const res = await API.get('/api/admin/admins');
                 if (res && res.success && res.data) {
                     adminData.admins = res.data;
-                    tbody.innerHTML = adminData.admins.map(a => `
+                    const currentUserIsSuperAdmin = window.currentAdminUser && 
+                        (window.currentAdminUser.role === 'ROLE_SUPER_ADMIN' || 
+                         window.currentAdminUser.role === 'SUPER_ADMIN' || 
+                         window.currentAdminUser.isSuperAdmin ||
+                         (window.currentAdminUser.email && window.currentAdminUser.email.toLowerCase() === 'harshtukaram45@gmail.com'));
+
+                    tbody.innerHTML = adminData.admins.map(a => {
+                        const isSuper = a.role === 'SUPER_ADMIN' || (a.email && a.email.toLowerCase() === 'harshtukaram45@gmail.com');
+                        let actionCell = '<span class="badge bg-light text-muted border">None</span>';
+                        if (currentUserIsSuperAdmin) {
+                            if (isSuper) {
+                                actionCell = `<span class="badge bg-dark text-white"><i class="bi bi-shield-lock me-1"></i>Permanent</span>`;
+                            } else {
+                                actionCell = `<button class="btn btn-sm btn-outline-danger" onclick="openRoleModal(${a.userId || a.id}, '${escapeHtml(a.name)}', '${escapeHtml(a.email)}', 'REMOVE')" title="Demote to Student"><i class="bi bi-person-dash me-1"></i>Demote</button>`;
+                            }
+                        }
+
+                        return `
                         <tr>
                             <td>
                                 <div class="d-flex align-items-center gap-2">
@@ -3401,15 +3859,17 @@
                                 </div>
                             </td>
                             <td><span class="small text-muted">${escapeHtml(a.email)}</span></td>
-                            <td><span class="badge ${a.role === 'SUPER_ADMIN' ? 'bg-danger text-white' : 'bg-primary text-white'}">${escapeHtml(a.role)}</span></td>
+                            <td><span class="badge ${isSuper ? 'bg-dark text-white border border-dark' : 'bg-primary text-white'}">${escapeHtml(a.role)}</span></td>
                             <td><span class="badge bg-success text-white">Active</span></td>
                             <td><span class="small text-muted">${formatDate(a.lastActive)}</span></td>
                             <td><span class="small text-muted">${formatDate(a.createdAt)}</span></td>
+                            <td class="text-end">${actionCell}</td>
                         </tr>
-                    `).join('');
+                    `;
+                    }).join('');
                 }
             } catch (err) {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">Failed to load admin team.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-4">Failed to load admin team.</td></tr>`;
             }
         }
 
@@ -3436,6 +3896,376 @@
                 }
             } catch (err) {
                 showAdminAlert("Failed to add administrator.", "danger");
+            }
+        }
+
+        function openPromoteStudentModal() {
+            const sel = document.getElementById('promoteStudentSelect');
+            if (!sel) return;
+            sel.innerHTML = '<option value="">-- Choose student account --</option>';
+            const students = (adminData.users || []).filter(u => !u.isAdmin && !u.isSuperAdmin);
+            students.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.userId;
+                opt.textContent = `${s.fullName} (${s.email}) - ${s.department || 'General'}`;
+                sel.appendChild(opt);
+            });
+            new bootstrap.Modal(document.getElementById('adminPromoteStudentModal')).show();
+        }
+
+        async function submitPromoteStudentModal() {
+            const sel = document.getElementById('promoteStudentSelect');
+            const userId = sel ? sel.value : null;
+            if (!userId) {
+                alert("Please select a student account to promote.");
+                return;
+            }
+
+            try {
+                const res = await API.put(`/api/admin/users/${userId}/role`, { role: 'ADMIN' });
+                if (res && res.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('adminPromoteStudentModal')).hide();
+                    showAdminAlert(res.message || "User promoted to Administrator successfully!", "success");
+                    await loadUsersList();
+                    await loadAdminsList();
+                    if (typeof loadAdminStats === 'function') await loadAdminStats();
+                } else {
+                    alert(res?.message || "Failed to promote user to Admin.");
+                }
+            } catch (e) {
+                alert("Error executing admin promotion: " + e.message);
+            }
+        }
+
+        // ===================================================================
+        // INDIVIDUAL SKILL VERIFICATION CONTROLLER (SUPER ADMIN / ADMIN)
+        // ===================================================================
+        async function toggleIndividualSkillVerify(userId, skillListingId, shouldVerify) {
+            try {
+                const res = await API.put(`/api/admin/users/${userId}/skills/${skillListingId}/verify`, { verified: shouldVerify });
+                if (res && res.success) {
+                    showAdminAlert(res.message || "Skill verification badge updated successfully.", "success");
+                    await openUserProfileModal(userId);
+                    await loadUsersList();
+                    if (typeof loadSkillsList === 'function') await loadSkillsList();
+                    if (typeof loadAdminStats === 'function') await loadAdminStats();
+                } else {
+                    showAdminAlert(res?.message || "Failed to update skill badge.", "danger");
+                }
+            } catch (e) {
+                showAdminAlert("Error updating skill badge.", "danger");
+            }
+        }
+
+        async function toggleSkillBadgeFromCatalog(userId, skillListingId, shouldVerify) {
+            try {
+                const res = await API.put(`/api/admin/users/${userId}/skills/${skillListingId}/verify`, { verified: shouldVerify });
+                if (res && res.success) {
+                    showAdminAlert(res.message || "Skill verification badge updated.", "success");
+                    await loadSkillsList();
+                    if (typeof loadAdminStats === 'function') await loadAdminStats();
+                } else {
+                    showAdminAlert(res?.message || "Failed to update skill badge.", "danger");
+                }
+            } catch (e) {
+                showAdminAlert("Error updating skill badge.", "danger");
+            }
+        }
+
+        // ===================================================================
+        // MEMBERSHIPS & FREE TRIALS CONTROLLER
+        // ===================================================================
+        async function loadMembershipsList() {
+            const tbody = document.getElementById('membershipsTableTbody');
+            if (!tbody) return;
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted"><span class="spinner-border spinner-border-sm me-2"></span>Loading memberships and trials...</td></tr>`;
+
+            try {
+                const res = await API.get('/api/admin/subscriptions');
+                if (res && res.success && res.data) {
+                    if (Array.isArray(res.data)) {
+                        adminData.subscriptions = res.data;
+                    } else if (res.data.users) {
+                        adminData.subscriptions = res.data.users;
+                        const summary = res.data.summary || {};
+                        if (document.getElementById('memKpiActiveTrials')) document.getElementById('memKpiActiveTrials').textContent = summary.activeTrials ?? 0;
+                        if (document.getElementById('memKpiPremiumMembers')) document.getElementById('memKpiPremiumMembers').textContent = summary.premiumMembers ?? 0;
+                        if (document.getElementById('memKpiExpiredTrials')) document.getElementById('memKpiExpiredTrials').textContent = summary.expiredTrials ?? 0;
+                        if (document.getElementById('memKpiTotalSubs')) document.getElementById('memKpiTotalSubs').textContent = summary.totalUsers ?? 0;
+                    } else {
+                        adminData.subscriptions = [];
+                    }
+                    filterMembershipsTable();
+                }
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-4">Failed to load subscriptions.</td></tr>`;
+            }
+        }
+
+        function setMembershipFilter(filter, btn) {
+            currentMembershipFilter = filter;
+            document.querySelectorAll('[data-mem-filter]').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            filterMembershipsTable();
+        }
+
+        function filterMembershipsTable() {
+            const q = (document.getElementById('membershipSearchInput')?.value || '').toLowerCase();
+            let filtered = adminData.subscriptions || [];
+
+            if (currentMembershipFilter === 'TRIAL') filtered = filtered.filter(u => u.membership?.status === 'TRIAL');
+            if (currentMembershipFilter === 'PREMIUM') filtered = filtered.filter(u => u.membership?.status === 'PREMIUM');
+            if (currentMembershipFilter === 'EXPIRED') filtered = filtered.filter(u => u.membership?.status === 'EXPIRED');
+
+            if (q) {
+                filtered = filtered.filter(u =>
+                    (u.fullName && u.fullName.toLowerCase().includes(q)) ||
+                    (u.email && u.email.toLowerCase().includes(q)) ||
+                    (u.department && u.department.toLowerCase().includes(q))
+                );
+            }
+
+            renderMembershipsTable(filtered);
+        }
+
+        function renderMembershipsTable(users) {
+            const tbody = document.getElementById('membershipsTableTbody');
+            if (!tbody) return;
+            if (users.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">No subscriptions matched your filter.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = users.map(u => {
+                const m = u.membership || { status: 'TRIAL', trialDaysRemaining: 30, plan: 'Free 30-Day Campus Pass' };
+                let statusBadge = '';
+                let progressPercent = Math.min(100, Math.max(0, Math.round(((30 - (m.trialDaysRemaining || 0)) / 30) * 100)));
+                if (m.status === 'PREMIUM') {
+                    statusBadge = `<span class="badge bg-warning text-dark border border-dark"><i class="bi bi-star-fill me-1"></i>PREMIUM</span>`;
+                    progressPercent = 100;
+                } else if (m.status === 'TRIAL') {
+                    statusBadge = `<span class="badge bg-info text-dark border border-dark"><i class="bi bi-clock-history me-1"></i>30-DAY TRIAL</span>`;
+                } else if (m.status === 'EXPIRED') {
+                    statusBadge = `<span class="badge bg-danger text-white"><i class="bi bi-x-circle me-1"></i>EXPIRED</span>`;
+                } else if (m.status === 'STAFF') {
+                    statusBadge = `<span class="badge bg-dark text-white"><i class="bi bi-shield-fill me-1"></i>STAFF PASS</span>`;
+                }
+
+                return `
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <img src="${u.avatarUrl || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + u.userId}" class="rounded-circle border border-1 border-dark" width="32" height="32" alt="${escapeHtml(u.fullName)}">
+                                <div>
+                                    <strong class="text-dark d-block">${escapeHtml(u.fullName)}</strong>
+                                    <small class="text-muted">${escapeHtml(u.email)}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="small fw-bold text-dark">${escapeHtml(u.department || 'General')}</span></td>
+                        <td><span class="badge bg-light text-dark border">${escapeHtml(m.plan || 'Campus Pass')}</span></td>
+                        <td>${statusBadge}</td>
+                        <td style="min-width: 160px;">
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <small class="fw-bold ${m.status === 'PREMIUM' ? 'text-success' : (m.trialDaysRemaining < 5 ? 'text-danger' : 'text-primary')}">
+                                    ${m.status === 'PREMIUM' ? 'Unlimited' : `${m.trialDaysRemaining ?? 0} days remaining`}
+                                </small>
+                                <small class="text-muted">${m.status === 'PREMIUM' ? 'Active' : '30-Day Limit'}</small>
+                            </div>
+                            <div class="progress border border-1 border-dark" style="height: 6px;">
+                                <div class="progress-bar ${m.status === 'PREMIUM' ? 'bg-success' : (m.trialDaysRemaining < 5 ? 'bg-danger' : 'bg-warning')}" role="progressbar" style="width: ${progressPercent}%"></div>
+                            </div>
+                        </td>
+                        <td><span class="small text-muted">${formatDate(m.trialStartDate || u.createdAt)} &rarr; ${formatDate(m.trialEndDate || '')}</span></td>
+                        <td class="text-end">
+                            <div class="d-inline-flex gap-1">
+                                <button class="btn btn-sm btn-outline-custom" onclick="openSubscriptionModal(${u.userId}, '${escapeHtml(u.fullName)}', '${escapeHtml(u.email)}', '${m.status}', '${escapeHtml(m.plan || '')}', ${m.trialDaysRemaining || 0})" title="Modify Subscription">
+                                    <i class="bi bi-sliders me-1"></i>Manage
+                                </button>
+                                <button class="btn btn-sm btn-outline-success" onclick="quickExtendTrial(${u.userId})" title="Quick Add +30 Days Free Trial">
+                                    <i class="bi bi-plus-circle me-1"></i>+30d
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function openSubscriptionModal(userId, fullName, email, status, plan, daysLeft) {
+            document.getElementById('subModalUserId').value = userId;
+            document.getElementById('subModalUserName').textContent = fullName;
+            document.getElementById('subModalUserEmail').textContent = email;
+            document.getElementById('subModalStatusBadge').textContent = status;
+            document.getElementById('subModalStatusBadge').className = status === 'PREMIUM' ? 'badge bg-warning text-dark border' : 'badge bg-info text-dark border';
+            document.getElementById('subModalCurrentInfo').innerHTML = `Current Plan: <strong>${plan}</strong> &bull; <strong>${status === 'PREMIUM' ? 'Unlimited' : daysLeft + ' days remaining'}</strong>`;
+            new bootstrap.Modal(document.getElementById('adminSubscriptionModal')).show();
+        }
+
+        async function submitSubscriptionModal() {
+            const userId = document.getElementById('subModalUserId').value;
+            const action = document.querySelector('input[name="subActionRadio"]:checked')?.value || 'EXTEND_TRIAL';
+
+            try {
+                const res = await API.put(`/api/admin/users/${userId}/subscription`, { action });
+                if (res && res.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('adminSubscriptionModal')).hide();
+                    showAdminAlert(res.message || "Membership updated successfully.", "success");
+                    await loadMembershipsList();
+                    await loadUsersList();
+                    await loadAdminStats();
+                } else {
+                    showAdminAlert(res?.message || "Failed to update membership.", "danger");
+                }
+            } catch (e) {
+                showAdminAlert("Error updating membership.", "danger");
+            }
+        }
+
+        async function quickExtendTrial(userId) {
+            try {
+                const res = await API.put(`/api/admin/users/${userId}/subscription`, { action: 'EXTEND_TRIAL', additionalDays: 30 });
+                if (res && res.success) {
+                    showAdminAlert("Added 30 days free trial successfully!", "success");
+                    await loadMembershipsList();
+                    await loadUsersList();
+                    await loadAdminStats();
+                } else {
+                    showAdminAlert(res?.message || "Failed to extend trial.", "danger");
+                }
+            } catch (e) {
+                showAdminAlert("Error extending trial.", "danger");
+            }
+        }
+
+        // ===================================================================
+        // KITAB BHANDAR BOOK BARTER MARKETPLACE CONTROLLER
+        // ===================================================================
+        async function loadKitabBhandarList() {
+            const tbody = document.getElementById('kitabTableTbody');
+            if (!tbody) return;
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-muted"><span class="spinner-border spinner-border-sm me-2"></span>Loading Kitab Bhandar marketplace...</td></tr>`;
+
+            try {
+                const res = await API.get('/api/admin/kitab-bhandar');
+                if (res && res.success && res.data) {
+                    adminData.kitabBhandar = res.data;
+                    if (document.getElementById('kitabKpiTotal')) document.getElementById('kitabKpiTotal').textContent = adminData.kitabBhandar.length;
+                    if (document.getElementById('kitabKpiAvailable')) document.getElementById('kitabKpiAvailable').textContent = adminData.kitabBhandar.filter(b => b.status === 'AVAILABLE').length;
+                    if (document.getElementById('kitabKpiExchanged')) document.getElementById('kitabKpiExchanged').textContent = adminData.kitabBhandar.filter(b => b.status === 'EXCHANGED').length;
+                    filterKitabTable();
+                }
+            } catch (e) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center text-danger py-4">Failed to load Kitab Bhandar catalog.</td></tr>`;
+            }
+        }
+
+        function setKitabFilter(filter, btn) {
+            currentKitabFilter = filter;
+            document.querySelectorAll('[data-kitab-filter]').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            filterKitabTable();
+        }
+
+        function filterKitabTable() {
+            const q = (document.getElementById('kitabSearchInput')?.value || '').toLowerCase();
+            let filtered = adminData.kitabBhandar || [];
+
+            if (currentKitabFilter === 'AVAILABLE') filtered = filtered.filter(b => b.status === 'AVAILABLE');
+            if (currentKitabFilter === 'EXCHANGED') filtered = filtered.filter(b => b.status === 'EXCHANGED');
+
+            if (q) {
+                filtered = filtered.filter(b =>
+                    (b.title && b.title.toLowerCase().includes(q)) ||
+                    (b.author && b.author.toLowerCase().includes(q)) ||
+                    (b.branch && b.branch.toLowerCase().includes(q)) ||
+                    (b.listerName && b.listerName.toLowerCase().includes(q))
+                );
+            }
+
+            renderKitabTable(filtered);
+        }
+
+        function renderKitabTable(books) {
+            const tbody = document.getElementById('kitabTableTbody');
+            if (!tbody) return;
+            if (books.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-muted">No books matched your filter.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = books.map(b => `
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="brand-icon-box" style="width: 28px; height: 28px; font-size: 0.8rem; background: var(--bg-card);"><i class="bi bi-book text-success"></i></span>
+                            <div>
+                                <strong class="text-dark d-block">${escapeHtml(b.title)}</strong>
+                                <small class="text-muted">By ${escapeHtml(b.author)} &bull; Edition: ${escapeHtml(b.edition || 'Standard')}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="badge bg-light text-dark border">${escapeHtml(b.branch || 'Engg')}</span></td>
+                    <td><span class="badge bg-light text-dark border">${escapeHtml(b.semester || 'Sem 1')}</span></td>
+                    <td>
+                        <strong class="text-dark d-block small">${escapeHtml(b.listerName || 'Student')}</strong>
+                        <small class="text-muted">${escapeHtml(b.listerEmail || '')}</small>
+                    </td>
+                    <td><span class="badge ${b.condition === 'Like New' ? 'bg-success text-white' : 'bg-info text-dark'}">${escapeHtml(b.condition || 'Good')}</span></td>
+                    <td><span class="small text-muted">${escapeHtml(b.desiredExchange || 'Open Barter')}</span></td>
+                    <td>
+                        <span class="badge ${b.status === 'AVAILABLE' ? 'bg-success text-white' : (b.status === 'EXCHANGED' ? 'bg-primary text-white' : 'bg-secondary text-white')}">
+                            ${escapeHtml(b.status)}
+                        </span>
+                    </td>
+                    <td class="text-end">
+                        <div class="d-inline-flex gap-1">
+                            ${b.status === 'AVAILABLE' ? `
+                                <button class="btn btn-sm btn-outline-success" onclick="updateKitabStatus(${b.id}, 'EXCHANGED')" title="Mark as Exchanged">
+                                    <i class="bi bi-check-circle"></i>
+                                </button>
+                            ` : `
+                                <button class="btn btn-sm btn-outline-custom" onclick="updateKitabStatus(${b.id}, 'AVAILABLE')" title="Mark as Available">
+                                    <i class="bi bi-arrow-counterclockwise"></i>
+                                </button>
+                            `}
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteKitabListing(${b.id})" title="Remove Book">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function updateKitabStatus(id, status) {
+            try {
+                const res = await API.put(`/api/admin/kitab-bhandar/${id}/status`, { status });
+                if (res && res.success) {
+                    showAdminAlert("Book listing status updated.", "success");
+                    await loadKitabBhandarList();
+                    await loadAdminStats();
+                } else {
+                    showAdminAlert("Failed to update book status.", "danger");
+                }
+            } catch (e) {
+                showAdminAlert("Error updating book listing.", "danger");
+            }
+        }
+
+        async function deleteKitabListing(id) {
+            if (!confirm("Are you sure you want to remove this book listing from Kitab Bhandar?")) return;
+            try {
+                const res = await API.delete(`/api/admin/kitab-bhandar/${id}`);
+                if (res && res.success) {
+                    showAdminAlert("Book listing removed from marketplace.", "success");
+                    await loadKitabBhandarList();
+                    await loadAdminStats();
+                } else {
+                    showAdminAlert("Failed to remove book.", "danger");
+                }
+            } catch (e) {
+                showAdminAlert("Error removing book.", "danger");
             }
         }
 

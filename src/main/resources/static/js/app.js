@@ -115,11 +115,23 @@ function updateNavbarLoggedIn(user) {
     const userControls = document.getElementById("navbarUserControls");
     if (!userControls) return;
 
-    const isAdmin = user.role === "ROLE_ADMIN";
-    const avatarSrc = user.avatarUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.userId}`;
+    const roleStr = (user.role || '').toUpperCase();
+    const emailStr = (user.email || '').toLowerCase();
+    const isSuperAdmin = roleStr === 'ROLE_SUPER_ADMIN' || roleStr === 'SUPER_ADMIN' || emailStr === 'harshtukaram45@gmail.com' || user.isSuperAdmin === true;
+    const isAdmin = isSuperAdmin || roleStr === 'ROLE_ADMIN' || roleStr === 'ADMIN' || user.isAdmin === true;
+    const roleLabel = isSuperAdmin ? 'SUPER ADMIN' : (isAdmin ? 'ADMIN' : 'STUDENT');
+    const avatarSrc = user.avatarUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.userId || user.id || 1}`;
 
     userControls.innerHTML = `
         <div class="d-flex align-items-center gap-2">
+            ${isAdmin ? `
+            <!-- Direct Quick-Access Admin Panel Button -->
+            <a href="admin-dashboard.html" class="btn btn-sm btn-danger d-inline-flex align-items-center gap-1 shadow-sm border border-2 border-dark fw-bold text-white px-2 py-1" style="font-size:0.75rem;" title="${isSuperAdmin ? 'Open Super Admin Panel' : 'Open Admin Panel'}">
+                <i class="bi ${isSuperAdmin ? 'bi-shield-lock-fill' : 'bi-shield-check'}"></i>
+                <span class="d-none d-sm-inline">${isSuperAdmin ? 'Super Admin' : 'Admin Panel'}</span>
+            </a>
+            ` : ''}
+
             <!-- Notifications Dropdown -->
             <div class="dropdown">
                 <button class="btn btn-outline-custom btn-sm position-relative p-2" type="button" id="navNotificationBtn" data-bs-toggle="dropdown" aria-expanded="false" title="Notifications" onclick="loadNavbarNotifications()">
@@ -150,11 +162,11 @@ function updateNavbarLoggedIn(user) {
                 <button class="btn btn-outline-custom btn-sm dropdown-toggle d-flex align-items-center gap-2 py-1 px-2" type="button" data-bs-toggle="dropdown">
                     <img src="${avatarSrc}" id="navUserAvatarImg" class="rounded-circle object-fit-cover border border-1 border-dark" width="28" height="28" style="aspect-ratio:1/1;" alt="User">
                     <span class="fw-bold text-dark small">${user.fullName || user.email}</span>
-                    <span class="badge ${isAdmin ? 'bg-danger text-white' : 'bg-primary text-white'} ms-1" style="font-size:0.62rem;">${isAdmin ? 'ADMIN' : 'STUDENT'}</span>
+                    <span class="badge ${isSuperAdmin ? 'bg-dark text-white border border-light' : (isAdmin ? 'bg-danger text-white' : 'bg-primary text-white')} ms-1" style="font-size:0.62rem;">${roleLabel}</span>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end mt-2 border border-2 border-dark" style="box-shadow: 4px 4px 0 var(--border-color);">
                     ${isAdmin ? `
-                    <li><a class="dropdown-item py-2 fw-bold text-danger bg-light border-bottom border-1 border-dark" href="admin-dashboard.html"><i class="bi bi-shield-check me-2 text-danger"></i>Admin Panel</a></li>
+                    <li><a class="dropdown-item py-2 fw-bold text-danger bg-danger-subtle border-bottom border-1 border-dark" href="admin-dashboard.html"><i class="bi bi-shield-lock-fill me-2 text-danger"></i>${isSuperAdmin ? 'Super Admin Panel' : 'Admin Panel'}</a></li>
                     ` : ''}
                     <li><a class="dropdown-item py-2" href="dashboard.html"><i class="bi bi-speedometer2 me-2 text-primary"></i>Dashboard</a></li>
                     <li><a class="dropdown-item py-2" href="profile.html"><i class="bi bi-person me-2 text-primary"></i>My Profile</a></li>
@@ -177,7 +189,10 @@ function updateNavbarLoggedIn(user) {
 
     const adminLinks = document.querySelectorAll(".nav-admin-only");
     adminLinks.forEach(el => {
-        if (isAdmin) el.classList.remove("d-none");
+        if (isAdmin) {
+            el.classList.remove("d-none");
+            el.style.display = "";
+        }
     });
 }
 
