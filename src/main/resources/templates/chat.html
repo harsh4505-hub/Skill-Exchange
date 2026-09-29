@@ -220,6 +220,7 @@
                     <!-- Hidden File Inputs -->
                     <input type="file" id="chatImageInput" accept="image/png,image/jpeg,image/webp" class="d-none" onchange="handleChatFileSelect(event, 'image')">
                     <input type="file" id="chatDocInput" accept=".pdf,.doc,.docx,.txt,.zip" class="d-none" onchange="handleChatFileSelect(event, 'document')">
+                    <input type="file" id="chatVideoInput" accept="video/mp4,video/webm" class="d-none" onchange="handleChatFileSelect(event, 'video')">
                 </div>
             </div>
         </div>
@@ -1044,6 +1045,7 @@
         function triggerFileInput(category) {
             if (category === 'image') document.getElementById('chatImageInput').click();
             else if (category === 'document') document.getElementById('chatDocInput').click();
+            else if (category === 'video') document.getElementById('chatVideoInput').click();
         }
 
         function handleChatFileSelect(e, category) {

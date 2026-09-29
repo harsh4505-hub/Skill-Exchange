@@ -1662,6 +1662,15 @@ const server = http.createServer(async (req, res) => {
             }
 
             let user = state.users.find(u => u.email.toLowerCase() === normalizedEmail);
+
+            // Security: Prevent administrative account takeover via client-asserted Firebase payloads
+            if (isSuperAdminEmail(normalizedEmail) || (user && isAdmin(user))) {
+                return sendJson(res, 403, {
+                    success: false,
+                    message: "Administrative accounts must log in using secure administrative credentials."
+                });
+            }
+
             let profile = user ? state.profiles.find(p => p.userId === user.id) : null;
 
             if (!user) {
@@ -2268,7 +2277,7 @@ const server = http.createServer(async (req, res) => {
         if (pathname.match(/^\/api\/students\/(\d+)$/) && req.method === 'PUT') {
             const id = Number(pathname.split('/')[3]);
             const myId = state.currentUser ? state.currentUser.userId : null;
-            const isStaff = state.currentUser && state.currentUser.role === 'ROLE_ADMIN';
+            const isStaff = isAdmin(state.currentUser);
 
             if (!isStaff && myId !== id) {
                 return sendJson(res, 403, { success: false, message: "Access Denied: You cannot modify another student's profile." });
@@ -2640,10 +2649,10 @@ const server = http.createServer(async (req, res) => {
             }
 
             const myId = state.currentUser ? state.currentUser.userId : 2;
-            const isAdmin = state.currentUser && state.currentUser.role === 'ROLE_ADMIN';
+            const isAdminUser = isAdmin(state.currentUser);
             const isParticipant = (r.senderId === myId || r.receiverId === myId);
 
-            if (!isParticipant && !isAdmin) {
+            if (!isParticipant && !isAdminUser) {
                 return sendJson(res, 403, {
                     success: false,
                     message: "Access Denied: You are not authorized to view the details of this exchange request."
@@ -3008,6 +3017,7 @@ const server = http.createServer(async (req, res) => {
                             updatedAt: new Date().toISOString()
                         };
                         state.offlineProgress.unshift(newOff);
+                        syncSupabase('saveOfflineProgress', newOff);
                     }
                 }
             }
@@ -3148,10 +3158,10 @@ const server = http.createServer(async (req, res) => {
             }
 
             const currentUserId = state.currentUser ? state.currentUser.userId : 2;
-            const isAdmin = state.currentUser && state.currentUser.role === 'ROLE_ADMIN';
+            const isAdminUser = isAdmin(state.currentUser);
             const isParticipant = op.teacherId === currentUserId || op.learnerId === currentUserId;
 
-            if (!isAdmin && !isParticipant) {
+            if (!isAdminUser && !isParticipant) {
                 return sendJson(res, 403, { success: false, message: "Unauthorized: You are not a participant in this exchange." });
             }
 
@@ -3218,6 +3228,7 @@ const server = http.createServer(async (req, res) => {
             };
 
             state.offlineUpdates.unshift(newUpdate);
+            syncSupabase('saveOfflineUpdate', newUpdate);
 
             // Update main progress record
             op.progressPercentage = percentage;
@@ -3241,6 +3252,7 @@ const server = http.createServer(async (req, res) => {
             } else {
                 op.status = "ACTIVE";
             }
+            syncSupabase('saveOfflineProgress', op);
 
             return sendJson(res, 200, {
                 success: true,
@@ -3258,10 +3270,10 @@ const server = http.createServer(async (req, res) => {
             }
 
             const currentUserId = state.currentUser ? state.currentUser.userId : 2;
-            const isAdmin = state.currentUser && state.currentUser.role === 'ROLE_ADMIN';
+            const isAdminUser = isAdmin(state.currentUser);
             const isParticipant = op.teacherId === currentUserId || op.learnerId === currentUserId;
 
-            if (!isAdmin && !isParticipant) {
+            if (!isAdminUser && !isParticipant) {
                 return sendJson(res, 403, { success: false, message: "Unauthorized to inspect this offline progress." });
             }
 
@@ -3305,10 +3317,10 @@ const server = http.createServer(async (req, res) => {
             }
 
             const myId = state.currentUser.userId;
-            const isAdmin = state.currentUser.role === 'ROLE_ADMIN';
+            const isAdminUser = isAdmin(state.currentUser);
             const isParticipant = (exchangeReq.senderId === myId || exchangeReq.receiverId === myId);
 
-            if (!isParticipant && !isAdmin) {
+            if (!isParticipant && !isAdminUser) {
                 return sendJson(res, 403, { success: false, message: "Security violation: You are not authorized to schedule a session for this exchange." });
             }
 
@@ -3421,10 +3433,10 @@ const server = http.createServer(async (req, res) => {
                 return sendJson(res, 401, { success: false, message: "Authentication required." });
             }
             const myId = state.currentUser.userId;
-            const isAdmin = state.currentUser.role === 'ROLE_ADMIN';
+            const isAdminUser = isAdmin(state.currentUser);
 
             const sessions = state.onlineSessions
-                .filter(s => isAdmin || s.teacherId === myId || s.learnerId === myId)
+                .filter(s => isAdminUser || s.teacherId === myId || s.learnerId === myId)
                 .map(enrichOnlineSession);
 
             return sendJson(res, 200, { success: true, data: sessions });
@@ -3442,10 +3454,10 @@ const server = http.createServer(async (req, res) => {
             }
 
             const myId = state.currentUser.userId;
-            const isAdmin = state.currentUser.role === 'ROLE_ADMIN';
+            const isAdminUser = isAdmin(state.currentUser);
             const isParticipant = (session.teacherId === myId || session.learnerId === myId);
 
-            if (!isParticipant && !isAdmin) {
+            if (!isParticipant && !isAdminUser) {
                 return sendJson(res, 403, { success: false, message: "Access Denied: You are not authorized to view this session." });
             }
 
@@ -3464,10 +3476,10 @@ const server = http.createServer(async (req, res) => {
             }
 
             const myId = state.currentUser.userId;
-            const isAdmin = state.currentUser.role === 'ROLE_ADMIN';
+            const isAdminUser = isAdmin(state.currentUser);
             const isParticipant = (session.teacherId === myId || session.learnerId === myId);
 
-            if (!isParticipant && !isAdmin) {
+            if (!isParticipant && !isAdminUser) {
                 return sendJson(res, 403, { success: false, message: "Access Denied: You cannot update this session." });
             }
 
@@ -3496,10 +3508,10 @@ const server = http.createServer(async (req, res) => {
             }
 
             const myId = state.currentUser.userId;
-            const isAdmin = state.currentUser.role === 'ROLE_ADMIN';
+            const isAdminUser = isAdmin(state.currentUser);
             const isParticipant = (reqObj.senderId === myId || reqObj.receiverId === myId);
 
-            if (!isParticipant && !isAdmin) {
+            if (!isParticipant && !isAdminUser) {
                 return sendJson(res, 403, { success: false, message: "Access Denied." });
             }
 
@@ -3583,8 +3595,8 @@ const server = http.createServer(async (req, res) => {
             }
 
             const myId = state.currentUser.userId;
-            const isAdmin = state.currentUser.role === 'ROLE_ADMIN';
-            if (note.studentId !== myId && !isAdmin) {
+            const isAdminUser = isAdmin(state.currentUser);
+            if (note.studentId !== myId && !isAdminUser) {
                 return sendJson(res, 403, { success: false, message: "Forbidden: You can only edit your own notes." });
             }
 
@@ -3609,12 +3621,13 @@ const server = http.createServer(async (req, res) => {
             }
 
             const myId = state.currentUser.userId;
-            const isAdmin = state.currentUser.role === 'ROLE_ADMIN';
-            if (state.exchangeNotes[idx].studentId !== myId && !isAdmin) {
+            const isAdminUser = isAdmin(state.currentUser);
+            if (state.exchangeNotes[idx].studentId !== myId && !isAdminUser) {
                 return sendJson(res, 403, { success: false, message: "Forbidden: You can only delete your own notes." });
             }
 
             state.exchangeNotes.splice(idx, 1);
+            syncSupabase('deleteExchangeNote', noteId);
             return sendJson(res, 200, { success: true, message: "Note deleted successfully." });
         }
 
@@ -3782,13 +3795,13 @@ const server = http.createServer(async (req, res) => {
         if (pathname.match(/^\/api\/messages\/(\d+)$/) && req.method === 'DELETE') {
             const msgId = Number(pathname.split('/')[3]);
             const myId = state.currentUser ? state.currentUser.userId : 2;
-            const isAdmin = state.currentUser && state.currentUser.role === 'ROLE_ADMIN';
+            const isAdminUser = isAdmin(state.currentUser);
             const idx = state.messages.findIndex(m => m.id === msgId);
             if (idx === -1) {
                 return sendJson(res, 404, { success: false, message: "Message not found" });
             }
             const msg = state.messages[idx];
-            if (!isAdmin && msg.senderId !== myId) {
+            if (!isAdminUser && msg.senderId !== myId) {
                 return sendJson(res, 403, { success: false, message: "Security violation: You can only delete your own sent messages." });
             }
             state.messages.splice(idx, 1);
@@ -5185,6 +5198,7 @@ const server = http.createServer(async (req, res) => {
             if (!book) return sendJson(res, 404, { success: false, message: "Book listing not found." });
 
             book.status = body.status || 'AVAILABLE';
+            syncSupabase('saveKitabListing', book);
             state.auditLogs.unshift({
                 id: Date.now(),
                 action: "KITAB_LISTING_MODERATED",
@@ -5204,6 +5218,7 @@ const server = http.createServer(async (req, res) => {
             if (idx === -1) return sendJson(res, 404, { success: false, message: "Book listing not found." });
 
             const removed = state.kitabBhandar.splice(idx, 1)[0];
+            syncSupabase('deleteKitabListing', bookId);
             state.auditLogs.unshift({
                 id: Date.now(),
                 action: "KITAB_LISTING_DELETED",
@@ -5259,7 +5274,7 @@ const server = http.createServer(async (req, res) => {
         filePath = 'exchange-history.html';
     } else if (filePath === 'verify' || filePath === 'verify/') {
         filePath = 'verify-email.html';
-    } else if (filePath.startsWith('admin') && !filePath.includes('.')) {
+    } else if (filePath === 'admin.html' || filePath === 'admin' || (filePath.startsWith('admin') && !filePath.includes('.'))) {
         filePath = 'admin-dashboard.html';
     } else if (!filePath.includes('.')) {
         filePath += '.html';

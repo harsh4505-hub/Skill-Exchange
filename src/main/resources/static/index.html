@@ -845,7 +845,7 @@
                                 <p class="text-muted small mb-2">Complete semester handwritten notes with solved previous year questions & formulas.</p>
                                 <div class="d-flex justify-content-between align-items-center pt-2 border-top border-1">
                                     <small class="text-dark fw-bold">By Harsh Vardhan (IT)</small>
-                                    <a href="register.html" class="btn-brutal-primary btn-brutal-sm py-1 px-2" style="font-size: 0.72rem;">Request Trade</a>
+                                    <button type="button" onclick="requestKitabTrade('Engineering Mathematics III')" class="btn-brutal-primary btn-brutal-sm py-1 px-2" style="font-size: 0.72rem;">Request Trade</button>
                                 </div>
                             </div>
                         </div>
@@ -861,7 +861,7 @@
                                 <p class="text-muted small mb-2">Self-authored quick review guide covering design patterns, collections, and multi-threading.</p>
                                 <div class="d-flex justify-content-between align-items-center pt-2 border-top border-1">
                                     <small class="text-dark fw-bold">By Raza Khan (CS)</small>
-                                    <a href="register.html" class="btn-brutal-primary btn-brutal-sm py-1 px-2" style="font-size: 0.72rem;">Request Trade</a>
+                                    <button type="button" onclick="requestKitabTrade('Clean Java & OOP Companion')" class="btn-brutal-primary btn-brutal-sm py-1 px-2" style="font-size: 0.72rem;">Request Trade</button>
                                 </div>
                             </div>
                         </div>
@@ -877,7 +877,7 @@
                                 <p class="text-muted small mb-2">Hardcover standard textbook in pristine condition. Seeking Database Management textbook.</p>
                                 <div class="d-flex justify-content-between align-items-center pt-2 border-top border-1">
                                     <small class="text-dark fw-bold">By Udipti Sen (IT)</small>
-                                    <a href="register.html" class="btn-brutal-primary btn-brutal-sm py-1 px-2" style="font-size: 0.72rem;">Request Trade</a>
+                                    <button type="button" onclick="requestKitabTrade('Operating System Concepts')" class="btn-brutal-primary btn-brutal-sm py-1 px-2" style="font-size: 0.72rem;">Request Trade</button>
                                 </div>
                             </div>
                         </div>
@@ -893,7 +893,7 @@
                                 <p class="text-muted small mb-2">Comprehensive visual design reference workbook with color theory and layout grid templates.</p>
                                 <div class="d-flex justify-content-between align-items-center pt-2 border-top border-1">
                                     <small class="text-dark fw-bold">By Sejal Sharma (IT)</small>
-                                    <a href="register.html" class="btn-brutal-primary btn-brutal-sm py-1 px-2" style="font-size: 0.72rem;">Request Trade</a>
+                                    <button type="button" onclick="requestKitabTrade('UI/UX & Figma Component Workbook')" class="btn-brutal-primary btn-brutal-sm py-1 px-2" style="font-size: 0.72rem;">Request Trade</button>
                                 </div>
                             </div>
                         </div>
@@ -901,9 +901,9 @@
                 </div>
                 <div class="modal-footer border-top border-2 border-dark p-3 bg-light d-flex justify-content-between">
                     <span class="small text-muted font-monospace">Exchange books or notes with campus peers without currency</span>
-                    <a href="register.html" class="btn-brutal-primary btn-brutal-sm press">
+                    <button type="button" onclick="listKitabBook()" class="btn-brutal-primary btn-brutal-sm press">
                         List Your Book or Notes
-                    </a>
+                    </button>
                 </div>
             </div>
         </div>
@@ -915,6 +915,24 @@
     <script src="js/app.js"></script>
     <script src="js/decorations.js"></script>
     <script>
+        function requestKitabTrade(title) {
+            const user = (typeof Auth !== 'undefined' && Auth.getUser) ? Auth.getUser() : null;
+            if (user && user.authenticated) {
+                window.location.href = 'matches.html';
+            } else {
+                window.location.href = 'login.html';
+            }
+        }
+
+        function listKitabBook() {
+            const user = (typeof Auth !== 'undefined' && Auth.getUser) ? Auth.getUser() : null;
+            if (user && user.authenticated) {
+                window.location.href = 'skills.html';
+            } else {
+                window.location.href = 'register.html';
+            }
+        }
+
         // Fetch and display live database metrics
         document.addEventListener('DOMContentLoaded', async () => {
             try {

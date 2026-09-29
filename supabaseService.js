@@ -317,6 +317,125 @@ async function syncFromSupabase(state) {
             }));
         }
 
+        // Synchronize Online Sessions, Exchange Notes, Offline Progress, Offline Updates, Kitab Bhandar if tables exist
+        try {
+            const [onlineRes, notesRes, offlineProgRes, offlineUpRes, kitabRes] = await Promise.all([
+                client.from('online_sessions').select('*'),
+                client.from('exchange_notes').select('*'),
+                client.from('offline_progress').select('*'),
+                client.from('offline_updates').select('*'),
+                client.from('kitab_bhandar').select('*')
+            ]);
+
+            if (onlineRes && onlineRes.data && onlineRes.data.length > 0) {
+                state.onlineSessions = onlineRes.data.map(s => ({
+                    id: Number(s.id),
+                    exchangeRequestId: s.exchange_request_id ? Number(s.exchange_request_id) : null,
+                    exchangeId: s.exchange_id ? Number(s.exchange_id) : null,
+                    title: s.title,
+                    skillId: s.skill_id ? Number(s.skill_id) : null,
+                    skillName: s.skill_name,
+                    teacherId: Number(s.teacher_id),
+                    teacherName: s.teacher_name,
+                    teacherEmail: s.teacher_email,
+                    learnerId: Number(s.learner_id),
+                    learnerName: s.learner_name,
+                    learnerEmail: s.learner_email,
+                    scheduledDate: s.scheduled_date,
+                    scheduledTime: s.scheduled_time,
+                    scheduledAt: s.scheduled_at,
+                    durationMinutes: Number(s.duration_minutes || 60),
+                    description: s.description,
+                    zoomMeetingId: s.zoom_meeting_id,
+                    zoomJoinUrl: s.zoom_join_url,
+                    zoomPassword: s.zoom_password,
+                    status: s.status,
+                    createdAt: s.created_at,
+                    updatedAt: s.updated_at
+                }));
+            }
+
+            if (notesRes && notesRes.data && notesRes.data.length > 0) {
+                state.exchangeNotes = notesRes.data.map(n => ({
+                    id: Number(n.id),
+                    studentId: Number(n.student_id),
+                    studentName: n.student_name,
+                    partnerId: Number(n.partner_id),
+                    partnerName: n.partner_name,
+                    exchangeRequestId: n.exchange_request_id ? Number(n.exchange_request_id) : null,
+                    topic: n.topic,
+                    content: n.content,
+                    createdAt: n.created_at,
+                    updatedAt: n.updated_at
+                }));
+            }
+
+            if (offlineProgRes && offlineProgRes.data && offlineProgRes.data.length > 0) {
+                state.offlineProgress = offlineProgRes.data.map(op => ({
+                    id: Number(op.id),
+                    exchangeRequestId: op.exchange_request_id ? Number(op.exchange_request_id) : null,
+                    exchangeId: op.exchange_id ? Number(op.exchange_id) : null,
+                    teacherId: Number(op.teacher_id),
+                    teacherName: op.teacher_name,
+                    teacherEmail: op.teacher_email,
+                    learnerId: Number(op.learner_id),
+                    learnerName: op.learner_name,
+                    learnerEmail: op.learner_email,
+                    skillOfferedTitle: op.skill_offered_title,
+                    skillRequestedTitle: op.skill_requested_title,
+                    learningMode: op.learning_mode || 'OFFLINE',
+                    location: op.location,
+                    startDate: op.start_date,
+                    expectedCompletionDate: op.expected_completion_date,
+                    progressPercentage: Number(op.progress_percentage || 0),
+                    currentStage: op.current_stage,
+                    status: op.status,
+                    completionDate: op.completion_date,
+                    lastActivityAt: op.last_activity_at,
+                    nextActivity: op.next_activity,
+                    createdAt: op.created_at,
+                    updatedAt: op.updated_at
+                }));
+            }
+
+            if (offlineUpRes && offlineUpRes.data && offlineUpRes.data.length > 0) {
+                state.offlineUpdates = offlineUpRes.data.map(u => ({
+                    id: Number(u.id),
+                    offlineExchangeProgressId: Number(u.offline_exchange_progress_id),
+                    submittedById: Number(u.submitted_by_id),
+                    submittedByName: u.submitted_by_name,
+                    sessionDate: u.session_date,
+                    stage: u.stage,
+                    topicsCovered: u.topics_covered,
+                    description: u.description,
+                    progressPercentage: Number(u.progress_percentage || 0),
+                    nextActivity: u.next_activity,
+                    attachmentUrl: u.attachment_url,
+                    createdAt: u.created_at
+                }));
+            }
+
+            if (kitabRes && kitabRes.data && kitabRes.data.length > 0) {
+                state.kitabBhandar = kitabRes.data.map(b => ({
+                    id: Number(b.id),
+                    title: b.title,
+                    author: b.author,
+                    category: b.category,
+                    condition: b.condition,
+                    ownerId: Number(b.owner_id),
+                    ownerName: b.owner_name,
+                    ownerEmail: b.owner_email,
+                    department: b.department,
+                    barterFor: b.barter_for,
+                    status: b.status,
+                    imageUrl: b.image_url,
+                    createdAt: b.created_at
+                }));
+            }
+        } catch (tableErr) {
+            console.log('[SupabaseService] Note on extended tables sync:', tableErr.message);
+        }
+
         console.log('[SupabaseService] Data synchronization completed successfully!');
         return true;
     } catch (err) {
@@ -695,6 +814,162 @@ async function saveOtp(email, otpHash, expiresAt, purpose = 'VERIFY') {
     }
 }
 
+async function saveOnlineSession(session) {
+    const client = getClient();
+    if (!client) return;
+    try {
+        await client.from('online_sessions').upsert({
+            id: session.id,
+            exchange_request_id: session.exchangeRequestId,
+            exchange_id: session.exchangeId,
+            title: session.title,
+            skill_id: session.skillId,
+            skill_name: session.skillName,
+            teacher_id: session.teacherId,
+            teacher_name: session.teacherName,
+            teacher_email: session.teacherEmail,
+            learner_id: session.learnerId,
+            learner_name: session.learnerName,
+            learner_email: session.learnerEmail,
+            scheduled_date: session.scheduledDate,
+            scheduled_time: session.scheduledTime,
+            scheduled_at: session.scheduledAt ? new Date(session.scheduledAt).toISOString() : null,
+            duration_minutes: session.durationMinutes,
+            description: session.description,
+            zoom_meeting_id: session.zoomMeetingId,
+            zoom_join_url: session.zoomJoinUrl,
+            zoom_password: session.zoomPassword,
+            status: session.status,
+            created_at: session.createdAt ? new Date(session.createdAt).toISOString() : new Date().toISOString(),
+            updated_at: session.updatedAt ? new Date(session.updatedAt).toISOString() : new Date().toISOString()
+        }, { onConflict: 'id' });
+    } catch (e) {
+        console.error('[SupabaseService] saveOnlineSession error:', e.message);
+    }
+}
+
+async function saveExchangeNote(note) {
+    const client = getClient();
+    if (!client) return;
+    try {
+        await client.from('exchange_notes').upsert({
+            id: note.id,
+            student_id: note.studentId,
+            student_name: note.studentName,
+            partner_id: note.partnerId,
+            partner_name: note.partnerName,
+            exchange_request_id: note.exchangeRequestId,
+            topic: note.topic,
+            content: note.content,
+            created_at: note.createdAt ? new Date(note.createdAt).toISOString() : new Date().toISOString(),
+            updated_at: note.updatedAt ? new Date(note.updatedAt).toISOString() : new Date().toISOString()
+        }, { onConflict: 'id' });
+    } catch (e) {
+        console.error('[SupabaseService] saveExchangeNote error:', e.message);
+    }
+}
+
+async function deleteExchangeNote(noteId) {
+    const client = getClient();
+    if (!client) return;
+    try {
+        await client.from('exchange_notes').delete().eq('id', noteId);
+    } catch (e) {
+        console.error('[SupabaseService] deleteExchangeNote error:', e.message);
+    }
+}
+
+async function saveOfflineProgress(progress) {
+    const client = getClient();
+    if (!client) return;
+    try {
+        await client.from('offline_progress').upsert({
+            id: progress.id,
+            exchange_request_id: progress.exchangeRequestId,
+            exchange_id: progress.exchangeId,
+            teacher_id: progress.teacherId,
+            teacher_name: progress.teacherName,
+            teacher_email: progress.teacherEmail,
+            learner_id: progress.learnerId,
+            learner_name: progress.learnerName,
+            learner_email: progress.learnerEmail,
+            skill_offered_title: progress.skillOfferedTitle,
+            skill_requested_title: progress.skillRequestedTitle,
+            learning_mode: progress.learningMode || 'OFFLINE',
+            location: progress.location,
+            start_date: progress.startDate ? new Date(progress.startDate).toISOString() : null,
+            expected_completion_date: progress.expectedCompletionDate ? new Date(progress.expectedCompletionDate).toISOString() : null,
+            progress_percentage: progress.progressPercentage,
+            current_stage: progress.currentStage,
+            status: progress.status,
+            completion_date: progress.completionDate ? new Date(progress.completionDate).toISOString() : null,
+            last_activity_at: progress.lastActivityAt ? new Date(progress.lastActivityAt).toISOString() : new Date().toISOString(),
+            next_activity: progress.nextActivity,
+            created_at: progress.createdAt ? new Date(progress.createdAt).toISOString() : new Date().toISOString(),
+            updated_at: progress.updatedAt ? new Date(progress.updatedAt).toISOString() : new Date().toISOString()
+        }, { onConflict: 'id' });
+    } catch (e) {
+        console.error('[SupabaseService] saveOfflineProgress error:', e.message);
+    }
+}
+
+async function saveOfflineUpdate(update) {
+    const client = getClient();
+    if (!client) return;
+    try {
+        await client.from('offline_updates').upsert({
+            id: update.id,
+            offline_exchange_progress_id: update.offlineExchangeProgressId,
+            submitted_by_id: update.submittedById,
+            submitted_by_name: update.submittedByName,
+            session_date: update.sessionDate,
+            stage: update.stage,
+            topics_covered: update.topicsCovered,
+            description: update.description,
+            progress_percentage: update.progressPercentage,
+            next_activity: update.nextActivity,
+            attachment_url: update.attachmentUrl,
+            created_at: update.createdAt ? new Date(update.createdAt).toISOString() : new Date().toISOString()
+        }, { onConflict: 'id' });
+    } catch (e) {
+        console.error('[SupabaseService] saveOfflineUpdate error:', e.message);
+    }
+}
+
+async function saveKitabListing(listing) {
+    const client = getClient();
+    if (!client) return;
+    try {
+        await client.from('kitab_bhandar').upsert({
+            id: listing.id,
+            title: listing.title,
+            author: listing.author,
+            category: listing.category,
+            condition: listing.condition,
+            owner_id: listing.ownerId,
+            owner_name: listing.ownerName,
+            owner_email: listing.ownerEmail,
+            department: listing.department,
+            barter_for: listing.barterFor,
+            status: listing.status,
+            image_url: listing.imageUrl,
+            created_at: listing.createdAt ? new Date(listing.createdAt).toISOString() : new Date().toISOString()
+        }, { onConflict: 'id' });
+    } catch (e) {
+        console.error('[SupabaseService] saveKitabListing error:', e.message);
+    }
+}
+
+async function deleteKitabListing(listingId) {
+    const client = getClient();
+    if (!client) return;
+    try {
+        await client.from('kitab_bhandar').delete().eq('id', listingId);
+    } catch (e) {
+        console.error('[SupabaseService] deleteKitabListing error:', e.message);
+    }
+}
+
 module.exports = {
     isConfigured,
     getClient,
@@ -717,5 +992,12 @@ module.exports = {
     saveReview,
     saveReport,
     saveAuditLog,
-    saveOtp
+    saveOtp,
+    saveOnlineSession,
+    saveExchangeNote,
+    deleteExchangeNote,
+    saveOfflineProgress,
+    saveOfflineUpdate,
+    saveKitabListing,
+    deleteKitabListing
 };
