@@ -7,8 +7,7 @@
     "start": "node server.js",
     "dev": "node server.js",
     "test": "node test_complete_flow.js",
-    "web:dev": "npm --prefix skill-exchange-website run dev",
-    "web:build": "npm --prefix skill-exchange-website run build"
+    "build": "node -e \"console.log('Build ready')\""
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.2",

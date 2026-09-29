@@ -1343,6 +1343,7 @@ async function handleExchangeEngineApi(req, res, pathname, parsedUrl, state, hel
             });
             zoomMeetingId = zoomResult.meetingId;
             zoomJoinUrl = zoomResult.joinUrl;
+            zoomStartUrl = zoomResult.startUrl || zoomResult.joinUrl;
             zoomPassword = zoomResult.password;
         }
 
@@ -1368,6 +1369,7 @@ async function handleExchangeEngineApi(req, res, pathname, parsedUrl, state, hel
             location: mode === 'OFFLINE' ? (body.location || "College Central Library / Lab") : null,
             zoomMeetingId,
             zoomJoinUrl,
+            zoomStartUrl: zoomStartUrl || zoomJoinUrl,
             zoomPassword,
             status: "SCHEDULED",
             attendance: { teacher: "PRESENT", learner: "PRESENT" },
@@ -1459,6 +1461,50 @@ async function handleExchangeEngineApi(req, res, pathname, parsedUrl, state, hel
         }
 
         return sendJson(res, 200, { success: true, message: `Session status updated to ${newStatus}`, data: session });
+    }
+
+    // PUT /api/sessions/:id/reschedule (Section 14: Reschedule session & update real Zoom meeting)
+    if (pathname.match(/^\/api\/sessions\/(\d+)\/reschedule$/) && req.method === 'PUT') {
+        if (!state.currentUser) return sendJson(res, 401, { success: false, message: "Authentication required." });
+        const sessId = Number(pathname.split('/')[3]);
+        const session = (state.sessions || []).find(s => s.id === sessId);
+        if (!session) return sendJson(res, 404, { success: false, message: "Session not found." });
+
+        const myId = state.currentUser.userId;
+        const isParticipant = (session.teacherId === myId || session.learnerId === myId);
+        if (!isParticipant && !isAdmin(state.currentUser)) {
+            return sendJson(res, 403, { success: false, message: "Forbidden: You are not authorized to reschedule this session." });
+        }
+
+        const body = await parseBody(req);
+        const newDate = (body.scheduledDate || '').trim();
+        const newTime = (body.scheduledTime || '').trim();
+        const newDuration = Math.min(300, Math.max(15, Number(body.durationMinutes) || session.durationMinutes || 60));
+
+        if (!newDate || !newTime) {
+            return sendJson(res, 400, { success: false, message: "New scheduled date and time are required." });
+        }
+
+        if (session.mode === 'ONLINE' && session.zoomMeetingId && helpers.updateZoomMeeting) {
+            await helpers.updateZoomMeeting({
+                meetingId: session.zoomMeetingId,
+                topic: `Session #${session.sessionNumber}: ${session.topic}`,
+                startTime: `${newDate}T${newTime}:00Z`,
+                durationMinutes: newDuration
+            });
+        }
+
+        session.scheduledDate = newDate;
+        session.scheduledTime = newTime;
+        session.durationMinutes = newDuration;
+        session.status = "SCHEDULED";
+        session.updatedAt = new Date().toISOString();
+
+        return sendJson(res, 200, {
+            success: true,
+            message: "Session rescheduled successfully.",
+            data: session
+        });
     }
 
     // PUT /api/sessions/:id/attendance (Record attendance: PRESENT, ABSENT, PARTIAL)

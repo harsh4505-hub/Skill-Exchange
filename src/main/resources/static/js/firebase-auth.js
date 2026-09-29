@@ -62,6 +62,7 @@ async function syncFirebaseUserToBackend(user) {
 
     if (data && data.success) {
         try {
+            localStorage.setItem('skillExchangeLandingSeen', 'true');
             localStorage.setItem('landingPageVisited', 'true');
             localStorage.setItem('se_landing_viewed', 'true');
             if (data.token) {

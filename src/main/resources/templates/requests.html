@@ -1253,12 +1253,23 @@
                                 ` : ''}
                             </div>
                             <div class="d-flex gap-2 flex-wrap pt-2 border-top border-1 border-dark">
-                                <a href="${os.zoomJoinUrl}" target="_blank" class="btn btn-sm btn-primary-custom">
-                                    <i class="bi bi-camera-video-fill me-1"></i> Join Session
+                                ${os.zoomStartUrl ? `
+                                    <a href="${os.zoomStartUrl}" target="_blank" class="btn btn-sm btn-dark fw-bold">
+                                        <i class="bi bi-play-circle-fill me-1"></i> Start Session (Host)
+                                    </a>
+                                ` : ''}
+                                <a href="${os.zoomJoinUrl}" target="_blank" class="btn btn-sm btn-primary-custom fw-bold">
+                                    <i class="bi bi-camera-video-fill me-1"></i> Join Zoom
                                 </a>
                                 <button type="button" class="btn btn-sm btn-outline-dark" onclick="shareOnlineSessionInChat(${os.id}, ${otherStudentId})">
                                     <i class="bi bi-chat-quote-fill me-1"></i> Share in Chat
                                 </button>
+                                <a href="chat.html?partnerId=${otherStudentId}#notes" class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-journal-text me-1"></i> View Notes
+                                </a>
+                                <a href="chat.html?partnerId=${otherStudentId}&filter=doubts" class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-question-circle me-1"></i> View Doubts
+                                </a>
                                 ${os.status !== 'Completed' ? `
                                     <button type="button" class="btn btn-sm btn-outline-danger" onclick="endOnlineSession(${os.id})">
                                         <i class="bi bi-stop-circle me-1"></i> End Session

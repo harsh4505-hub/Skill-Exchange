@@ -289,19 +289,28 @@
 
             <!-- Quick Suggestion Chips -->
             <div class="grok-chips-bar">
-                <button class="grok-chip" onclick="window.sendGrokQuickPrompt('When is my next session?')">📅 Next Session</button>
-                <button class="grok-chip" onclick="window.sendGrokQuickPrompt('What is my learning streak?')">🔥 My Streak</button>
-                <button class="grok-chip" onclick="window.sendGrokQuickPrompt('What did I learn in the last session?')">📘 Last Class</button>
-                <button class="grok-chip" onclick="window.sendGrokQuickPrompt('What topics should I revise?')">💡 Revise Topics</button>
-                <button class="grok-chip" onclick="window.sendGrokQuickPrompt('What is my current skill progress?')">📊 Progress</button>
+                ${(user.role === 'ROLE_ADMIN' || user.role === 'ROLE_SUPER_ADMIN') ? `
+                    <button class="grok-chip" onclick="window.sendGrokQuickPrompt('How many active exchanges are there?')">📊 Active Exchanges</button>
+                    <button class="grok-chip" onclick="window.sendGrokQuickPrompt('How many verification submissions are pending?')">📋 Verifications</button>
+                    <button class="grok-chip" onclick="window.sendGrokQuickPrompt('Which skills are most requested?')">🔥 Top Skills</button>
+                    <button class="grok-chip" onclick="window.sendGrokQuickPrompt('Which exchanges are overdue?')">⚠️ Overdue</button>
+                ` : `
+                    <button class="grok-chip" onclick="window.sendGrokQuickPrompt('When is my next session?')">📅 Next Session</button>
+                    <button class="grok-chip" onclick="window.sendGrokQuickPrompt('What is my learning streak?')">🔥 My Streak</button>
+                    <button class="grok-chip" onclick="window.sendGrokQuickPrompt('What did I learn in the last session?')">📘 Last Class</button>
+                    <button class="grok-chip" onclick="window.sendGrokQuickPrompt('What topics should I revise?')">💡 Revise Topics</button>
+                    <button class="grok-chip" onclick="window.sendGrokQuickPrompt('What is my current skill progress?')">📊 Progress</button>
+                `}
             </div>
 
             <!-- Messages Stream Area -->
             <div class="grok-messages-container" id="grokMessagesContainer">
                 <div class="grok-msg grok-msg-assistant">
-                    👋 Hi <strong>${escapeHtml(user.fullName || 'Student')}</strong>! I'm <strong>Grok</strong>, your campus Skill Exchange Learning Assistant.
+                    👋 Hi <strong>${escapeHtml(user.fullName || 'User')}</strong>! I'm <strong>Grok</strong>, your campus Skill Exchange Learning Assistant.
                     <div class="mt-2 text-muted" style="font-size:0.78rem;">
-                        I have access to your active exchanges, scheduled sessions, daily streak, and verified learning records. Ask me anything to prepare for your peer classes!
+                        ${(user.role === 'ROLE_ADMIN' || user.role === 'ROLE_SUPER_ADMIN') ? 
+                            'I have access to platform analytics, active exchanges, pending verification dossiers, and overdue session tracking. Ask me anything about platform metrics or educational topics!' : 
+                            'I have access to your active exchanges, scheduled sessions, daily streak, and verified learning records. Ask me anything to prepare for your peer classes!'}
                     </div>
                 </div>
             </div>
@@ -318,7 +327,7 @@
 
             <!-- Input Bar -->
             <form class="grok-input-area" id="grokInputForm" onsubmit="window.handleGrokFormSubmit(event)">
-                <input type="text" class="grok-input" id="grokInputField" placeholder="Ask about sessions, streaks, revision..." maxlength="1000" autocomplete="off">
+                <input type="text" class="grok-input" id="grokInputField" placeholder="Ask SkillExchange AI..." maxlength="1000" autocomplete="off">
                 <button type="submit" class="grok-send-btn" id="grokSendBtn" title="Send Question">
                     <i class="bi bi-arrow-up-short" style="font-size:1.4rem;"></i>
                 </button>

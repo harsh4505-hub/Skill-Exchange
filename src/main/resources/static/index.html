@@ -24,7 +24,8 @@
     <!-- Official First-Visit Landing Page Gateway & Route Protection -->
     <script>
         (function() {
-            const hasSeenLanding = localStorage.getItem('landingPageVisited') === 'true' || 
+            const hasSeenLanding = localStorage.getItem('skillExchangeLandingSeen') === 'true' ||
+                                   localStorage.getItem('landingPageVisited') === 'true' || 
                                    localStorage.getItem('se_landing_viewed') === 'true';
 
             if (!hasSeenLanding) {

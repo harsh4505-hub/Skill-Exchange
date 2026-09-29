@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Skill Exchange — Peer-to-Peer Campus Learning Platform</title>
-    <meta name="description" content="Exchange skills with campus peers: teach what you know, learn what you need. A reciprocal, peer-to-peer university learning network with verified skill credentials.">
+    <title>SkillExchange — Trade Skills, Not Money | Campus Skill Barter</title>
+    <meta name="description" content="Swap skills with campus peers: teach what you know, learn what you don't. Verified skills, online Zoom & offline sessions, built-in chat, progress tracking and Kitaab Ghar academic marketplace. 100% Free campus skill barter.">
+    <meta property="og:title" content="SkillExchange — Trade Skills, Not Money">
+    <meta property="og:description" content="The university peer barter platform. Verified skills, online Zoom or offline sessions, real-time chat and Kitaab Ghar.">
+    <meta property="og:type" content="website">
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,10 +19,11 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="css/style.css">
 
-    <!-- Pre-check: If already authenticated, bypass landing page directly to Main Website -->
+    <!-- Pre-check: One-Time Landing Page Logic & Auth Bypass -->
     <script>
         (function() {
-            const hasSeenLanding = localStorage.getItem('landingPageVisited') === 'true' || 
+            const hasSeenLanding = localStorage.getItem('skillExchangeLandingSeen') === 'true' ||
+                                   localStorage.getItem('landingPageVisited') === 'true' || 
                                    localStorage.getItem('se_landing_viewed') === 'true';
 
             fetch('/api/auth/current-user', { credentials: 'include' })
@@ -27,13 +31,19 @@
                 .then(res => {
                     if (res && res.success && res.data && res.data.authenticated) {
                         try {
+                            localStorage.setItem('skillExchangeLandingSeen', 'true');
                             localStorage.setItem('landingPageVisited', 'true');
                             localStorage.setItem('se_landing_viewed', 'true');
                         } catch (e) {}
-                        const targetMainWebsite = 'dashboard.html';
-                        window.location.replace('index.html');
+                        const role = res.data.role || (res.data.user && res.data.user.role);
+                        const isStaff = role === 'ROLE_SUPER_ADMIN' || role === 'SUPER_ADMIN' || role === 'ROLE_ADMIN' || role === 'ADMIN';
+                        if (isStaff) {
+                            window.location.replace('admin-dashboard.html');
+                        } else {
+                            window.location.replace('index.html');
+                        }
                     } else if (hasSeenLanding) {
-                        // Returning visitor on this device who already completed landing page
+                        // Returning visitor who already completed/left the landing page
                         window.location.replace('login.html');
                     }
                 })
@@ -47,6 +57,7 @@
         // Handler to mark landing page as seen ONLY when user enters authentication flow
         function enterAuthFlow(targetUrl) {
             try {
+                localStorage.setItem('skillExchangeLandingSeen', 'true');
                 localStorage.setItem('landingPageVisited', 'true');
                 localStorage.setItem('se_landing_viewed', 'true');
             } catch (e) {
@@ -54,25 +65,94 @@
             }
             window.location.href = targetUrl || 'login.html';
         }
+
+        // Handler for Kitaab Ghar: navigate to marketplace if authenticated, otherwise login
+        function enterKitaabGhar() {
+            try {
+                localStorage.setItem('skillExchangeLandingSeen', 'true');
+                localStorage.setItem('landingPageVisited', 'true');
+                localStorage.setItem('se_landing_viewed', 'true');
+            } catch (e) {}
+            fetch('/api/auth/current-user', { credentials: 'include' })
+                .then(r => r.json())
+                .then(res => {
+                    if (res && res.success && res.data && res.data.authenticated) {
+                        window.location.href = 'kitaab-ghar.html';
+                    } else {
+                        window.location.href = 'login.html';
+                    }
+                })
+                .catch(() => {
+                    window.location.href = 'login.html';
+                });
+        }
     </script>
 
     <style>
         /* ===================================================================
-           NEO-BRUTALIST LANDING PAGE STYLING (Pastels: Lavender, Pink, White)
+           NEO-BRUTALIST DESIGN SYSTEM (Extracted & Reused from Provided ZIP)
+           Palette: Ink #1f1b2e, Brand #6366f1, Surface #f7f6fa, Soft Accents
            =================================================================== */
-        body.landing-body {
-            background-color: #fafafa;
-            color: #0f172a;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            overflow-x: hidden;
+        :root {
+            --color-ink: #1f1b2e;
+            --color-ink-soft: #6c6680;
+            --color-paper: #ffffff;
+            --color-surface: #f7f6fa;
+            --color-brand: #6366f1;
+            --color-brand-deep: #4f46e5;
+            --color-brand-soft: #ede9fe;
+            --color-mint-soft: #d1fae5;
+            --color-mint-ink: #065f46;
+            --color-blush-soft: #fee2e2;
+            --color-blush-ink: #991b1b;
+            --color-amber-soft: #fef3c7;
+            --color-amber-ink: #92400e;
+
+            --shadow-brutal-xs: 2px 2px 0 0 var(--color-ink);
+            --shadow-brutal-sm: 3px 3px 0 0 var(--color-ink);
+            --shadow-brutal: 4px 4px 0 0 var(--color-ink);
+            --shadow-brutal-lg: 6px 6px 0 0 var(--color-ink);
         }
 
+        body.landing-body {
+            background-color: var(--color-surface);
+            color: var(--color-ink);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Subtle 40px grid background */
+        .grid-bg {
+            background-color: var(--color-surface);
+            background-image:
+                linear-gradient(to right, rgba(31, 27, 46, 0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(31, 27, 46, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        /* Press interactive effect */
+        .press {
+            transition: transform 120ms ease, box-shadow 120ms ease;
+            cursor: pointer;
+        }
+        .press:hover {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0 var(--color-ink) !important;
+        }
+        .press:active {
+            transform: translate(4px, 4px);
+            box-shadow: none !important;
+        }
+
+        /* Header */
         .landing-header {
             background-color: #ffffff;
-            border-bottom: 2px solid #0f172a;
+            border-bottom: 2px solid var(--color-ink);
             position: sticky;
             top: 0;
-            z-index: 1030;
+            z-index: 1040;
         }
 
         /* Neo-Brutalist Buttons */
@@ -80,218 +160,210 @@
             font-family: 'Space Grotesk', sans-serif;
             font-weight: 700;
             color: #ffffff;
-            background-color: #f43f5e;
-            border: 2px solid #0f172a;
-            border-radius: 6px;
-            box-shadow: 3px 3px 0 #0f172a;
-            padding: 0.55rem 1.35rem;
+            background-color: var(--color-brand);
+            border: 2px solid var(--color-ink);
+            border-radius: 8px;
+            box-shadow: var(--shadow-brutal);
+            padding: 0.65rem 1.45rem;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
-            transition: all 0.15s ease;
-            cursor: pointer;
         }
-
         .btn-neo-primary:hover {
-            transform: translate(-1px, -1px);
-            box-shadow: 5px 5px 0 #0f172a;
-            background-color: #e11d48;
+            background-color: var(--color-brand-deep);
             color: #ffffff;
         }
 
         .btn-neo-outline {
             font-family: 'Space Grotesk', sans-serif;
             font-weight: 700;
-            color: #0f172a;
+            color: var(--color-ink);
             background-color: #ffffff;
-            border: 2px solid #0f172a;
-            border-radius: 6px;
-            box-shadow: 3px 3px 0 #0f172a;
-            padding: 0.55rem 1.35rem;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            transition: all 0.15s ease;
-            cursor: pointer;
-        }
-
-        .btn-neo-outline:hover {
-            transform: translate(-1px, -1px);
-            box-shadow: 5px 5px 0 #0f172a;
-            background-color: #f8fafc;
-            color: #0f172a;
-        }
-
-        .btn-neo-lavender {
-            font-family: 'Space Grotesk', sans-serif;
-            font-weight: 700;
-            color: #0f172a;
-            background-color: #ede9fe;
-            border: 2px solid #0f172a;
-            border-radius: 6px;
-            box-shadow: 3px 3px 0 #0f172a;
-            padding: 0.55rem 1.35rem;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            transition: all 0.15s ease;
-            cursor: pointer;
-        }
-
-        .btn-neo-lavender:hover {
-            transform: translate(-1px, -1px);
-            box-shadow: 5px 5px 0 #0f172a;
-            background-color: #ddd6fe;
-            color: #0f172a;
-        }
-
-        /* Hero */
-        .landing-hero {
-            background-color: #ffffff;
-            border-bottom: 2px solid #0f172a;
-            padding: 4.5rem 0 4rem;
-        }
-
-        .hero-headline {
-            font-family: 'Space Grotesk', sans-serif;
-            font-weight: 800;
-            font-size: clamp(2.35rem, 5vw, 3.85rem);
-            line-height: 1.1;
-            letter-spacing: -0.03em;
-            color: #0f172a;
-        }
-
-        .hero-lead {
-            font-size: 1.12rem;
-            line-height: 1.6;
-            color: #475569;
-            max-width: 580px;
-        }
-
-        /* Feature & Action Cards */
-        .neo-card {
-            background-color: #ffffff;
-            border: 2px solid #0f172a;
+            border: 2px solid var(--color-ink);
             border-radius: 8px;
-            box-shadow: 4px 4px 0 #0f172a;
-            padding: 1.85rem;
-            height: 100%;
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
-        }
-
-        .neo-card:hover {
-            transform: translate(-2px, -2px);
-            box-shadow: 6px 6px 0 #0f172a;
-        }
-
-        .icon-box-feature {
-            width: 48px;
-            height: 48px;
-            border: 2px solid #0f172a;
-            border-radius: 6px;
-            display: flex;
+            box-shadow: var(--shadow-brutal);
+            padding: 0.65rem 1.45rem;
+            text-decoration: none;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.35rem;
-            margin-bottom: 1.25rem;
-            box-shadow: 2px 2px 0 #0f172a;
+            gap: 0.5rem;
+        }
+        .btn-neo-outline:hover {
+            background-color: var(--color-surface);
+            color: var(--color-ink);
         }
 
-        .badge-mono {
+        .btn-neo-sm {
+            padding: 0.45rem 1.1rem;
+            font-size: 0.85rem;
+            box-shadow: var(--shadow-brutal-sm);
+        }
+
+        /* Brutal Cards */
+        .card-brutal {
+            border: 2px solid var(--color-ink);
+            border-radius: 12px;
+            background-color: #ffffff;
+            box-shadow: var(--shadow-brutal);
+            transition: transform 140ms ease, box-shadow 140ms ease;
+        }
+        .card-brutal:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: var(--shadow-brutal-lg);
+        }
+
+        /* Chips & Micro-Labels */
+        .chip-mono {
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.72rem;
             font-weight: 700;
-            letter-spacing: 0.05em;
-            padding: 0.35rem 0.75rem;
-            border: 1.5px solid #0f172a;
-            border-radius: 4px;
-            text-transform: uppercase;
-        }
-
-        /* Barter Visual Card */
-        .barter-demo-card {
-            background: #ffffff;
-            border: 2px solid #0f172a;
-            border-radius: 10px;
-            box-shadow: 6px 6px 0 #0f172a;
-            padding: 1.75rem;
-        }
-
-        .barter-side {
-            border: 2px solid #0f172a;
+            letter-spacing: 0.08em;
+            padding: 0.3rem 0.75rem;
+            border: 2px solid var(--color-ink);
             border-radius: 6px;
-            padding: 1.1rem;
+            text-transform: uppercase;
+            display: inline-block;
+        }
+        .chip-dark {
+            background: var(--color-ink);
+            color: #ffffff;
+        }
+        .chip-brand {
+            background: var(--color-brand-soft);
+            color: var(--color-brand-deep);
+        }
+        .chip-mint {
+            background: var(--color-mint-soft);
+            color: var(--color-mint-ink);
+        }
+        .chip-amber {
+            background: var(--color-amber-soft);
+            color: var(--color-amber-ink);
+        }
+        .chip-blush {
+            background: var(--color-blush-soft);
+            color: var(--color-blush-ink);
         }
 
-        .barter-side-teach {
-            background-color: #ede9fe;
+        /* Verified Badge */
+        .badge-verified {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            border: 1.5px solid var(--color-mint-ink);
+            background: var(--color-mint-soft);
+            color: var(--color-mint-ink);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 0.2rem 0.55rem;
+            border-radius: 4px;
         }
 
-        .barter-side-learn {
-            background-color: #fff1f2;
+        /* Mode Badges */
+        .mode-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            border: 2px solid var(--color-ink);
+            border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.25rem 0.65rem;
         }
 
-        /* Step Card */
+        /* Typography */
+        .headline-grotesk {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 800;
+            letter-spacing: -0.025em;
+            color: var(--color-ink);
+        }
+        .subtext {
+            color: var(--color-ink-soft);
+            line-height: 1.6;
+        }
+
+        /* Step Number Box */
         .step-num-box {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 1.25rem;
+            font-size: 1.15rem;
             font-weight: 800;
-            color: #0f172a;
-            background: #ffe4e6;
-            border: 2px solid #0f172a;
-            width: 42px;
-            height: 42px;
+            color: var(--color-ink);
+            background: var(--color-brand-soft);
+            border: 2px solid var(--color-ink);
+            width: 44px;
+            height: 44px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 6px;
+            border-radius: 8px;
+            box-shadow: var(--shadow-brutal-xs);
             margin-bottom: 1rem;
-            box-shadow: 2px 2px 0 #0f172a;
         }
 
-        /* Banner CTA */
-        .cta-banner-box {
-            background: #ede9fe;
-            border: 2px solid #0f172a;
-            border-radius: 10px;
-            box-shadow: 6px 6px 0 #0f172a;
-            padding: 3.25rem 2rem;
-            text-align: center;
+        /* Hero */
+        .hero-section {
+            border-bottom: 2px solid var(--color-ink);
+            padding: 4.5rem 0 4rem;
+        }
+        .hero-title {
+            font-size: clamp(2rem, 5.2vw, 4rem);
+            line-height: 1.05;
+            text-transform: uppercase;
+        }
+
+        /* Responsive Breakpoints Fine-Tuning */
+        @media (max-width: 576px) {
+            .hero-title {
+                font-size: 1.85rem;
+            }
+            .hero-section {
+                padding: 2.5rem 0 2rem;
+            }
+            .btn-neo-sm {
+                padding: 0.35rem 0.75rem;
+                font-size: 0.75rem;
+            }
+            .headline-grotesk.fs-1 {
+                font-size: 1.65rem !important;
+            }
         }
     </style>
 </head>
 <body class="landing-body">
 
     <!-- ===================================================================
-         1. TOP NAVIGATION HEADER (PUBLIC LANDING PAGE — LOGO & AUTH ONLY)
+         1. TOP NAVIGATION HEADER (PUBLIC LANDING — BRANDING & AUTH ONLY)
+         Section 8: LEFT logo, RIGHT Login & Sign Up only. No tabs.
          =================================================================== -->
     <header class="landing-header py-3">
         <div class="container d-flex align-items-center justify-content-between gap-3">
             <!-- Brand Logo (Left) -->
             <a href="landing.html" class="d-flex align-items-center gap-2 text-decoration-none">
-                <span class="d-flex align-items-center justify-content-center rounded-2 border border-2 border-dark bg-dark text-white flex-shrink-0" style="width: 38px; height: 38px; box-shadow: 2px 2px 0 #0f172a;">
+                <span class="d-flex align-items-center justify-content-center rounded-2 border border-2 border-dark bg-dark text-white flex-shrink-0" style="width: 38px; height: 38px; box-shadow: var(--shadow-brutal-xs);">
                     <i class="bi bi-arrow-left-right fs-6"></i>
                 </span>
                 <div class="d-flex align-items-center">
-                    <span class="fs-5 fw-bold text-dark text-nowrap" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.02em;">
-                        SKILL<span style="color: #f43f5e;">EXCHANGE</span>
+                    <span class="fs-5 fw-bold text-dark text-nowrap headline-grotesk">
+                        SKILL<span style="color: var(--color-brand);">EXCHANGE</span>
                     </span>
-                    <span class="badge badge-mono bg-light text-dark ms-2 d-none d-sm-inline-block">CAMPUS NETWORK</span>
+                    <span class="chip-mono chip-dark ms-2 d-none d-sm-inline-block" style="font-size: 0.68rem; padding: 0.2rem 0.55rem;">
+                        CAMPUS NETWORK
+                    </span>
                 </div>
             </a>
 
             <!-- Authentication Actions (Far Right: LOGIN & SIGN UP Only) -->
             <div class="d-flex align-items-center gap-2 ms-auto flex-shrink-0">
-                <button type="button" class="btn-neo-outline btn-sm fw-bold text-uppercase px-3" id="navLoginBtn" onclick="enterAuthFlow('login.html')">
+                <button type="button" class="btn-neo-outline btn-neo-sm press text-uppercase" id="navLoginBtn" onclick="enterAuthFlow('login.html')">
                     LOGIN
                 </button>
-                <button type="button" class="btn-neo-primary btn-sm fw-bold text-uppercase px-3" id="navSignUpBtn" onclick="enterAuthFlow('register.html')">
+                <button type="button" class="btn-neo-primary btn-neo-sm press text-uppercase" id="navSignUpBtn" onclick="enterAuthFlow('register.html')">
                     SIGN UP
                 </button>
             </div>
@@ -299,89 +371,116 @@
     </header>
 
     <!-- ===================================================================
-         2. HERO SECTION
+         2. HERO SECTION (01 / CAMPUS SKILL BARTER)
+         Reusing layout and components from ZIP index.tsx Hero
          =================================================================== -->
-    <section class="landing-hero">
+    <section class="hero-section grid-bg">
         <div class="container">
             <div class="row align-items-center g-5">
-                <!-- Left: Platform Explanation & CTAs -->
+                <!-- Left: Headline & Actions -->
                 <div class="col-lg-7">
-                    <div class="d-inline-flex align-items-center gap-2 mb-3">
-                        <span class="badge badge-mono" style="background: #ede9fe; color: #0f172a;">
-                            <i class="bi bi-mortarboard-fill me-1 text-primary"></i> PEER-TO-PEER CAMPUS LEARNING
-                        </span>
-                    </div>
-
-                    <h1 class="hero-headline mb-3">
-                        Share What You Know.<br>
-                        <span style="color: #f43f5e; text-decoration: underline; text-decoration-color: #0f172a;">Learn What You Need.</span>
+                    <span class="chip-mono chip-dark mb-3">01 / CAMPUS SKILL BARTER</span>
+                    
+                    <h1 class="headline-grotesk hero-title mt-2 mb-3">
+                        Trade skills,<br>
+                        <span style="color: var(--color-brand);">not money.</span>
                     </h1>
 
-                    <p class="hero-lead mb-4">
-                        A reciprocal student-to-student platform where university peers exchange skills, collaborate on academic projects, and build verifiable practical expertise — without monetary costs.
+                    <p class="fs-5 subtext mb-4" style="max-width: 580px;">
+                        Share What You Know. Learn What You Need. Two students. Two different skills. One reciprocal swap. SkillExchange pairs you with university peers so you teach what you know and learn what you don't — online via Zoom, in person on campus, or right in chat.
                     </p>
 
                     <!-- Hero Call to Action Buttons -->
                     <div class="d-flex flex-wrap gap-3 mb-4">
-                        <button type="button" class="btn-neo-primary py-3 px-4 fs-6" id="heroSignUpBtn" onclick="enterAuthFlow('register.html')">
-                            <i class="bi bi-person-plus-fill"></i> Sign Up for Free
+                        <button type="button" class="btn-neo-primary press py-3 px-4 fs-6" id="heroSignUpBtn" onclick="enterAuthFlow('register.html')">
+                            Start Exchanging — Free <i class="bi bi-arrow-right ms-1"></i>
                         </button>
-                        <button type="button" class="btn-neo-outline py-3 px-4 fs-6" id="heroLoginBtn" onclick="enterAuthFlow('login.html')">
-                            <i class="bi bi-box-arrow-in-right"></i> Student Log In
-                        </button>
+                        <a href="#how-it-works" class="btn-neo-outline press py-3 px-4 fs-6 text-decoration-none">
+                            See How It Works
+                        </a>
                     </div>
 
-                    <div class="d-flex align-items-center gap-2 pt-1 text-muted small">
-                        <i class="bi bi-shield-check text-success fs-5"></i>
-                        <span>Sign up with any valid email &bull; Verified student credentials &bull; Zero platform charges</span>
+                    <!-- Platform Guarantee Tagline -->
+                    <p class="font-monospace fw-bold small text-muted text-uppercase mb-4" style="letter-spacing: 0.08em; font-size: 0.75rem;">
+                        100% FREE CAMPUS PEER BARTER &bull; ZERO PLATFORM CHARGES &bull; VERIFIED PEER AUDIT
+                    </p>
+
+                    <!-- Trending Skills Badges -->
+                    <div class="d-flex flex-wrap align-items-center gap-2 pt-2">
+                        <span class="font-monospace fw-bold text-dark" style="font-size: 0.72rem; letter-spacing: 0.05em;">TRENDING NOW:</span>
+                        <span class="badge border border-2 border-dark bg-white text-dark font-monospace text-decoration-underline py-1 px-2">JAVA</span>
+                        <span class="badge border border-2 border-dark bg-white text-dark font-monospace text-decoration-underline py-1 px-2">PYTHON</span>
+                        <span class="badge border border-2 border-dark bg-white text-dark font-monospace text-decoration-underline py-1 px-2">PHOTOSHOP</span>
+                        <span class="badge border border-2 border-dark bg-white text-dark font-monospace text-decoration-underline py-1 px-2">PUBLIC SPEAKING</span>
+                        <span class="badge border border-2 border-dark bg-white text-dark font-monospace text-decoration-underline py-1 px-2">WEB DEV</span>
                     </div>
                 </div>
 
-                <!-- Right: Reciprocal Barter Demonstration Visual -->
+                <!-- Right: Live Exchange Preview Card (Neo-Brutalist Layout from ZIP) -->
                 <div class="col-lg-5">
-                    <div class="barter-demo-card">
-                        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom border-2 border-dark">
-                            <span class="badge badge-mono bg-dark text-white">RECIPROCAL EXCHANGE EXAMPLE</span>
-                            <span class="badge badge-mono" style="background: #ede9fe; color: #4338ca;">1:1 MATCH</span>
+                    <div class="card-brutal p-4" style="box-shadow: var(--shadow-brutal-lg);">
+                        <div class="d-flex align-items-center justify-content-between mb-4">
+                            <span class="chip-mono chip-dark" style="font-size: 0.68rem;">LIVE EXCHANGE PREVIEW</span>
+                            <span class="chip-mono chip-brand" style="font-size: 0.68rem;">MUTUAL BARTER</span>
                         </div>
 
-                        <!-- Side 1: Skill Offered -->
-                        <div class="barter-side barter-side-teach mb-2">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <span class="badge-mono bg-white text-dark" style="font-size:0.68rem;">OFFERED SKILL</span>
-                                <span class="badge bg-white text-dark border border-dark small" style="font-size:0.65rem;">ADVANCED</span>
+                        <!-- Peer Mentor Offering -->
+                        <div class="p-3 rounded-3 border border-2 border-dark mb-3" style="background: var(--color-surface);">
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="d-flex align-items-center justify-content-center rounded-2 border border-2 border-dark" style="width: 44px; height: 44px; background: var(--color-blush-soft); box-shadow: var(--shadow-brutal-xs);">
+                                    <span class="d-flex align-items-center justify-content-center rounded-circle text-white font-monospace fw-bold" style="width: 28px; height: 28px; background: var(--color-blush-ink); font-size: 0.85rem;">P</span>
+                                </span>
+                                <div>
+                                    <div class="fw-bold text-dark">Peer Mentor</div>
+                                    <div class="small text-muted">Department of Computer Engineering</div>
+                                </div>
                             </div>
-                            <h5 class="fw-bold text-dark mb-1">
-                                <i class="bi bi-terminal-fill text-dark me-1"></i> Python for Data Science
-                            </h5>
-                            <p class="small text-muted mb-0">Pandas, NumPy, statistical modeling, and data visualization</p>
-                        </div>
-
-                        <!-- Reciprocal Swap Indicator -->
-                        <div class="text-center my-2">
-                            <div class="d-inline-flex align-items-center justify-content-center rounded-circle border border-2 border-dark bg-white" style="width: 36px; height: 36px; box-shadow: 2px 2px 0 #0f172a;">
-                                <i class="bi bi-arrow-down-up fs-6 text-dark"></i>
+                            <div class="d-flex flex-wrap align-items-center gap-2 mt-3">
+                                <span class="badge border border-2 border-dark bg-white text-dark font-monospace fw-bold py-1 px-2" style="font-size: 0.72rem;">
+                                    OFFERS: JAVA PROGRAMMING
+                                </span>
+                                <span class="badge-verified">
+                                    <i class="bi bi-patch-check-fill"></i> VERIFIED
+                                </span>
                             </div>
                         </div>
 
-                        <!-- Side 2: Skill Requested -->
-                        <div class="barter-side barter-side-learn">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <span class="badge-mono bg-white text-dark" style="font-size:0.68rem;">WANTED SKILL</span>
-                                <span class="badge bg-white text-dark border border-dark small" style="font-size:0.65rem;">INTERMEDIATE</span>
-                            </div>
-                            <h5 class="fw-bold text-dark mb-1">
-                                <i class="bi bi-palette-fill text-danger me-1"></i> UI/UX Design & Figma
-                            </h5>
-                            <p class="small text-muted mb-0">Design systems, interactive prototypes, and wireframing</p>
-                        </div>
-
-                        <!-- Barter Summary -->
-                        <div class="d-flex align-items-center justify-content-between mt-3 pt-2 border-top border-2 border-dark">
-                            <span class="small fw-bold text-dark" style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem;">
-                                <i class="bi bi-check-circle-fill text-success me-1"></i> Mutual Agreement
+                        <!-- 2-Way Exchange Connector -->
+                        <div class="d-flex justify-content-center my-2">
+                            <span class="d-flex align-items-center justify-content-center rounded-2 border border-2 border-dark text-white" style="width: 42px; height: 42px; background: var(--color-brand); box-shadow: var(--shadow-brutal-sm);">
+                                <i class="bi bi-arrow-left-right fs-5"></i>
                             </span>
-                            <span class="small text-muted font-monospace" style="font-size: 0.72rem;">Online / In-Person</span>
+                        </div>
+
+                        <!-- Reciprocal Peer Offering -->
+                        <div class="p-3 rounded-3 border border-2 border-dark mt-2" style="background: var(--color-surface);">
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="d-flex align-items-center justify-content-center rounded-2 border border-2 border-dark" style="width: 44px; height: 44px; background: var(--color-mint-soft); box-shadow: var(--shadow-brutal-xs);">
+                                    <span class="d-flex align-items-center justify-content-center rounded-circle text-white font-monospace fw-bold" style="width: 28px; height: 28px; background: var(--color-mint-ink); font-size: 0.85rem;">R</span>
+                                </span>
+                                <div>
+                                    <div class="fw-bold text-dark">Reciprocal Peer</div>
+                                    <div class="small text-muted">Department of Design & Media</div>
+                                </div>
+                            </div>
+                            <div class="d-flex flex-wrap align-items-center gap-2 mt-3">
+                                <span class="badge border border-2 border-dark font-monospace fw-bold py-1 px-2" style="background: var(--color-blush-soft); color: var(--color-blush-ink); font-size: 0.72rem;">
+                                    WANTS: PHOTOSHOP &bull; 2-WAY MUTUAL BARTER
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Meeting Modes Footer -->
+                        <div class="d-flex flex-wrap gap-2 border-top border-2 border-dark pt-3 mt-4">
+                            <span class="mode-chip" style="background: var(--color-brand-soft); color: var(--color-brand-deep);">
+                                <i class="bi bi-camera-video-fill"></i> ONLINE (ZOOM)
+                            </span>
+                            <span class="mode-chip" style="background: var(--color-amber-soft); color: var(--color-amber-ink);">
+                                <i class="bi bi-geo-alt-fill"></i> OFFLINE (CAMPUS)
+                            </span>
+                            <span class="mode-chip" style="background: #ffffff; color: var(--color-ink);">
+                                <i class="bi bi-chat-dots-fill"></i> CHAT (MESSAGING)
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -390,29 +489,27 @@
     </section>
 
     <!-- ===================================================================
-         3. WHAT STUDENTS CAN DO (Core Capabilities)
+         3. WHAT STUDENTS CAN DO (Core Pillars)
          =================================================================== -->
     <section class="py-5 border-bottom border-2 border-dark bg-white" id="what-you-can-do">
         <div class="container py-4">
-            <div class="text-center max-w-xl mx-auto mb-5">
-                <span class="badge badge-mono mb-2" style="background: #ffe4e6; color: #0f172a;">CORE PILLARS</span>
-                <h2 class="fw-bold mb-2" style="font-family: 'Space Grotesk', sans-serif; font-size: 2.2rem; letter-spacing: -0.02em;">
+            <div class="text-center mx-auto mb-5" style="max-width: 650px;">
+                <span class="chip-mono chip-blush mb-2">CORE PILLARS</span>
+                <h2 class="headline-grotesk fs-1 text-uppercase mt-2 mb-2">
                     WHAT STUDENTS CAN DO
                 </h2>
-                <p class="text-muted">A collaborative platform designed entirely around student peer learning and skill sharing.</p>
+                <p class="subtext mb-0">A collaborative platform designed entirely around student peer learning and skill sharing.</p>
             </div>
 
             <div class="row g-4">
                 <!-- 1. Learn Skills -->
                 <div class="col-md-6 col-lg-3">
-                    <div class="neo-card" style="background: #ffffff;">
-                        <div class="icon-box-feature" style="background: #ede9fe; color: #4338ca;">
+                    <div class="card-brutal p-4 h-100">
+                        <div class="step-num-box" style="background: var(--color-brand-soft); color: var(--color-brand-deep);">
                             <i class="bi bi-mortarboard-fill"></i>
                         </div>
-                        <h4 class="fw-bold text-dark mb-2" style="font-family: 'Space Grotesk', sans-serif; font-size: 1.25rem;">
-                            Learn Skills
-                        </h4>
-                        <p class="text-muted small mb-0" style="line-height: 1.6;">
+                        <h4 class="headline-grotesk fs-5 mb-2">Learn Skills</h4>
+                        <p class="subtext small mb-0">
                             Master programming languages, design tools, and academic topics directly from campus peers who have already built tangible projects.
                         </p>
                     </div>
@@ -420,44 +517,38 @@
 
                 <!-- 2. Teach Skills -->
                 <div class="col-md-6 col-lg-3">
-                    <div class="neo-card" style="background: #ffffff;">
-                        <div class="icon-box-feature" style="background: #ffe4e6; color: #e11d48;">
+                    <div class="card-brutal p-4 h-100">
+                        <div class="step-num-box" style="background: var(--color-blush-soft); color: var(--color-blush-ink);">
                             <i class="bi bi-lightbulb-fill"></i>
                         </div>
-                        <h4 class="fw-bold text-dark mb-2" style="font-family: 'Space Grotesk', sans-serif; font-size: 1.25rem;">
-                            Teach Skills
-                        </h4>
-                        <p class="text-muted small mb-0" style="line-height: 1.6;">
+                        <h4 class="headline-grotesk fs-5 mb-2">Teach Skills</h4>
+                        <p class="subtext small mb-0">
                             Reinforce your own knowledge by mentoring fellow students. Share your applied proficiency in software, multimedia, or coursework.
                         </p>
                     </div>
                 </div>
 
-                <!-- 3. Find Exchange Partners -->
+                <!-- 3. Find Partners -->
                 <div class="col-md-6 col-lg-3">
-                    <div class="neo-card" style="background: #ffffff;">
-                        <div class="icon-box-feature" style="background: #dbeafe; color: #1d4ed8;">
+                    <div class="card-brutal p-4 h-100">
+                        <div class="step-num-box" style="background: var(--color-mint-soft); color: var(--color-mint-ink);">
                             <i class="bi bi-people-fill"></i>
                         </div>
-                        <h4 class="fw-bold text-dark mb-2" style="font-family: 'Space Grotesk', sans-serif; font-size: 1.25rem;">
-                            Find Partners
-                        </h4>
-                        <p class="text-muted small mb-0" style="line-height: 1.6;">
+                        <h4 class="headline-grotesk fs-5 mb-2">Find Partners</h4>
+                        <p class="subtext small mb-0">
                             Discover peers whose learning desires match what you teach and whose teaching skills match what you want to master for reciprocal balance.
                         </p>
                     </div>
                 </div>
 
-                <!-- 4. Exchange Skills Reciprocally -->
+                <!-- 4. Exchange Skills -->
                 <div class="col-md-6 col-lg-3">
-                    <div class="neo-card" style="background: #ffffff;">
-                        <div class="icon-box-feature" style="background: #fef3c7; color: #d97706;">
+                    <div class="card-brutal p-4 h-100">
+                        <div class="step-num-box" style="background: var(--color-amber-soft); color: var(--color-amber-ink);">
                             <i class="bi bi-arrow-left-right"></i>
                         </div>
-                        <h4 class="fw-bold text-dark mb-2" style="font-family: 'Space Grotesk', sans-serif; font-size: 1.25rem;">
-                            Exchange Skills
-                        </h4>
-                        <p class="text-muted small mb-0" style="line-height: 1.6;">
+                        <h4 class="headline-grotesk fs-5 mb-2">Exchange Skills</h4>
+                        <p class="subtext small mb-0">
                             Submit structured exchange proposals, schedule learning milestones, coordinate through built-in chat, and earn verified badges.
                         </p>
                     </div>
@@ -467,59 +558,65 @@
     </section>
 
     <!-- ===================================================================
-         4. HOW IT WORKS (4 Simple Steps)
+         4. HOW IT WORKS (Four Steps to Your First Swap / Real Platform Flow)
+         Reused from ZIP Section 02 / How It Works & Prompt Requirement 17
          =================================================================== -->
-    <section class="py-5 border-bottom border-2 border-dark" id="how-it-works" style="background: #fafafa;">
+    <section class="py-5 border-bottom border-2 border-dark grid-bg" id="how-it-works">
         <div class="container py-4">
-            <div class="text-center max-w-xl mx-auto mb-5">
-                <span class="badge badge-mono mb-2" style="background: #ede9fe; color: #0f172a;">STEP-BY-STEP</span>
-                <h2 class="fw-bold mb-2" style="font-family: 'Space Grotesk', sans-serif; font-size: 2.2rem; letter-spacing: -0.02em;">
-                    HOW THE PLATFORM WORKS
+            <div class="text-center mx-auto mb-5" style="max-width: 650px;">
+                <span class="chip-mono chip-dark mb-2">02 / HOW IT WORKS</span>
+                <h2 class="headline-grotesk fs-1 text-uppercase mt-2 mb-2">
+                    Four Steps to Your First Swap
                 </h2>
-                <p class="text-muted">A clear, simple 4-step path from creating your profile to sharing knowledge.</p>
+                <p class="subtext mb-0">From listing your skills to a completed exchange — all inside one dashboard.</p>
             </div>
 
             <div class="row g-4">
                 <!-- Step 01 -->
                 <div class="col-md-6 col-lg-3">
-                    <div class="neo-card">
-                        <div class="step-num-box">01</div>
-                        <h5 class="fw-bold text-dark mb-2" style="font-family: 'Space Grotesk', sans-serif;">Set Up Profile</h5>
-                        <p class="text-muted small mb-0">
-                            Register with your credentials and specify the skills you can teach alongside the skills you want to learn.
+                    <div class="card-brutal p-4 h-100">
+                        <span class="step-num-box">01</span>
+                        <h5 class="headline-grotesk fs-5 mb-2">List What You Know</h5>
+                        <p class="subtext small mb-0">
+                            1. Create your profile.<br>
+                            2. Add skills you can teach.<br>
+                            3. Add skills you want to learn — from Java and Python to UI/UX and public speaking.
                         </p>
                     </div>
                 </div>
 
                 <!-- Step 02 -->
                 <div class="col-md-6 col-lg-3">
-                    <div class="neo-card">
-                        <div class="step-num-box">02</div>
-                        <h5 class="fw-bold text-dark mb-2" style="font-family: 'Space Grotesk', sans-serif;">Discover Matches</h5>
-                        <p class="text-muted small mb-0">
-                            Search peer offerings by category and find students ready for reciprocal exchange in your department or college.
+                    <div class="card-brutal p-4 h-100">
+                        <span class="step-num-box">02</span>
+                        <h5 class="headline-grotesk fs-5 mb-2">Get Matched</h5>
+                        <p class="subtext small mb-0">
+                            4. Find a suitable student.<br>
+                            Our reciprocal matching algorithm pairs campus peers by mutual skills, academic department, and verified credentials.
                         </p>
                     </div>
                 </div>
 
                 <!-- Step 03 -->
                 <div class="col-md-6 col-lg-3">
-                    <div class="neo-card">
-                        <div class="step-num-box">03</div>
-                        <h5 class="fw-bold text-dark mb-2" style="font-family: 'Space Grotesk', sans-serif;">Propose Exchange</h5>
-                        <p class="text-muted small mb-0">
-                            Send a structured proposal detailing the skill offered, skill wanted, preferred mode (online/in-person), and note.
+                    <div class="card-brutal p-4 h-100">
+                        <span class="step-num-box">03</span>
+                        <h5 class="headline-grotesk fs-5 mb-2">Propose & Plan</h5>
+                        <p class="subtext small mb-0">
+                            5. Send / accept an exchange proposal.<br>
+                            6. Plan and conduct the exchange — agree on curriculum milestones, Zoom calls, or campus meetups.
                         </p>
                     </div>
                 </div>
 
                 <!-- Step 04 -->
                 <div class="col-md-6 col-lg-3">
-                    <div class="neo-card">
-                        <div class="step-num-box">04</div>
-                        <h5 class="fw-bold text-dark mb-2" style="font-family: 'Space Grotesk', sans-serif;">Collaborate & Learn</h5>
-                        <p class="text-muted small mb-0">
-                            Once accepted, coordinate via real-time chat, conduct mutual study sessions, and complete your learning milestones.
+                    <div class="card-brutal p-4 h-100">
+                        <span class="step-num-box">04</span>
+                        <h5 class="headline-grotesk fs-5 mb-2">Learn & Track</h5>
+                        <p class="subtext small mb-0">
+                            7. Track progress with teaching logs, comprehension notes, and milestone quizzes.<br>
+                            8. Complete the skill exchange and earn verified badges.
                         </p>
                     </div>
                 </div>
@@ -528,69 +625,65 @@
     </section>
 
     <!-- ===================================================================
-         5. EVIDENCE-BASED VERIFICATION STANDARDS
+         5. LEARNING MODES (You Decide How to Meet)
+         Reused from ZIP Section 03 / Learning Modes (Zoom-accurate)
          =================================================================== -->
-    <section class="py-5 border-bottom border-2 border-dark bg-white" id="verification">
+    <section class="py-5 border-bottom border-2 border-dark bg-white" id="modes">
         <div class="container py-4">
-            <div class="text-center max-w-xl mx-auto mb-5">
-                <span class="badge badge-mono mb-2" style="background: #ffe4e6; color: #0f172a;">PEER TRUST</span>
-                <h2 class="fw-bold mb-2" style="font-family: 'Space Grotesk', sans-serif; font-size: 2.2rem; letter-spacing: -0.02em;">
-                    SKILL VERIFICATION STANDARDS
+            <div class="text-center mx-auto mb-5" style="max-width: 650px;">
+                <span class="chip-mono chip-brand mb-2">03 / LEARNING MODES</span>
+                <h2 class="headline-grotesk fs-1 text-uppercase mt-2 mb-2">
+                    You Decide How to Meet
                 </h2>
-                <p class="text-muted">
-                    We maintain trust through real evidence: peer teaching credentials are authenticated with practical work.
-                </p>
+                <p class="subtext mb-0">Every exchange runs your way — online via Zoom, offline on campus, or purely over chat.</p>
             </div>
 
             <div class="row g-4">
-                <!-- Projects -->
+                <!-- Mode 1: Online -->
                 <div class="col-md-4">
-                    <div class="neo-card">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <span class="badge badge-mono bg-danger text-white">COMPULSORY</span>
-                            <i class="bi bi-code-square fs-3 text-dark"></i>
+                    <div class="card-brutal p-4 h-100">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <span class="d-flex align-items-center justify-content-center rounded-2 border border-2 border-dark bg-white" style="width: 48px; height: 48px; box-shadow: var(--shadow-brutal-sm);">
+                                <i class="bi bi-camera-video-fill fs-4" style="color: var(--color-brand);"></i>
+                            </span>
+                            <span class="mode-chip" style="background: var(--color-brand-soft); color: var(--color-brand-deep);">ONLINE</span>
                         </div>
-                        <h4 class="fw-bold text-dark mb-2" style="font-family: 'Space Grotesk', sans-serif;">Practical Projects</h4>
-                        <p class="text-muted small mb-3">
-                            A tangible project demonstrating applied mastery is required for each skill you offer to teach.
+                        <h4 class="headline-grotesk fs-5 mb-2">Online Zoom Sessions</h4>
+                        <p class="subtext small mb-0">
+                            Pick a date and time, and a real Zoom meeting is automatically created right in your exchange schedule. Host controls protect start links while learners receive instant join URLs.
                         </p>
-                        <div class="p-2 border border-dark rounded bg-light small font-monospace" style="font-size: 0.72rem;">
-                            ✓ GitHub / Live Demo / Uploaded Proof
-                        </div>
                     </div>
                 </div>
 
-                <!-- Experience -->
+                <!-- Mode 2: Offline -->
                 <div class="col-md-4">
-                    <div class="neo-card">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <span class="badge badge-mono bg-danger text-white">COMPULSORY</span>
-                            <i class="bi bi-briefcase-fill fs-3 text-dark"></i>
+                    <div class="card-brutal p-4 h-100">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <span class="d-flex align-items-center justify-content-center rounded-2 border border-2 border-dark bg-white" style="width: 48px; height: 48px; box-shadow: var(--shadow-brutal-sm);">
+                                <i class="bi bi-geo-alt-fill fs-4" style="color: var(--color-amber-ink);"></i>
+                            </span>
+                            <span class="mode-chip" style="background: var(--color-amber-soft); color: var(--color-amber-ink);">OFFLINE</span>
                         </div>
-                        <h4 class="fw-bold text-dark mb-2" style="font-family: 'Space Grotesk', sans-serif;">Practical Experience</h4>
-                        <p class="text-muted small mb-3">
-                            Documented experience demonstrating practical application, student committees, or club roles.
+                        <h4 class="headline-grotesk fs-5 mb-2">On-Campus Meetings</h4>
+                        <p class="subtext small mb-0">
+                            Meet face-to-face at the college library, computer labs, or department seminar rooms. Perfect for hands-on pair programming, hardware testing, and design critiques.
                         </p>
-                        <div class="p-2 border border-dark rounded bg-light small font-monospace" style="font-size: 0.72rem;">
-                            ✓ Role, Organization, & Responsibilities
-                        </div>
                     </div>
                 </div>
 
-                <!-- Certificates -->
+                <!-- Mode 3: Chat -->
                 <div class="col-md-4">
-                    <div class="neo-card">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <span class="badge badge-mono bg-secondary text-white">OPTIONAL</span>
-                            <i class="bi bi-patch-check-fill fs-3 text-dark"></i>
+                    <div class="card-brutal p-4 h-100">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <span class="d-flex align-items-center justify-content-center rounded-2 border border-2 border-dark bg-white" style="width: 48px; height: 48px; box-shadow: var(--shadow-brutal-sm);">
+                                <i class="bi bi-chat-dots-fill fs-4 text-dark"></i>
+                            </span>
+                            <span class="mode-chip" style="background: var(--color-surface); color: var(--color-ink);">CHAT</span>
                         </div>
-                        <h4 class="fw-bold text-dark mb-2" style="font-family: 'Space Grotesk', sans-serif;">Certificates</h4>
-                        <p class="text-muted small mb-3">
-                            Optional course completion certificates, awards, or exam credentials provide supporting verification.
+                        <h4 class="headline-grotesk fs-5 mb-2">In-Platform Chat</h4>
+                        <p class="subtext small mb-0">
+                            Coordinate session timings, ask doubt questions, share code snippets, and record shared session notes all within one dedicated conversation thread.
                         </p>
-                        <div class="p-2 border border-dark rounded bg-light small font-monospace" style="font-size: 0.72rem;">
-                            ○ Supplementary supporting document
-                        </div>
                     </div>
                 </div>
             </div>
@@ -598,56 +691,292 @@
     </section>
 
     <!-- ===================================================================
-         6. CALL TO ACTION BANNER
+         6. TRUST & VERIFICATION STANDARDS
+         Section 16: Projects = compulsory, Experience = compulsory, Certificate = optional.
          =================================================================== -->
-    <section class="py-5" style="background: #fafafa;">
+    <section class="py-5 border-bottom border-2 border-dark grid-bg" id="verification">
         <div class="container py-4">
-            <div class="cta-banner-box">
-                <span class="badge badge-mono mb-3" style="background: #ffffff; color: #0f172a;">GET STARTED TODAY</span>
-                <h2 class="fw-bold mb-3" style="font-family: 'Space Grotesk', sans-serif; font-size: clamp(1.85rem, 3.8vw, 2.75rem); letter-spacing: -0.02em;">
-                    Ready to Exchange Knowledge on Campus?
-                </h2>
-                <p class="text-dark mx-auto mb-4" style="max-width: 600px; font-size: 1.1rem; line-height: 1.6;">
-                    Connect with fellow students sharing skills today. No fees, no commercial barriers — just reciprocal learning powered by university peer verification.
-                </p>
+            <div class="row align-items-center g-5">
+                <!-- Left: Verification Pillars -->
+                <div class="col-lg-6">
+                    <span class="chip-mono chip-mint mb-3">04 / TRUST & VERIFICATION</span>
+                    <h2 class="headline-grotesk fs-1 text-uppercase mt-2 mb-3">
+                        Verified Skills, Real Trust
+                    </h2>
+                    <p class="subtext mb-4">
+                        Every skill can earn the official <strong>Verified</strong> badge through an administrative audit — so you always know who you're trading with.
+                    </p>
 
-                <div class="d-flex justify-content-center flex-wrap gap-3">
-                    <button type="button" class="btn-neo-primary py-3 px-4 fs-6" id="ctaSignUpBtn" onclick="enterAuthFlow('register.html')">
-                        <i class="bi bi-person-plus-fill"></i> Create Student Account
-                    </button>
-                    <button type="button" class="btn-neo-outline py-3 px-4 fs-6" id="ctaLoginBtn" onclick="enterAuthFlow('login.html')">
-                        <i class="bi bi-box-arrow-in-right"></i> Already Registered? Log In
-                    </button>
+                    <div class="d-flex flex-column gap-3 mb-4">
+                        <div class="card-brutal p-3">
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <span class="fw-bold headline-grotesk">1. Practical Projects</span>
+                                <span class="chip-mono chip-blush" style="font-size: 0.65rem;">COMPULSORY</span>
+                            </div>
+                            <p class="subtext small mb-0">Upload GitHub repositories, live demo links, or project documentation demonstrating tangible mastery.</p>
+                        </div>
+
+                        <div class="card-brutal p-3">
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <span class="fw-bold headline-grotesk">2. Practical Experience</span>
+                                <span class="chip-mono chip-blush" style="font-size: 0.65rem;">COMPULSORY</span>
+                            </div>
+                            <p class="subtext small mb-0">Document applied experience through student committees, technical club leadership, or academic roles.</p>
+                        </div>
+
+                        <div class="card-brutal p-3">
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <span class="fw-bold headline-grotesk">3. Certificates & Badges</span>
+                                <span class="chip-mono chip-brand" style="font-size: 0.65rem;">OPTIONAL</span>
+                            </div>
+                            <p class="subtext small mb-0">Course completion certificates, awards, and certifications provide helpful supporting verification.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Visual Audit Dossier (Reused from ZIP) -->
+                <div class="col-lg-6">
+                    <div class="card-brutal p-4" style="box-shadow: var(--shadow-brutal-lg);">
+                        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom border-2 border-dark">
+                            <span class="chip-mono chip-dark" style="font-size: 0.68rem;">ADMIN AUDIT WORKFLOW</span>
+                            <span class="badge-verified"><i class="bi bi-shield-check"></i> OFFICIAL BADGE</span>
+                        </div>
+
+                        <div class="p-3 rounded-3 border border-2 border-dark mb-3" style="background: var(--color-surface);">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <span class="fw-bold">Java Backend Architecture</span>
+                                <span class="badge-verified"><i class="bi bi-patch-check-fill"></i> VERIFIED</span>
+                            </div>
+                            <p class="small text-muted mt-1 mb-0 font-monospace">Spring Boot, REST APIs, Supabase DB &bull; Verified via Project Repo</p>
+                        </div>
+
+                        <div class="p-3 rounded-3 border border-2 border-dark mb-3" style="background: var(--color-surface);">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <span class="fw-bold">UI/UX Design Systems</span>
+                                <span class="chip-mono chip-amber" style="font-size: 0.65rem;">AUDITED</span>
+                            </div>
+                            <p class="small text-muted mt-1 mb-0 font-monospace">Figma Tokens, Responsive Grids &bull; Verified via Club Experience</p>
+                        </div>
+
+                        <p class="font-monospace fw-bold small text-muted text-uppercase border-top border-2 border-dark pt-3 mt-3 mb-0" style="font-size: 0.72rem;">
+                            PROJECTS & EXPERIENCE REQUIRED &bull; CERTIFICATES OPTIONAL
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- ===================================================================
-         7. FOOTER
+         7. KITAAB GHAR (Campus Academic Marketplace)
+         Section 15: Reused concept from ZIP Kitab Bhandar without fake data
          =================================================================== -->
-    <footer class="py-4 border-top border-2 border-dark bg-white">
-        <div class="container d-flex flex-wrap justify-content-between align-items-center gap-3">
-            <div class="d-flex align-items-center gap-2">
-                <span class="d-flex align-items-center justify-content-center rounded-2 border border-2 border-dark bg-dark text-white" style="width: 28px; height: 28px; box-shadow: 2px 2px 0 #0f172a;">
-                    <i class="bi bi-arrow-left-right" style="font-size: 0.8rem;"></i>
+    <section class="py-5 border-bottom border-2 border-dark bg-white" id="kitaab-ghar">
+        <div class="container py-4">
+            <div class="row align-items-center g-5">
+                <div class="col-lg-6">
+                    <span class="chip-mono chip-brand mb-3">05 / THE MARKETPLACE</span>
+                    <h2 class="headline-grotesk fs-1 text-uppercase mt-2 mb-3">
+                        Kitaab Ghar
+                    </h2>
+                    <p class="subtext mb-4">
+                        A student-run academic marketplace built directly into SkillExchange. Buy, sell, or donate reference textbooks, handwritten semester exam notes, and project manuals within your trusted campus community.
+                    </p>
+                    <button type="button" class="btn-neo-primary press py-3 px-4 fs-6" id="kitaabGharCtaBtn" onclick="enterAuthFlow('kitaab-ghar.html')">
+                        Explore Kitaab Ghar <i class="bi bi-arrow-right ms-1"></i>
+                    </button>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <div class="card-brutal p-3">
+                                <div class="d-flex align-items-center gap-3">
+                                    <span class="d-flex align-items-center justify-content-center rounded-2 border border-2 border-dark" style="width: 44px; height: 44px; background: var(--color-brand-soft); box-shadow: var(--shadow-brutal-xs);">
+                                        <i class="bi bi-journal-bookmark-fill fs-5" style="color: var(--color-brand-deep);"></i>
+                                    </span>
+                                    <div>
+                                        <h5 class="headline-grotesk fs-6 mb-1">Reference Textbooks</h5>
+                                        <p class="subtext small mb-0">Pass on semester textbooks you've outgrown to juniors who need them.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="card-brutal p-3">
+                                <div class="d-flex align-items-center gap-3">
+                                    <span class="d-flex align-items-center justify-content-center rounded-2 border border-2 border-dark" style="width: 44px; height: 44px; background: var(--color-amber-soft); box-shadow: var(--shadow-brutal-xs);">
+                                        <i class="bi bi-pen-fill fs-5" style="color: var(--color-amber-ink);"></i>
+                                    </span>
+                                    <div>
+                                        <h5 class="headline-grotesk fs-6 mb-1">Handwritten Exam Notes</h5>
+                                        <p class="subtext small mb-0">Turn your detailed lecture notes into valued academic study resources.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="card-brutal p-3">
+                                <div class="d-flex align-items-center gap-3">
+                                    <span class="d-flex align-items-center justify-content-center rounded-2 border border-2 border-dark" style="width: 44px; height: 44px; background: var(--color-mint-soft); box-shadow: var(--shadow-brutal-xs);">
+                                        <i class="bi bi-handshake-fill fs-5" style="color: var(--color-mint-ink);"></i>
+                                    </span>
+                                    <div>
+                                        <h5 class="headline-grotesk fs-6 mb-1">Zero Middleman Fees</h5>
+                                        <p class="subtext small mb-0">Direct student-to-student handover on campus with 100% transparent pricing.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===================================================================
+         8. 100% FREE PEER BARTER (Zero Hidden Fees)
+         Section 14: Accurately reflects 100% free campus barter
+         =================================================================== -->
+    <section class="py-5 border-bottom border-2 border-dark grid-bg" id="pricing">
+        <div class="container py-4">
+            <div class="text-center mx-auto mb-5" style="max-width: 650px;">
+                <span class="chip-mono chip-dark mb-2">06 / PURE BARTER</span>
+                <h2 class="headline-grotesk fs-1 text-uppercase mt-2 mb-2">
+                    100% Free. Always.
+                </h2>
+                <p class="subtext mb-0">No commercial barriers, no hidden platform fees — peer knowledge exchange built by students, for students.</p>
+            </div>
+
+            <div class="row g-4 justify-content-center">
+                <div class="col-md-6 col-lg-5">
+                    <div class="card-brutal p-4 h-100 bg-white">
+                        <span class="chip-mono chip-mint mb-3">CAMPUS PEER BARTER</span>
+                        <h3 class="headline-grotesk display-4 fw-bold mt-2 mb-1">₹0</h3>
+                        <p class="font-monospace fw-bold small text-muted text-uppercase mb-4">COMPLETE ACCESS &bull; NO CARD REQUIRED</p>
+                        
+                        <ul class="list-unstyled d-flex flex-column gap-2 mb-4">
+                            <li class="d-flex align-items-center gap-2 small">
+                                <i class="bi bi-check-circle-fill text-success fs-5"></i> Unlimited skill listings & peer matches
+                            </li>
+                            <li class="d-flex align-items-center gap-2 small">
+                                <i class="bi bi-check-circle-fill text-success fs-5"></i> Online Zoom sessions & campus meetings
+                            </li>
+                            <li class="d-flex align-items-center gap-2 small">
+                                <i class="bi bi-check-circle-fill text-success fs-5"></i> Real-time chat with notes & doubts log
+                            </li>
+                            <li class="d-flex align-items-center gap-2 small">
+                                <i class="bi bi-check-circle-fill text-success fs-5"></i> Project-based skill verification & badges
+                            </li>
+                            <li class="d-flex align-items-center gap-2 small">
+                                <i class="bi bi-check-circle-fill text-success fs-5"></i> Full access to Kitaab Ghar marketplace
+                            </li>
+                        </ul>
+
+                        <button type="button" class="btn-neo-primary press w-100 py-3" onclick="enterAuthFlow('register.html')">
+                            Create Free Student Account
+                        </button>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-5">
+                    <div class="card-brutal p-4 h-100" style="background: var(--color-surface);">
+                        <span class="chip-mono chip-amber mb-3">RECIPROCAL EXCHANGE ETHICS</span>
+                        <h3 class="headline-grotesk fs-3 fw-bold mt-2 mb-2">Knowledge is Currency</h3>
+                        <p class="font-monospace fw-bold small text-muted text-uppercase mb-4">1-FOR-1 SKILL RECIPROCITY</p>
+                        
+                        <ul class="list-unstyled d-flex flex-column gap-2 mb-4">
+                            <li class="d-flex align-items-center gap-2 small">
+                                <i class="bi bi-lightbulb-fill text-warning fs-5"></i> Teach what you know, learn what you don't
+                            </li>
+                            <li class="d-flex align-items-center gap-2 small">
+                                <i class="bi bi-lightbulb-fill text-warning fs-5"></i> No money changes hands for skill sessions
+                            </li>
+                            <li class="d-flex align-items-center gap-2 small">
+                                <i class="bi bi-lightbulb-fill text-warning fs-5"></i> Mutually confirmed two-way learning plans
+                            </li>
+                            <li class="d-flex align-items-center gap-2 small">
+                                <i class="bi bi-lightbulb-fill text-warning fs-5"></i> Daily learning streaks & progress tracking
+                            </li>
+                            <li class="d-flex align-items-center gap-2 small">
+                                <i class="bi bi-lightbulb-fill text-warning fs-5"></i> Audited by campus student council & admin
+                            </li>
+                        </ul>
+
+                        <button type="button" class="btn-neo-outline press w-100 py-3" onclick="enterAuthFlow('login.html')">
+                            Student Log In
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===================================================================
+         9. FINAL CALL TO ACTION
+         Reused from ZIP Section 08 / Final CTA
+         =================================================================== -->
+    <section class="py-5 border-bottom border-2 border-dark bg-white">
+        <div class="container py-4 text-center">
+            <span class="chip-mono chip-dark mb-3">07 / YOUR MOVE</span>
+            <h2 class="headline-grotesk display-5 text-uppercase mt-2 mb-3">
+                Ready to trade skills?
+            </h2>
+            <p class="subtext fs-5 mx-auto mb-4" style="max-width: 600px;">
+                Join your university peers on SkillExchange — teach what you know, learn what you don't.
+            </p>
+            <div class="d-flex justify-content-center flex-wrap gap-3">
+                <button type="button" class="btn-neo-primary press py-3 px-4 fs-6" id="ctaSignUpBtn" onclick="enterAuthFlow('register.html')">
+                    Start Exchanging — Free <i class="bi bi-arrow-right ms-1"></i>
+                </button>
+                <button type="button" class="btn-neo-outline press py-3 px-4 fs-6" id="ctaLoginBtn" onclick="enterAuthFlow('login.html')">
+                    Student Log In
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===================================================================
+         10. FOOTER
+         Reused from ZIP Footer with clean Neo-Brutalist styling
+         =================================================================== -->
+    <footer class="py-5 border-top border-2 border-dark bg-dark text-white">
+        <div class="container d-flex flex-column flex-md-row align-items-center justify-content-between gap-4">
+            <div class="d-flex align-items-center gap-3">
+                <span class="d-flex align-items-center justify-content-center rounded-2 border border-2 border-white bg-white text-dark" style="width: 36px; height: 36px;">
+                    <i class="bi bi-arrow-left-right fs-6"></i>
                 </span>
-                <strong class="text-dark small" style="font-family: 'Space Grotesk', sans-serif;">Student Skill Exchange Platform</strong>
+                <div>
+                    <div class="fw-bold headline-grotesk tracking-tight fs-5">
+                        SKILL<span style="color: var(--color-brand-soft);">EXCHANGE</span>
+                    </div>
+                    <div class="font-monospace small text-white-50" style="font-size: 0.72rem; letter-spacing: 0.08em;">
+                        TRADE SKILLS, NOT MONEY
+                    </div>
+                </div>
             </div>
 
-            <div class="d-flex align-items-center gap-3 small fw-bold">
-                <a href="javascript:void(0)" onclick="enterAuthFlow('login.html')" class="text-dark text-decoration-none">Log In</a>
-                <span class="text-muted">&bull;</span>
-                <a href="javascript:void(0)" onclick="enterAuthFlow('register.html')" class="text-dark text-decoration-none">Sign Up</a>
+            <div class="d-flex flex-wrap justify-content-center gap-4 font-monospace small fw-bold">
+                <a href="#how-it-works" class="text-white text-decoration-none hover-underline">How It Works</a>
+                <a href="#modes" class="text-white text-decoration-none hover-underline">Learning Modes</a>
+                <a href="#verification" class="text-white text-decoration-none hover-underline">Verification</a>
+                <a href="#kitaab-ghar" class="text-white text-decoration-none hover-underline">Kitaab Ghar</a>
+                <a href="javascript:void(0)" onclick="enterAuthFlow('login.html')" class="text-white text-decoration-none hover-underline">Log In</a>
+                <a href="javascript:void(0)" onclick="enterAuthFlow('register.html')" class="text-white text-decoration-none hover-underline">Sign Up</a>
             </div>
 
-            <small class="text-muted font-monospace" style="font-size: 0.72rem;">
-                Campus Peer Knowledge Exchange &bull; Student Network
+            <small class="text-white-50 font-monospace" style="font-size: 0.75rem;">
+                &copy; 2026 SkillExchange &bull; Campus Network
             </small>
         </div>
     </footer>
 
     <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Grok AI Learning Assistant Client -->
+    <script src="js/grok-assistant.js"></script>
 </body>
 </html>

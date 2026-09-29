@@ -126,7 +126,8 @@ function enforceRouteProtection(isAuthenticated) {
                      page === "verify-email.html" || page === "verify" ||
                      page === "forgot-password.html" || page === "links.html";
 
-    const hasSeenLanding = localStorage.getItem("landingPageVisited") === "true" ||
+    const hasSeenLanding = localStorage.getItem("skillExchangeLandingSeen") === "true" ||
+                           localStorage.getItem("landingPageVisited") === "true" ||
                            localStorage.getItem("se_landing_viewed") === "true";
 
     if (isAuthenticated) {
@@ -266,6 +267,7 @@ async function logout() {
     CurrentUser = null;
     try {
         localStorage.removeItem("se_session_token");
+        localStorage.setItem("skillExchangeLandingSeen", "true");
         localStorage.setItem("landingPageVisited", "true");
         localStorage.setItem("se_landing_viewed", "true");
     } catch (e) {}

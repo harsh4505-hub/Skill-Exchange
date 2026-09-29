@@ -18,7 +18,9 @@ const PORT = process.env.PORT || 8080;
 const candidateStaticDirs = [
     path.join(__dirname, 'src', 'main', 'resources', 'static'),
     path.join(process.cwd(), 'src', 'main', 'resources', 'static'),
-    path.join(__dirname, '..', 'src', 'main', 'resources', 'static')
+    path.join(__dirname, '..', 'src', 'main', 'resources', 'static'),
+    path.join(__dirname, '..', '..', 'src', 'main', 'resources', 'static'),
+    path.resolve('./src/main/resources/static')
 ];
 let STATIC_DIR = candidateStaticDirs[0];
 for (const dir of candidateStaticDirs) {
@@ -1506,6 +1508,15 @@ function verifySessionToken(token) {
     if (state.activeSessions && state.activeSessions.has(token)) {
         const session = state.activeSessions.get(token);
         if (session && session.expiresAt > Date.now()) {
+            const liveUser = (state.users || []).find(u => u.id === session.user.userId || (u.email && u.email.toLowerCase() === session.user.email.toLowerCase()));
+            if (liveUser) {
+                if (!liveUser.active || (state.blockedUsers && state.blockedUsers.includes(liveUser.id))) {
+                    state.activeSessions.delete(token);
+                    return null;
+                }
+                session.user.role = liveUser.role;
+                session.user.active = liveUser.active;
+            }
             return session.user;
         } else {
             state.activeSessions.delete(token);
@@ -1741,6 +1752,9 @@ async function verifyFirebaseIdToken(idToken) {
 // ZOOM SERVER-TO-SERVER OAUTH 2.0 & MEETING SERVICE
 // ===================================================================
 
+let cachedZoomToken = null;
+let zoomTokenExpiresAt = 0;
+
 function getZoomConfig() {
     const accountId = (process.env.ZOOM_ACCOUNT_ID || '').trim();
     const clientId = (process.env.ZOOM_CLIENT_ID || '').trim();
@@ -1758,6 +1772,12 @@ function fetchZoomOAuthToken() {
         const config = getZoomConfig();
         if (!config.isConfigured) return resolve(null);
 
+        const now = Date.now();
+        // Return cached token if valid for at least 60 more seconds
+        if (cachedZoomToken && zoomTokenExpiresAt > (now + 60000)) {
+            return resolve(cachedZoomToken);
+        }
+
         const authHeader = 'Basic ' + Buffer.from(`${config.clientId}:${config.clientSecret}`).toString('base64');
         const tokenUrl = `https://zoom.us/oauth/token?grant_type=account_credentials&account_id=${encodeURIComponent(config.accountId)}`;
 
@@ -1767,7 +1787,7 @@ function fetchZoomOAuthToken() {
                 'Authorization': authHeader,
                 'Content-Type': 'application/x-www-form-urlencoded'
             },
-            timeout: 5000
+            timeout: 7000
         }, (res) => {
             let data = '';
             res.on('data', chunk => { data += chunk; });
@@ -1775,9 +1795,12 @@ function fetchZoomOAuthToken() {
                 try {
                     const parsed = JSON.parse(data);
                     if (res.statusCode >= 200 && res.statusCode < 300 && parsed.access_token) {
+                        cachedZoomToken = parsed.access_token;
+                        const expiresInMs = (parsed.expires_in || 3600) * 1000;
+                        zoomTokenExpiresAt = Date.now() + expiresInMs;
                         resolve(parsed.access_token);
                     } else {
-                        console.warn("[Zoom Service] Token generation returned status", res.statusCode);
+                        console.warn("[Zoom Service] Token generation returned status", res.statusCode, data);
                         resolve(null);
                     }
                 } catch (e) {
@@ -1801,6 +1824,9 @@ function fetchZoomOAuthToken() {
 
 async function createZoomMeeting({ topic, startTime, durationMinutes, agenda }) {
     const config = getZoomConfig();
+    const duration = Math.min(300, Math.max(15, Number(durationMinutes) || 60));
+    const startIso = startTime || new Date().toISOString();
+
     if (config.isConfigured) {
         try {
             const token = await fetchZoomOAuthToken();
@@ -1809,8 +1835,8 @@ async function createZoomMeeting({ topic, startTime, durationMinutes, agenda }) 
                     const postData = JSON.stringify({
                         topic: topic || "Student Skill Exchange Session",
                         type: 2,
-                        start_time: startTime || new Date().toISOString(),
-                        duration: durationMinutes || 60,
+                        start_time: startIso,
+                        duration: duration,
                         timezone: "Asia/Kolkata",
                         agenda: agenda || "Peer-to-peer student skill learning exchange session",
                         settings: {
@@ -1818,7 +1844,8 @@ async function createZoomMeeting({ topic, startTime, durationMinutes, agenda }) 
                             participant_video: true,
                             join_before_host: true,
                             mute_upon_entry: false,
-                            watermark: false
+                            watermark: false,
+                            waiting_room: false
                         }
                     });
 
@@ -1829,7 +1856,7 @@ async function createZoomMeeting({ topic, startTime, durationMinutes, agenda }) 
                             'Content-Type': 'application/json',
                             'Content-Length': Buffer.byteLength(postData)
                         },
-                        timeout: 6000
+                        timeout: 8000
                     }, (res) => {
                         let data = '';
                         res.on('data', chunk => { data += chunk; });
@@ -1840,10 +1867,15 @@ async function createZoomMeeting({ topic, startTime, durationMinutes, agenda }) 
                                     resolve({
                                         meetingId: String(parsed.id),
                                         joinUrl: parsed.join_url,
-                                        password: parsed.password || 'zoom123'
+                                        startUrl: parsed.start_url || parsed.join_url,
+                                        password: parsed.password || 'zoom123',
+                                        scheduledStart: parsed.start_time || startIso,
+                                        duration: parsed.duration || duration,
+                                        timezone: parsed.timezone || "Asia/Kolkata",
+                                        status: parsed.status || "waiting"
                                     });
                                 } else {
-                                    console.warn("[Zoom Service] Zoom API create meeting status:", res.statusCode);
+                                    console.warn("[Zoom Service] Zoom API create meeting status:", res.statusCode, data);
                                     resolve(null);
                                 }
                             } catch (e) {
@@ -1881,32 +1913,86 @@ async function createZoomMeeting({ topic, startTime, durationMinutes, agenda }) 
     return {
         meetingId: randomMeetingId,
         joinUrl: joinUrl,
-        password: randomPassword
+        startUrl: joinUrl,
+        password: randomPassword,
+        scheduledStart: startIso,
+        duration: duration,
+        timezone: "Asia/Kolkata",
+        status: "waiting"
     };
 }
 
-function enrichOnlineSession(s) {
+async function updateZoomMeeting({ meetingId, topic, startTime, durationMinutes }) {
+    const config = getZoomConfig();
+    if (!config.isConfigured || !meetingId) return false;
+    try {
+        const token = await fetchZoomOAuthToken();
+        if (!token) return false;
+        const patchData = JSON.stringify({
+            topic: topic || "Updated Skill Exchange Session",
+            start_time: startTime,
+            duration: Number(durationMinutes) || 60
+        });
+        return await new Promise((resolve) => {
+            const req = https.request(`https://api.zoom.us/v2/meetings/${encodeURIComponent(meetingId)}`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                    'Content-Length': Buffer.byteLength(patchData)
+                },
+                timeout: 6000
+            }, (res) => {
+                resolve(res.statusCode >= 200 && res.statusCode < 300);
+            });
+            req.on('error', () => resolve(false));
+            req.on('timeout', () => { req.destroy(); resolve(false); });
+            req.write(patchData);
+            req.end();
+        });
+    } catch (e) {
+        return false;
+    }
+}
+
+function enrichOnlineSession(s, viewerId) {
     if (!s) return null;
     const session = { ...s };
     // Dynamic status determination if scheduled
-    if (session.status !== 'Completed') {
-        const start = new Date(session.scheduledAt).getTime();
+    if (session.status !== 'Completed' && session.status !== 'COMPLETED' && session.status !== 'VERIFIED' && session.status !== 'Live' && session.status !== 'IN_PROGRESS') {
+        const start = new Date(session.scheduledAt || `${session.scheduledDate}T${session.scheduledTime || '00:00'}:00`).getTime();
         const durationMs = (session.durationMinutes || 60) * 60000;
         const end = start + durationMs;
         const now = Date.now();
         if (now > end) {
-            session.status = 'Completed';
+            session.status = 'COMPLETED';
         } else if (now >= start && now <= end) {
-            session.status = 'Live';
+            session.status = 'IN_PROGRESS';
+        } else if (now >= start - 15 * 60000 && now < start) {
+            session.status = 'READY_TO_JOIN';
+        } else if (now >= start - 60 * 60000 && now < start - 15 * 60000) {
+            session.status = 'STARTING_SOON';
+        } else {
+            session.status = session.status || 'SCHEDULED';
         }
+    }
+
+    // Role-based Zoom URL exposure:
+    // Only the teacher/host receives the zoomStartUrl
+    const effectiveViewerId = viewerId !== undefined ? viewerId : (state.currentUser ? (state.currentUser.userId || state.currentUser.id) : null);
+    if (effectiveViewerId && effectiveViewerId !== session.teacherId && effectiveViewerId !== session.hostId) {
+        delete session.zoomStartUrl;
     }
     return session;
 }
 
 
 const requestHandler = async (req, res) => {
-    const parsedUrl = url.parse(req.url, true);
-    let pathname = parsedUrl.pathname;
+    // Resolve effective request URL (supports both standard Node http and Vercel serverless proxy headers)
+    const rawUrl = (req.headers && (req.headers['x-forwarded-uri'] || req.headers['x-matched-path'])) || req.url || '/';
+    const effectiveUrl = (rawUrl === '/api/index.js' || rawUrl === '/api/index' || rawUrl === '/api') ? '/' : rawUrl;
+    const parsedUrl = url.parse(effectiveUrl, true);
+    let pathname = parsedUrl.pathname || '/';
 
     // Handle OPTIONS for CORS
     if (req.method === 'OPTIONS') {
@@ -1952,7 +2038,8 @@ const requestHandler = async (req, res) => {
             syncSupabase,
             isAdmin,
             isSuperAdmin,
-            createZoomMeeting
+            createZoomMeeting,
+            updateZoomMeeting
         });
         if (handledByEngine) return;
         
@@ -3838,6 +3925,7 @@ const requestHandler = async (req, res) => {
                 description: description,
                 zoomMeetingId: zoomResult.meetingId,
                 zoomJoinUrl: zoomResult.joinUrl,
+                zoomStartUrl: zoomResult.startUrl || zoomResult.joinUrl,
                 zoomPassword: zoomResult.password,
                 status: "Scheduled",
                 createdAt: new Date().toISOString(),
@@ -3847,18 +3935,18 @@ const requestHandler = async (req, res) => {
             state.onlineSessions.unshift(newSession);
             syncSupabase('saveOnlineSession', newSession);
 
-            // Section 8 Requirement: Automatically post a system message to exchange conversation:
-            // "Online session scheduled for [date] at [time]."
+            // Section 8 & 13 Requirement: Automatically post a message containing session details to conversation
             const nowIso = new Date().toISOString();
             const nextMsgId = state.messages.length > 0 ? Math.max(...state.messages.map(m => m.id)) + 1 : 1;
+            const sessionShareText = `📅 [ONLINE SESSION DETAILS]\nOnline session scheduled for ${scheduledDate} at ${scheduledTime}.\nOnline Session: ${title}\nSkill: ${skillName}\nTopic: ${title}\nDate: ${scheduledDate}\nTime: ${scheduledTime} (${durationMinutes} mins)\nJoin Meeting: ${newSession.zoomJoinUrl}${newSession.zoomPassword ? `\nPassword: ${newSession.zoomPassword}` : ''}`;
             const autoSystemMsg = {
                 id: nextMsgId,
                 senderId: myId,
                 senderName: myName,
                 receiverId: partnerId,
                 receiverName: partnerName,
-                messageText: `Online session scheduled for ${scheduledDate} at ${scheduledTime}.`,
-                content: `Online session scheduled for ${scheduledDate} at ${scheduledTime}.`,
+                messageText: sessionShareText,
+                content: sessionShareText,
                 isSystem: true,
                 isDoubt: false,
                 sessionId: newSession.id,
@@ -3892,6 +3980,94 @@ const requestHandler = async (req, res) => {
                 success: true,
                 data: enrichOnlineSession(newSession),
                 message: "Online skill session scheduled successfully."
+            });
+        }
+
+        // 1.B Share Online Session in Chat (Section 13)
+        if (pathname.match(/^\/api\/online-sessions\/(\d+)\/share-in-chat$/) && req.method === 'POST') {
+            if (!state.currentUser) return sendJson(res, 401, { success: false, message: "Authentication required." });
+            const sessId = Number(pathname.split('/')[3]);
+            const session = state.onlineSessions.find(s => s.id === sessId);
+            if (!session) return sendJson(res, 404, { success: false, message: "Online session not found." });
+
+            const myId = state.currentUser.userId;
+            const partnerId = (myId === session.teacherId) ? session.learnerId : session.teacherId;
+            const partnerProf = state.profiles.find(p => p.userId === partnerId);
+            const partnerName = partnerProf ? partnerProf.fullName : ((myId === session.teacherId) ? session.learnerName : session.teacherName);
+            const myProf = state.profiles.find(p => p.userId === myId);
+            const myName = myProf ? myProf.fullName : (state.currentUser.fullName || "Student");
+
+            const shareText = `📅 [ONLINE SESSION DETAILS]\nOnline Session: ${session.title}\nSkill: ${session.skillName}\nTopic: ${session.title}\nDate: ${session.scheduledDate}\nTime: ${session.scheduledTime} (${session.durationMinutes} mins)\nJoin Meeting: ${session.zoomJoinUrl}${session.zoomPassword ? `\nPassword: ${session.zoomPassword}` : ''}`;
+
+            const nowIso = new Date().toISOString();
+            const nextMsgId = state.messages.length > 0 ? Math.max(...state.messages.map(m => m.id)) + 1 : 1;
+            const newMsg = {
+                id: nextMsgId,
+                senderId: myId,
+                senderName: myName,
+                receiverId: partnerId,
+                receiverName: partnerName,
+                messageText: shareText,
+                content: shareText,
+                isSystem: false,
+                sessionId: session.id,
+                exchangeId: session.exchangeId,
+                sentAt: nowIso,
+                deliveredAt: nowIso,
+                seenAt: null,
+                status: "DELIVERED",
+                isRead: false
+            };
+
+            state.messages.push(newMsg);
+            syncSupabase('saveMessage', newMsg);
+            return sendJson(res, 200, { success: true, message: "Session details shared in chat.", data: newMsg });
+        }
+
+        // 1.C Reschedule Online Session (Section 14: Updates Zoom meeting & session record)
+        if (pathname.match(/^\/api\/online-sessions\/(\d+)\/reschedule$/) && req.method === 'PUT') {
+            if (!state.currentUser) return sendJson(res, 401, { success: false, message: "Authentication required." });
+            const sessId = Number(pathname.split('/')[3]);
+            const session = state.onlineSessions.find(s => s.id === sessId);
+            if (!session) return sendJson(res, 404, { success: false, message: "Online session not found." });
+
+            const myId = state.currentUser.userId;
+            const isParticipant = (session.teacherId === myId || session.learnerId === myId);
+            if (!isParticipant && !isAdmin(state.currentUser)) {
+                return sendJson(res, 403, { success: false, message: "Access Denied: You cannot reschedule this session." });
+            }
+
+            const body = await parseBody(req);
+            const newDate = (body.scheduledDate || '').trim();
+            const newTime = (body.scheduledTime || '').trim();
+            const newDuration = Math.min(300, Math.max(15, Number(body.durationMinutes) || session.durationMinutes || 60));
+
+            if (!newDate || !newTime) {
+                return sendJson(res, 400, { success: false, message: "New scheduled date and time are required." });
+            }
+
+            // Update real Zoom meeting if meeting ID is present
+            if (session.zoomMeetingId) {
+                await updateZoomMeeting({
+                    meetingId: session.zoomMeetingId,
+                    topic: session.title,
+                    startTime: `${newDate}T${newTime}:00Z`,
+                    durationMinutes: newDuration
+                });
+            }
+
+            session.scheduledDate = newDate;
+            session.scheduledTime = newTime;
+            session.scheduledAt = new Date(`${newDate}T${newTime}:00`).toISOString();
+            session.durationMinutes = newDuration;
+            session.status = "Scheduled";
+            session.updatedAt = new Date().toISOString();
+            syncSupabase('saveOnlineSession', session);
+
+            return sendJson(res, 200, {
+                success: true,
+                message: "Online session rescheduled successfully.",
+                data: enrichOnlineSession(session)
             });
         }
 
@@ -3952,9 +4128,9 @@ const requestHandler = async (req, res) => {
             }
 
             const body = await parseBody(req);
-            const validStatuses = ['Scheduled', 'Live', 'Completed'];
+            const validStatuses = ['Scheduled', 'SCHEDULED', 'Live', 'IN_PROGRESS', 'Completed', 'COMPLETED'];
             if (!body.status || !validStatuses.includes(body.status)) {
-                return sendJson(res, 400, { success: false, message: "Invalid status. Allowed: Scheduled, Live, Completed." });
+                return sendJson(res, 400, { success: false, message: "Invalid status. Allowed: Scheduled, Live, Completed, IN_PROGRESS." });
             }
 
             session.status = body.status;
@@ -4100,8 +4276,10 @@ const requestHandler = async (req, res) => {
         }
 
         // --- 6. CHAT & MESSAGING (MODULE 8) ---
-        if (pathname.match(/^\/api\/messages\/(\d+)$/) && req.method === 'GET') {
-            const partnerId = Number(pathname.split('/')[3]);
+        const pathPartnerMatch = pathname.match(/^\/api\/messages\/(\d+)$/);
+        if ((pathPartnerMatch ||
+             ((pathname === '/api/messages' || pathname === '/api/chat/messages' || pathname === '/api/chat') && (parsedUrl.query.partnerId || parsedUrl.query.receiverId))) && req.method === 'GET') {
+            const partnerId = pathPartnerMatch ? Number(pathPartnerMatch[1]) : Number(parsedUrl.query.partnerId || parsedUrl.query.receiverId);
             const myId = state.currentUser ? state.currentUser.userId : 2;
             const now = new Date().toISOString();
             const msgs = state.messages.filter(m =>
@@ -4183,7 +4361,7 @@ const requestHandler = async (req, res) => {
             }
         }
 
-        if (pathname === '/api/messages' && req.method === 'POST') {
+        if ((pathname === '/api/messages' || pathname === '/api/chat/messages') && req.method === 'POST') {
             const body = await parseBody(req);
             const myId = state.currentUser ? state.currentUser.userId : 2;
             const senderProf = state.profiles.find(p => p.userId === myId);
@@ -4880,6 +5058,8 @@ const requestHandler = async (req, res) => {
                 });
             }
 
+            const previousRole = targetUser.role === 'ROLE_ADMIN' ? 'ADMIN' : (targetUser.role === 'ROLE_SUPER_ADMIN' ? 'SUPER_ADMIN' : 'STUDENT');
+            const targetNewDisplayRole = newRole === 'ROLE_ADMIN' ? 'ADMIN' : 'STUDENT';
             targetUser.role = newRole;
             const targetName = targetProfile ? targetProfile.fullName : targetUser.email;
 
@@ -4903,12 +5083,16 @@ const requestHandler = async (req, res) => {
 
                 state.auditLogs.unshift({
                     id: Date.now(),
+                    admin: state.currentUser ? (state.currentUser.email || "Super Admin") : "Super Admin",
+                    performedBy: state.currentUser ? (state.currentUser.email || "Super Admin") : "Super Admin",
                     action: "ROLE_PROMOTED",
-                    performedBy: state.currentUser ? state.currentUser.email : "Super Admin",
+                    targetUser: targetUser.email,
                     target: targetUser.email,
+                    previousRole: previousRole,
+                    newRole: targetNewDisplayRole,
                     timestamp: new Date().toISOString(),
                     status: "SUCCESS",
-                    details: `Super Admin promoted student ${targetName} (${targetUser.email}) to ADMIN.`
+                    details: `Super Admin promoted student ${targetName} (${targetUser.email}) from ${previousRole} to ${targetNewDisplayRole}.`
                 });
             } else {
                 // Revert to STUDENT
@@ -4916,12 +5100,16 @@ const requestHandler = async (req, res) => {
 
                 state.auditLogs.unshift({
                     id: Date.now(),
+                    admin: state.currentUser ? (state.currentUser.email || "Super Admin") : "Super Admin",
+                    performedBy: state.currentUser ? (state.currentUser.email || "Super Admin") : "Super Admin",
                     action: "ROLE_DEMOTED",
-                    performedBy: state.currentUser ? state.currentUser.email : "Super Admin",
+                    targetUser: targetUser.email,
                     target: targetUser.email,
+                    previousRole: previousRole,
+                    newRole: targetNewDisplayRole,
                     timestamp: new Date().toISOString(),
                     status: "SUCCESS",
-                    details: `Super Admin removed ADMIN role from ${targetName} (${targetUser.email}). Reverted to STUDENT.`
+                    details: `Super Admin removed ADMIN role from ${targetName} (${targetUser.email}). Reverted from ${previousRole} to ${targetNewDisplayRole}.`
                 });
             }
 
@@ -6003,6 +6191,16 @@ const requestHandler = async (req, res) => {
     // -------------------------------------------------------------------
     // STATIC FILE SERVING & ROUTE REWRITES
     // -------------------------------------------------------------------
+
+    // If user is already authenticated, bypass landing directly to Main Website (/dashboard.html)
+    if (pathname === '/' || pathname === '/landing' || pathname === '/landing/' || pathname === '/landing.html') {
+        const sessionInfo = resolveSessionUser(req);
+        if (sessionInfo && sessionInfo.user) {
+            res.writeHead(302, { 'Location': '/dashboard.html' });
+            res.end();
+            return;
+        }
+    }
 
     let filePath = pathname === '/' ? 'landing.html' : pathname;
 
