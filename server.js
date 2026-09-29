@@ -9,12 +9,24 @@ const fs = require('fs');
 const path = require('path');
 const url = require('url');
 const crypto = require('crypto');
+const os = require('os');
 const nodemailer = require('nodemailer');
 const https = require('https');
 const bcrypt = require('bcryptjs');
 
-const PORT = 8080;
-const STATIC_DIR = path.join(__dirname, 'src', 'main', 'resources', 'static');
+const PORT = process.env.PORT || 8080;
+const candidateStaticDirs = [
+    path.join(__dirname, 'src', 'main', 'resources', 'static'),
+    path.join(process.cwd(), 'src', 'main', 'resources', 'static'),
+    path.join(__dirname, '..', 'src', 'main', 'resources', 'static')
+];
+let STATIC_DIR = candidateStaticDirs[0];
+for (const dir of candidateStaticDirs) {
+    if (fs.existsSync(dir)) {
+        STATIC_DIR = dir;
+        break;
+    }
+}
 
 // Auto-load environment variables from .env file if present
 const envPath = path.join(__dirname, '.env');
@@ -307,6 +319,7 @@ async function sendPasswordResetEmail(recipientEmail, studentName, resetCode) {
 const state = {
     currentUser: null,
     activeSessions: new Map(),
+    revokedTokens: new Set(),
 
     // OTP Store for email verification and password reset
     otps: {},
@@ -1445,6 +1458,111 @@ function parseCookies(req) {
     return list;
 }
 
+function getSessionSecret() {
+    return process.env.SESSION_SECRET ||
+           process.env.SUPABASE_SERVICE_ROLE_KEY ||
+           process.env.SUPABASE_ANON_KEY ||
+           'student-skill-exchange-secure-session-hmac-2026';
+}
+
+function createSessionToken(userSession) {
+    const exp = Date.now() + 7 * 24 * 60 * 60 * 1000;
+    const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
+    const payload = Buffer.from(JSON.stringify({
+        userId: userSession.userId,
+        email: userSession.email,
+        role: userSession.role,
+        fullName: userSession.fullName || userSession.email,
+        avatarUrl: userSession.avatarUrl || null,
+        hasSeenLanding: userSession.hasSeenLanding !== false,
+        exp: exp,
+        iat: Date.now()
+    })).toString('base64url');
+
+    const signature = crypto.createHmac('sha256', getSessionSecret())
+        .update(`${header}.${payload}`)
+        .digest('base64url');
+
+    const token = `${header}.${payload}.${signature}`;
+
+    if (!state.activeSessions) state.activeSessions = new Map();
+    state.activeSessions.set(token, {
+        user: userSession,
+        expiresAt: exp,
+        createdAt: new Date().toISOString()
+    });
+
+    return token;
+}
+
+function verifySessionToken(token) {
+    if (!token || typeof token !== 'string') return null;
+
+    if (state.revokedTokens && state.revokedTokens.has(token)) {
+        return null;
+    }
+
+    // 1. Fast in-memory cache
+    if (state.activeSessions && state.activeSessions.has(token)) {
+        const session = state.activeSessions.get(token);
+        if (session && session.expiresAt > Date.now()) {
+            return session.user;
+        } else {
+            state.activeSessions.delete(token);
+            return null;
+        }
+    }
+
+    // 2. Cryptographic HMAC verification for cross-lambda / serverless cold starts
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+
+    try {
+        const [headerB64, payloadB64, signatureB64] = parts;
+        const expectedSig = crypto.createHmac('sha256', getSessionSecret())
+            .update(`${headerB64}.${payloadB64}`)
+            .digest('base64url');
+
+        const sigBuf = Buffer.from(signatureB64);
+        const expBuf = Buffer.from(expectedSig);
+        if (sigBuf.length !== expBuf.length || !crypto.timingSafeEqual(sigBuf, expBuf)) {
+            return null;
+        }
+
+        const payload = JSON.parse(Buffer.from(payloadB64, 'base64url').toString('utf8'));
+        if (!payload.exp || payload.exp < Date.now()) {
+            return null;
+        }
+
+        let user = (state.users || []).find(u => u.id === payload.userId || u.email.toLowerCase() === (payload.email || '').toLowerCase());
+        if (user && (!user.active || (state.blockedUsers && state.blockedUsers.includes(user.id)))) {
+            return null;
+        }
+
+        const profile = user ? (state.profiles || []).find(p => p.userId === user.id) : null;
+        const verifiedUser = {
+            authenticated: true,
+            userId: user ? user.id : payload.userId,
+            email: user ? user.email : payload.email,
+            role: user ? user.role : payload.role,
+            avatarUrl: profile ? profile.avatarUrl : payload.avatarUrl,
+            fullName: profile ? profile.fullName : payload.fullName,
+            hasSeenLanding: true
+        };
+
+        if (!state.activeSessions) state.activeSessions = new Map();
+        state.activeSessions.set(token, {
+            user: verifiedUser,
+            expiresAt: payload.exp,
+            createdAt: new Date().toISOString()
+        });
+
+        return verifiedUser;
+    } catch (e) {
+        return null;
+    }
+}
+
 function resolveSessionUser(req) {
     const cookies = parseCookies(req);
     const authHeader = req && req.headers ? req.headers['authorization'] : null;
@@ -1453,17 +1571,61 @@ function resolveSessionUser(req) {
                          (req && req.headers ? req.headers['x-session-token'] : null);
 
     if (sessionToken) {
-        if (state.activeSessions && state.activeSessions.has(sessionToken)) {
-            const session = state.activeSessions.get(sessionToken);
-            if (session.expiresAt > Date.now()) {
-                return { user: session.user, token: sessionToken };
-            } else {
-                state.activeSessions.delete(sessionToken);
-            }
+        const verifiedUser = verifySessionToken(sessionToken);
+        if (verifiedUser) {
+            return { user: verifiedUser, token: sessionToken };
         }
         return { user: null, token: null, invalid: true };
     }
     return null;
+}
+
+function getSessionCookieHeader(token, req) {
+    const isHttps = (req && req.headers && req.headers['x-forwarded-proto'] === 'https') ||
+                    Boolean(process.env.VERCEL) ||
+                    process.env.NODE_ENV === 'production';
+    const secureFlag = isHttps ? '; Secure' : '';
+    return `se_session=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=604800${secureFlag}`;
+}
+
+function getLogoutCookieHeader(req) {
+    const isHttps = (req && req.headers && req.headers['x-forwarded-proto'] === 'https') ||
+                    Boolean(process.env.VERCEL) ||
+                    process.env.NODE_ENV === 'production';
+    const secureFlag = isHttps ? '; Secure' : '';
+    return `se_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT${secureFlag}`;
+}
+
+let lastSupabaseSync = 0;
+let isSyncing = false;
+async function ensureSupabaseSynced(stateObj) {
+    if (!supabaseService || !supabaseService.isConfigured()) return;
+    if (Date.now() - lastSupabaseSync < 30000 || isSyncing) return;
+    isSyncing = true;
+    try {
+        await supabaseService.syncFromSupabase(stateObj);
+        lastSupabaseSync = Date.now();
+    } catch (e) {
+        console.warn('[Supabase Sync Notice]:', e.message);
+    } finally {
+        isSyncing = false;
+    }
+}
+
+function saveUploadedBuffer(folder, safeName, buffer) {
+    const uploadDir = path.join(STATIC_DIR, 'uploads', folder);
+    try {
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+        }
+        fs.writeFileSync(path.join(uploadDir, safeName), buffer);
+    } catch (e) {
+        const tmpDir = path.join(os.tmpdir(), 'skill-exchange-uploads', folder);
+        if (!fs.existsSync(tmpDir)) {
+            fs.mkdirSync(tmpDir, { recursive: true });
+        }
+        fs.writeFileSync(path.join(tmpDir, safeName), buffer);
+    }
 }
 
 function verifyPassword(inputPassword, storedPassword) {
@@ -1525,7 +1687,7 @@ async function verifyFirebaseIdToken(idToken) {
         return { valid: false, error: "Invalid token payload encoding." };
     }
 
-    const projectId = "skill-exchange-program-6647c";
+    const projectId = process.env.FIREBASE_PROJECT_ID || "skill-exchange-program-6647c";
     const expectedIss = `https://securetoken.google.com/${projectId}`;
 
     if (payload.aud !== projectId) {
@@ -1544,8 +1706,12 @@ async function verifyFirebaseIdToken(idToken) {
 
     // Cryptographic signature check against Google public keys
     try {
-        const certs = await getGooglePublicCerts();
-        const kid = header.kid;
+        let certs = await getGooglePublicCerts();
+        let kid = header.kid;
+        if (!certs || !certs[kid]) {
+            cachedGoogleCerts = null;
+            certs = await getGooglePublicCerts();
+        }
         if (kid && certs && certs[kid]) {
             const verifier = crypto.createVerify('RSA-SHA256');
             verifier.update(`${parts[0]}.${parts[1]}`);
@@ -1553,9 +1719,12 @@ async function verifyFirebaseIdToken(idToken) {
             if (!isValid) {
                 return { valid: false, error: "Cryptographic signature verification failed for Firebase ID token." };
             }
+        } else {
+            return { valid: false, error: "Firebase token signed with unrecognized Google certificate key." };
         }
     } catch (err) {
         console.warn("[Firebase Token Verify] Warning during signature verification:", err.message);
+        return { valid: false, error: "Signature verification error: " + err.message };
     }
 
     return {
@@ -1747,6 +1916,9 @@ const requestHandler = async (req, res) => {
         return;
     }
 
+    // Ensure cloud database state is synchronized if running in serverless / cold start environment
+    await ensureSupabaseSynced(state);
+
     // Resolve user session from cookie, Bearer token, or x-session-token header
     const sessionInfo = resolveSessionUser(req);
     if (sessionInfo && sessionInfo.user) {
@@ -1870,7 +2042,6 @@ const requestHandler = async (req, res) => {
             }
 
             const profile = state.profiles.find(p => p.userId === user.id);
-            const sessionToken = crypto.randomBytes(32).toString('hex');
             const userSession = {
                 authenticated: true,
                 userId: user.id,
@@ -1881,11 +2052,7 @@ const requestHandler = async (req, res) => {
                 hasSeenLanding: user.hasSeenLanding !== false
             };
 
-            state.activeSessions.set(sessionToken, {
-                user: userSession,
-                expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000,
-                createdAt: new Date().toISOString()
-            });
+            const sessionToken = createSessionToken(userSession);
             state.currentUser = userSession;
             req.sessionUser = userSession;
             req.sessionToken = sessionToken;
@@ -1900,7 +2067,7 @@ const requestHandler = async (req, res) => {
                 details: "Successful login session established."
             });
 
-            const cookieHeader = `se_session=${sessionToken}; Path=/; HttpOnly; SameSite=Lax; Max-Age=604800`;
+            const cookieHeader = getSessionCookieHeader(sessionToken, req);
             res.setHeader('Set-Cookie', cookieHeader);
 
             return sendJson(res, 200, {
@@ -1914,12 +2081,12 @@ const requestHandler = async (req, res) => {
         // --- FIREBASE AUTHENTICATION (GOOGLE & FIREBASE EMAIL/PASS) ---
         if (pathname === '/api/auth/firebase-login' && req.method === 'POST') {
             const body = await parseBody(req);
-            let normalizedEmail = (body.email || '').trim().toLowerCase();
-            let uid = body.uid;
-            let displayName = (body.fullName || body.displayName || '').trim();
-            let photoURL = body.photoURL || '';
 
-            // Cryptographically verify ID token if provided
+            let normalizedEmail = '';
+            let uid = '';
+            let displayName = '';
+            let photoURL = '';
+
             if (body.idToken) {
                 const tokenResult = await verifyFirebaseIdToken(body.idToken);
                 if (!tokenResult.valid) {
@@ -1930,22 +2097,31 @@ const requestHandler = async (req, res) => {
                 }
                 normalizedEmail = tokenResult.email;
                 uid = tokenResult.uid;
-                if (!displayName && tokenResult.name) displayName = tokenResult.name;
-                if (!photoURL && tokenResult.picture) photoURL = tokenResult.picture;
+                displayName = tokenResult.name || normalizedEmail.split('@')[0];
+                photoURL = tokenResult.picture || '';
+            } else {
+                normalizedEmail = (body.email || '').trim().toLowerCase();
+                uid = body.uid || crypto.randomBytes(16).toString('hex');
+                displayName = (body.fullName || body.displayName || '').trim() || normalizedEmail.split('@')[0];
+                photoURL = body.photoURL || '';
             }
-
-            if (!isValidEmail(normalizedEmail)) {
-                return sendJson(res, 400, { success: false, message: "Invalid email from Firebase Auth." }, {}, req);
-            }
-
-            let user = state.users.find(u => u.email.toLowerCase() === normalizedEmail);
 
             // Security: Prevent administrative account takeover via client-asserted Firebase payloads
+            let user = state.users.find(u => u.email.toLowerCase() === normalizedEmail);
             if (isSuperAdminEmail(normalizedEmail) || (user && isAdmin(user))) {
                 return sendJson(res, 403, {
                     success: false,
                     message: "Administrative accounts must log in using secure administrative credentials."
                 }, {}, req);
+            }
+
+            const isProduction = Boolean(process.env.VERCEL || process.env.NODE_ENV === 'production' || req.headers['x-enforce-token']);
+            if (isProduction && !body.idToken) {
+                return sendJson(res, 400, { success: false, message: "Missing required Firebase ID token for verification." }, {}, req);
+            }
+
+            if (!isValidEmail(normalizedEmail)) {
+                return sendJson(res, 400, { success: false, message: "Invalid email from Firebase Auth." }, {}, req);
             }
 
             let profile = user ? state.profiles.find(p => p.userId === user.id) : null;
@@ -2019,7 +2195,6 @@ const requestHandler = async (req, res) => {
                 syncSupabase('saveUser', user);
             }
 
-            const sessionToken = crypto.randomBytes(32).toString('hex');
             const userSession = {
                 authenticated: true,
                 userId: user.id,
@@ -2030,11 +2205,7 @@ const requestHandler = async (req, res) => {
                 hasSeenLanding: true
             };
 
-            state.activeSessions.set(sessionToken, {
-                user: userSession,
-                expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000,
-                createdAt: new Date().toISOString()
-            });
+            const sessionToken = createSessionToken(userSession);
             state.currentUser = userSession;
             req.sessionUser = userSession;
             req.sessionToken = sessionToken;
@@ -2048,7 +2219,7 @@ const requestHandler = async (req, res) => {
                 details: "Firebase authenticated session established."
             });
 
-            const cookieHeader = `se_session=${sessionToken}; Path=/; HttpOnly; SameSite=Lax; Max-Age=604800`;
+            const cookieHeader = getSessionCookieHeader(sessionToken, req);
             res.setHeader('Set-Cookie', cookieHeader);
 
             return sendJson(res, 200, {
@@ -2062,8 +2233,10 @@ const requestHandler = async (req, res) => {
         if (pathname === '/api/auth/logout' && req.method === 'POST') {
             const cookies = parseCookies(req);
             const sessionToken = (cookies && cookies['se_session']) || req.sessionToken;
-            if (sessionToken && state.activeSessions) {
-                state.activeSessions.delete(sessionToken);
+            if (sessionToken) {
+                if (state.activeSessions) state.activeSessions.delete(sessionToken);
+                if (!state.revokedTokens) state.revokedTokens = new Set();
+                state.revokedTokens.add(sessionToken);
             }
             const userToLog = req.sessionUser || state.currentUser;
             if (userToLog && userToLog.email) {
@@ -2079,7 +2252,7 @@ const requestHandler = async (req, res) => {
             state.currentUser = null;
             req.sessionUser = null;
             req.sessionToken = null;
-            const clearCookie = 'se_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0';
+            const clearCookie = getLogoutCookieHeader(req);
             res.setHeader('Set-Cookie', clearCookie);
             return sendJson(res, 200, { success: true, message: "Logged out" }, { 'Set-Cookie': clearCookie }, req);
         }
@@ -2451,17 +2624,13 @@ const requestHandler = async (req, res) => {
             // Generate safe filename
             const prefix = folder === 'avatars' ? 'avatar' : (folder === 'proofs' ? 'proof' : 'chat');
             const safeName = `${prefix}_${Date.now()}_${Math.random().toString(36).substring(2, 8)}${ext}`;
-            const uploadDir = path.join(STATIC_DIR, 'uploads', folder);
             try {
-                if (!fs.existsSync(uploadDir)) {
-                    fs.mkdirSync(uploadDir, { recursive: true });
-                }
                 const buffer = Buffer.from(fileData.replace(/^data:[^;]+;base64,/, ''), 'base64');
                 // Enforce 15MB limit
                 if (buffer.length > 15 * 1024 * 1024) {
                     return sendJson(res, 400, { success: false, message: "File exceeds maximum permitted size of 15MB." });
                 }
-                fs.writeFileSync(path.join(uploadDir, safeName), buffer);
+                saveUploadedBuffer(folder, safeName, buffer);
                 const fileUrl = `uploads/${folder}/${safeName}`;
 
                 // Formatted file size string
@@ -2531,11 +2700,7 @@ const requestHandler = async (req, res) => {
                 }
 
                 const safeName = `avatar_${state.currentUser.userId}_${Date.now()}${ext}`;
-                const uploadDir = path.join(STATIC_DIR, 'uploads', 'avatars');
-                if (!fs.existsSync(uploadDir)) {
-                    fs.mkdirSync(uploadDir, { recursive: true });
-                }
-                fs.writeFileSync(path.join(uploadDir, safeName), buffer);
+                saveUploadedBuffer('avatars', safeName, buffer);
                 const avatarUrl = `uploads/avatars/${safeName}`;
 
                 const prof = state.profiles.find(p => p.userId === state.currentUser.userId);
@@ -3989,11 +4154,7 @@ const requestHandler = async (req, res) => {
                 }
 
                 const safeName = `chat_${state.currentUser.userId}_${Date.now()}_${Math.random().toString(36).substring(2, 7)}${ext}`;
-                const uploadDir = path.join(STATIC_DIR, 'uploads', 'chat');
-                if (!fs.existsSync(uploadDir)) {
-                    fs.mkdirSync(uploadDir, { recursive: true });
-                }
-                fs.writeFileSync(path.join(uploadDir, safeName), buffer);
+                saveUploadedBuffer('chat', safeName, buffer);
                 const fileUrl = `uploads/chat/${safeName}`;
 
                 let formattedSize = (buffer.length / 1024).toFixed(1) + ' KB';
@@ -5863,9 +6024,8 @@ const requestHandler = async (req, res) => {
     if (filePath === 'landing' || filePath === 'landing/') {
         filePath = 'landing.html';
     } else if (filePath === 'home' || filePath === 'home/' || filePath === 'index.html' || filePath === 'index') {
-        const cookies = parseCookies(req);
-        const hasActiveCookie = cookies && cookies['se_session'] && state.activeSessions && state.activeSessions.has(cookies['se_session']);
-        if (hasActiveCookie) {
+        const sessionInfo = resolveSessionUser(req);
+        if (sessionInfo && sessionInfo.user) {
             res.writeHead(302, { 'Location': '/dashboard.html' });
             res.end();
             return;
@@ -5960,7 +6120,14 @@ const requestHandler = async (req, res) => {
         }
     }
 
-    const fullPath = path.join(STATIC_DIR, filePath);
+    let fullPath = path.join(STATIC_DIR, filePath);
+    if (!fs.existsSync(fullPath) && (normalizedFilePath.startsWith('uploads/') || normalizedFilePath.startsWith('static/uploads/'))) {
+        const subPath = normalizedFilePath.replace(/^(static\/)?uploads\//, '');
+        const tmpCandidate = path.join(os.tmpdir(), 'skill-exchange-uploads', subPath);
+        if (fs.existsSync(tmpCandidate)) {
+            fullPath = tmpCandidate;
+        }
+    }
 
     fs.readFile(fullPath, (err, data) => {
         if (err) {

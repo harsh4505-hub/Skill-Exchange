@@ -85,30 +85,6 @@
                         </button>
                     </form>
 
-                    <!-- Quick Evaluation / Demo Logins -->
-                    <div class="mt-4 pt-3 border-top border-2 border-dark">
-                        <p class="text-center small text-muted fw-bold mb-2 text-uppercase" style="letter-spacing: 0.05em;">
-                            <i class="bi bi-lightning-charge-fill text-warning me-1"></i>Quick 1-Click Demo Evaluation Logins
-                        </p>
-                        <div class="d-flex flex-wrap gap-2 justify-content-center">
-                            <button type="button" class="btn btn-sm btn-outline-custom" onclick="quickFill('harsh@mgmmumbai.ac.in', 'password123')">
-                                Harsh (Student)
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline-custom" onclick="quickFill('sejal@mgmmumbai.ac.in', 'password123')">
-                                Sejal (Student)
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline-custom" onclick="quickFill('raza@mgmmumbai.ac.in', 'password123')">
-                                Raza (Student)
-                            </button>
-                            <button type="button" class="btn btn-sm btn-dark text-white fw-bold" onclick="quickFill('harshtukaram45@gmail.com', 'password123')">
-                                <i class="bi bi-shield-fill-check text-warning me-1"></i>Super Admin
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="quickFill('admin@mgmmumbai.ac.in', 'password123')">
-                                Admin (Staff)
-                            </button>
-                        </div>
-                    </div>
-
                     <div class="text-center mt-4">
                         <span class="text-muted small">Don't have an account yet? </span>
                         <a href="register.html" class="small fw-bold text-dark text-decoration-underline">Register student account</a>
@@ -134,7 +110,9 @@
                             localStorage.setItem('landingPageVisited', 'true');
                             localStorage.setItem('se_landing_viewed', 'true');
                         } catch (e) {}
-                        window.location.replace('index.html');
+                        const userRole = res.data.role;
+                        const isStaff = userRole === 'ROLE_SUPER_ADMIN' || userRole === 'SUPER_ADMIN' || userRole === 'ROLE_ADMIN' || userRole === 'ADMIN';
+                        window.location.replace(isStaff ? 'admin-dashboard.html' : 'dashboard.html');
                         return;
                     }
                 } catch (e) {}
@@ -151,12 +129,6 @@
                 document.getElementById('email').value = params.get('email');
             }
         });
-
-        function quickFill(email, pwd) {
-            document.getElementById('email').value = email;
-            document.getElementById('password').value = pwd;
-            handleLogin(new Event('submit'));
-        }
 
         async function handleLogin(e) {
             e.preventDefault();
@@ -195,6 +167,9 @@
                     try {
                         localStorage.setItem('landingPageVisited', 'true');
                         localStorage.setItem('se_landing_viewed', 'true');
+                        if (res.token) {
+                            localStorage.setItem('se_session_token', res.token);
+                        }
                     } catch (e) {}
                     showAlert("Login successful! Redirecting...", "success");
                     setTimeout(() => {

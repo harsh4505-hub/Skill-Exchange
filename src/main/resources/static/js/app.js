@@ -3,10 +3,23 @@
  * Core Frontend JavaScript Client Library
  */
 
+function getAuthHeaders(extra = {}) {
+    const headers = { ...extra };
+    try {
+        const token = localStorage.getItem('se_session_token');
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+            headers['x-session-token'] = token;
+        }
+    } catch (e) {}
+    return headers;
+}
+
 const API = {
     async get(endpoint) {
         try {
             const res = await fetch(endpoint, {
+                headers: getAuthHeaders(),
                 credentials: 'include'
             });
             return await res.json();
@@ -20,7 +33,7 @@ const API = {
         try {
             const res = await fetch(endpoint, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: getAuthHeaders({ "Content-Type": "application/json" }),
                 credentials: 'include',
                 body: JSON.stringify(data)
             });
@@ -35,7 +48,7 @@ const API = {
         try {
             const res = await fetch(endpoint, {
                 method: "PUT",
-                headers: { "Content-Type": "application/json" },
+                headers: getAuthHeaders({ "Content-Type": "application/json" }),
                 credentials: 'include',
                 body: data ? JSON.stringify(data) : null
             });
@@ -50,6 +63,7 @@ const API = {
         try {
             const res = await fetch(endpoint, {
                 method: "DELETE",
+                headers: getAuthHeaders(),
                 credentials: 'include'
             });
             return await res.json();
@@ -73,6 +87,9 @@ async function checkCurrentUser() {
     const res = await API.get("/api/auth/current-user");
     if (res && res.success && res.data && res.data.authenticated) {
         CurrentUser = res.data;
+        if (res.token) {
+            try { localStorage.setItem('se_session_token', res.token); } catch (e) {}
+        }
         updateNavbarLoggedIn(CurrentUser);
         enforceRouteProtection(true);
         loadGrokAssistant(CurrentUser);
@@ -248,6 +265,7 @@ async function logout() {
     } catch (e) {}
     CurrentUser = null;
     try {
+        localStorage.removeItem("se_session_token");
         localStorage.setItem("landingPageVisited", "true");
         localStorage.setItem("se_landing_viewed", "true");
     } catch (e) {}
