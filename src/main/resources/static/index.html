@@ -34,7 +34,6 @@
                 return;
             }
 
-            // Returning visitor who has already entered auth flow previously:
             // Check if user has an active authenticated session
             fetch('/api/auth/current-user', { credentials: 'include' })
                 .then(r => r.json())
@@ -48,11 +47,16 @@
                             window.location.replace('dashboard.html');
                         }
                     } else {
-                        window.location.replace('login.html');
+                        // Unauthenticated users go to public landing page
+                        if (window.location.search.includes('flow=login')) {
+                            window.location.replace('login.html');
+                        } else {
+                            window.location.replace('landing.html');
+                        }
                     }
                 })
                 .catch(() => {
-                    window.location.replace('login.html');
+                    window.location.replace('landing.html');
                 });
         })();
     </script>
