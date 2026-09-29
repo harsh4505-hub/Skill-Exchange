@@ -2195,7 +2195,7 @@ const requestHandler = async (req, res) => {
 
             // Security: Prevent administrative account takeover via client-asserted Firebase payloads
             let user = state.users.find(u => u.email.toLowerCase() === normalizedEmail);
-            if (isSuperAdminEmail(normalizedEmail) || (user && isAdmin(user))) {
+            if (!body.idToken && (isSuperAdminEmail(normalizedEmail) || (user && isAdmin(user)))) {
                 return sendJson(res, 403, {
                     success: false,
                     message: "Administrative accounts must log in using secure administrative credentials."
@@ -2212,16 +2212,17 @@ const requestHandler = async (req, res) => {
             }
 
             let profile = user ? state.profiles.find(p => p.userId === user.id) : null;
+            const isSuper = isSuperAdminEmail(normalizedEmail);
 
             if (!user) {
                 const newId = state.users.length > 0 ? Math.max(...state.users.map(u => u.id)) + 1 : 1;
-                const studentName = displayName || normalizedEmail.split('@')[0];
+                const studentName = displayName || (isSuper ? 'Harsh Tukaram' : normalizedEmail.split('@')[0]);
                 const avatar = photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${newId}`;
 
                 user = {
                     id: newId,
                     email: normalizedEmail,
-                    role: "ROLE_STUDENT",
+                    role: isSuper ? "ROLE_SUPER_ADMIN" : "ROLE_STUDENT",
                     password: hashPassword(uid || crypto.randomBytes(16).toString('hex')),
                     active: true,
                     emailVerified: true,
@@ -2254,20 +2255,24 @@ const requestHandler = async (req, res) => {
             } else {
                 user.active = true;
                 user.emailVerified = true;
+                user.hasSeenLanding = true;
+                if (isSuper) {
+                    user.role = "ROLE_SUPER_ADMIN";
+                }
                 if (!profile) {
                     profile = {
                         id: user.id,
                         userId: user.id,
-                        fullName: displayName || user.email.split('@')[0],
+                        fullName: displayName || (isSuper ? 'Harsh Tukaram' : user.email.split('@')[0]),
                         email: user.email,
                         college: 'College of Engineering & Technology',
                         department: 'Information Technology',
                         yearOfStudy: '2nd Year',
                         phone: '',
-                        bio: `Hello! I am a student trading skills.`,
+                        bio: isSuper ? "Platform Super Administrator" : `Hello! I am a student trading skills.`,
                         avatarUrl: photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.id}`,
-                        verified: false,
-                        averageRating: 0.0,
+                        verified: true,
+                        averageRating: 5.0,
                         completedExchangesCount: 0,
                         blocked: false,
                         teachingSkills: [],
@@ -2288,7 +2293,7 @@ const requestHandler = async (req, res) => {
                 email: user.email,
                 role: user.role,
                 avatarUrl: profile ? profile.avatarUrl : null,
-                fullName: profile ? profile.fullName : user.email,
+                fullName: profile ? profile.fullName : (user.role === 'ROLE_SUPER_ADMIN' ? 'Harsh Tukaram (Super Admin)' : user.email),
                 hasSeenLanding: true
             };
 

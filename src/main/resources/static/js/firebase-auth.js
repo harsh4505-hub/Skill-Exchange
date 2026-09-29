@@ -93,6 +93,19 @@ async function syncFirebaseUserToBackend(user) {
     }
 }
 
+function showAuthNotification(message, type = "warning") {
+    if (typeof showAlert === 'function') {
+        showAlert(message, type);
+    } else {
+        const container = document.getElementById('alertContainer');
+        if (container) {
+            container.innerHTML = `<div class="alert alert-${type} alert-dismissible fade show" role="alert">${message}</div>`;
+        } else {
+            alert(message.replace(/<[^>]*>?/gm, ''));
+        }
+    }
+}
+
 /**
  * Handle 1-Click Google Sign-In / Registration
  */
@@ -115,33 +128,30 @@ window.handleGoogleAuth = async function(btnElement) {
 
         if (error.code === 'auth/unauthorized-domain') {
             const domain = window.location.hostname;
-            if (typeof showAlert === 'function') {
-                showAlert(`Domain "${domain}" is not authorized for Google Sign-In in Firebase Console! Go to Firebase Console ➔ Authentication ➔ Settings ➔ Authorized Domains and add "${domain}".`, "warning");
-            }
+            showAuthNotification(
+                `<strong>Domain Not Authorized in Firebase</strong><br>` +
+                `Domain <code>${domain}</code> is not added to Firebase Authorized Domains.<br>` +
+                `<strong>Fix:</strong> Open <a href="https://console.firebase.google.com/project/skill-exchange-program-6647c/authentication/settings" target="_blank" class="fw-bold text-dark text-decoration-underline">Firebase Console Settings</a> ➔ Click <strong>Authorized domains</strong> ➔ Click <strong>Add domain</strong> ➔ Enter <code>${domain}</code> (or <code>vercel.app</code>) ➔ Save.`,
+                "warning"
+            );
         } else if (error.code === 'auth/operation-not-allowed' || error.code === 'auth/configuration-not-found') {
-            if (typeof showAlert === 'function') {
-                showAlert("Google provider is not enabled yet in your Firebase Console! Go to Firebase Console ➔ Authentication ➔ Sign-in method, click Google, toggle Enable, and Save.", "warning");
-            }
+            showAuthNotification(
+                `<strong>Google Sign-In Not Enabled</strong><br>` +
+                `Go to <a href="https://console.firebase.google.com/project/skill-exchange-program-6647c/authentication/providers" target="_blank" class="fw-bold text-dark text-decoration-underline">Firebase Console ➔ Sign-in method</a> ➔ Select <strong>Google</strong> ➔ Toggle <strong>Enable</strong> ➔ Save.`,
+                "warning"
+            );
         } else if (error.code === 'auth/popup-closed-by-user') {
-            if (typeof showAlert === 'function') {
-                showAlert("Google sign-in popup was closed before finishing.", "warning");
-            }
+            showAuthNotification("Google sign-in popup was closed before completing authentication.", "warning");
         } else if (error.code === 'auth/popup-blocked') {
-            if (typeof showAlert === 'function') {
-                showAlert("Popup was blocked by your browser. Attempting direct redirect sign-in...", "info");
-            }
+            showAuthNotification("Popup was blocked by your browser. Attempting direct redirect sign-in...", "info");
             try {
                 await signInWithRedirect(auth, googleProvider);
                 return;
             } catch (redErr) {
-                if (typeof showAlert === 'function') {
-                    showAlert("Google sign-in popup was blocked. Please allow popups.", "warning");
-                }
+                showAuthNotification("Google sign-in popup was blocked. Please allow popups for this site.", "warning");
             }
         } else {
-            if (typeof showAlert === 'function') {
-                showAlert("Google Sign-In failed: " + (error.message || "Unknown error"), "danger");
-            }
+            showAuthNotification("Google Sign-In failed: " + (error.message || "Unknown error"), "danger");
         }
     } finally {
         if (btnElement) {
