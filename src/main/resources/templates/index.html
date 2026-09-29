@@ -35,11 +35,18 @@
 
             // Returning visitor who has already entered auth flow previously:
             // Check if user has an active authenticated session
-            fetch('/api/auth/current-user')
+            fetch('/api/auth/current-user', { credentials: 'include' })
                 .then(r => r.json())
                 .then(res => {
-                    if (!res || !res.success || !res.data || !res.data.authenticated) {
-                        // Returning unauthenticated visitor starts at Login / Sign Up (NOT Landing Page)
+                    if (res && res.success && res.data && res.data.authenticated) {
+                        const role = res.data.role || (res.data.user && res.data.user.role);
+                        const isStaff = role === 'ROLE_SUPER_ADMIN' || role === 'SUPER_ADMIN' || role === 'ROLE_ADMIN' || role === 'ADMIN';
+                        if (isStaff) {
+                            window.location.replace('admin-dashboard.html');
+                        } else {
+                            window.location.replace('dashboard.html');
+                        }
+                    } else {
                         window.location.replace('login.html');
                     }
                 })

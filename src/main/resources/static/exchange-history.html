@@ -13,7 +13,7 @@
     <!-- Navigation Header -->
     <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container">
-            <a class="navbar-brand" href="index.html">
+            <a class="navbar-brand" href="dashboard.html">
                 <span class="brand-icon-box"><i class="bi bi-arrow-left-right"></i></span>
                 <span class="brand-title">SkillExchange</span>
             </a>
@@ -28,6 +28,7 @@
                     <li class="nav-item"><a class="nav-link" href="skills.html">My Skills</a></li>
                     <li class="nav-item"><a class="nav-link" href="requests.html">Exchange Proposals</a></li>
                     <li class="nav-item"><a class="nav-link" href="chat.html">Chat</a></li>
+                    <li class="nav-item"><a class="nav-link" href="kitaab-ghar.html">Kitaab Ghar</a></li>
                     <li class="nav-item"><a class="nav-link" href="verification.html">Verification</a></li>
                     <li class="nav-item"><a class="nav-link active" href="exchange-history.html">History</a></li>
                 </ul>
@@ -142,7 +143,532 @@
     </div>
 
     <!-- Bootstrap 5 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+        let currentModalExchangeId = null;
+
+        async function openExchangeSessionsModal(exchangeId) {
+            currentModalExchangeId = exchangeId;
+            const modalEl = document.getElementById('exchangeSessionsModal');
+            const esm = new bootstrap.Modal(modalEl);
+            esm.show();
+
+            const body = document.getElementById('esmBody');
+            body.innerHTML = `<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2"></div> Loading curriculum plan & sessions...</div>`;
+
+            try {
+                const [planRes, sessRes, progRes] = await Promise.all([
+                    API.get(`/api/exchanges/${exchangeId}/plan`),
+                    API.get(`/api/exchanges/${exchangeId}/sessions`),
+                    API.get(`/api/exchanges/${exchangeId}/progress`)
+                ]);
+
+                if (!planRes || !planRes.success) {
+                    body.innerHTML = `<div class="alert alert-danger">Failed to load exchange plan.</div>`;
+                    return;
+                }
+
+                const plan = planRes.data;
+                const sessions = (sessRes && sessRes.success) ? sessRes.data : [];
+                const progress = (progRes && progRes.success) ? progRes.data : null;
+                const myId = CurrentUser ? CurrentUser.userId : null;
+
+                const isStudentA = plan.studentAId === myId;
+                const isStudentB = plan.studentBId === myId;
+                const hasConfirmedMyPart = isStudentA ? plan.confirmedByA : (isStudentB ? plan.confirmedByB : true);
+
+                let planBadgeClass = plan.status === 'PLAN_CONFIRMED' ? 'bg-success text-white' : 'bg-warning text-dark';
+
+                body.innerHTML = `
+                    <!-- 1. Exchange Plan Overview -->
+                    <div class="card p-3 border border-2 border-dark rounded bg-light mb-4 shadow-sm">
+                        <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+                            <div>
+                                <span class="badge border border-dark ${planBadgeClass} px-3 py-1">${plan.status}</span>
+                                <span class="text-muted small ms-2 font-monospace">Duration: ${plan.durationWeeks} Weeks &bull; Planned Sessions: ${plan.plannedSessionsCount}</span>
+                            </div>
+                            ${!hasConfirmedMyPart ? `
+                                <button class="btn btn-sm btn-success fw-bold border border-2 border-dark" onclick="confirmExchangePlan(${exchangeId})">
+                                    <i class="bi bi-check2-circle me-1"></i> Confirm Exchange Plan
+                                </button>
+                            ` : `
+                                <span class="text-success small fw-bold"><i class="bi bi-patch-check-fill me-1"></i> Plan Confirmed by You</span>
+                            `}
+                        </div>
+
+                        <div class="row g-2 mb-2">
+                            <div class="col-md-6">
+                                <div class="p-2 border border-1 border-secondary-subtle rounded bg-white">
+                                    <small class="text-muted text-uppercase fw-bold d-block" style="font-size:0.68rem;">Phase 1 (Initial Teacher)</small>
+                                    <strong class="text-dark">${escapeHtml(plan.firstTeacherName)}</strong> teaches <strong>${escapeHtml(plan.firstSkillName)}</strong> to ${escapeHtml(plan.firstLearnerName)}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="p-2 border border-1 border-secondary-subtle rounded bg-white">
+                                    <small class="text-muted text-uppercase fw-bold d-block" style="font-size:0.68rem;">Phase 2 (Reciprocal Teacher)</small>
+                                    <strong class="text-dark">${escapeHtml(plan.secondTeacherName)}</strong> teaches <strong>${escapeHtml(plan.secondSkillName)}</strong> to ${escapeHtml(plan.secondLearnerName)}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center small font-monospace pt-2 border-top border-secondary-subtle">
+                            <span>Confirmations: ${escapeHtml(plan.studentAName)} (${plan.confirmedByA ? '✓' : 'Pending'}) &bull; ${escapeHtml(plan.studentBName)} (${plan.confirmedByB ? '✓' : 'Pending'})</span>
+                            <span>Overall Progress: <strong>${plan.overallProgress || 0}%</strong></span>
+                        </div>
+                    </div>
+
+                    <!-- 2. Schedule New Session Accordion / Form -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+<div class="d-flex align-items-center gap-2 flex-wrap">
+                                <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-clock-history me-1 text-primary"></i> Scheduled Sessions Timeline</h6>
+                                <span class="badge ${plan.currentPhase === 2 ? 'bg-purple text-white' : 'bg-info text-dark'} border border-dark small">CURRENT: PHASE ${plan.currentPhase || 1}</span>
+                            </div>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <button class="btn btn-sm btn-outline-primary fw-bold" type="button" onclick="openGenerateScheduleModal(${exchangeId})"><i class="bi bi-magic me-1"></i> Recurring Schedule</button>
+                                <button class="btn btn-sm btn-outline-secondary fw-bold" type="button" onclick="extendExchangePlan(${exchangeId})"><i class="bi bi-calendar-plus me-1"></i> +2 Wks</button>
+                                <button class="btn btn-sm btn-outline-dark fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#newSessionCollapse"><i class="bi bi-plus-circle me-1"></i> Add Session</button>
+                            </div>
+                        </div>
+
+                        <div class="collapse mb-3" id="newSessionCollapse">
+                            <div class="card p-3 border border-2 border-dark rounded bg-white shadow-sm">
+                                <h6 class="fw-bold mb-2">Schedule New Exchange Session</h6>
+                                <form onsubmit="handleScheduleSession(event, ${exchangeId})">
+                                    <div class="row g-2 mb-2">
+                                        <div class="col-md-6">
+                                            <label class="form-label small fw-bold mb-1">Topic / Curriculum Module *</label>
+                                            <input type="text" id="schedTopic" class="form-control form-control-sm border border-2 border-dark" placeholder="e.g. OOP Inheritance & Polymorphism" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label small fw-bold mb-1">Learning Objective *</label>
+                                            <input type="text" id="schedObjective" class="form-control form-control-sm border border-2 border-dark" placeholder="e.g. Build class hierarchy and interfaces" required>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label small fw-bold mb-1">Date *</label>
+                                            <input type="date" id="schedDate" class="form-control form-control-sm border border-2 border-dark" required>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label small fw-bold mb-1">Start Time *</label>
+                                            <input type="time" id="schedTime" class="form-control form-control-sm border border-2 border-dark" required>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label small fw-bold mb-1">Duration (Minutes)</label>
+                                            <select id="schedDuration" class="form-select form-select-sm border border-2 border-dark">
+                                                <option value="45">45 Minutes</option>
+                                                <option value="60" selected>60 Minutes</option>
+                                                <option value="75">75 Minutes</option>
+                                                <option value="90">90 Minutes</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label small fw-bold mb-1">Learning Mode</label>
+                                            <select id="schedMode" class="form-select form-select-sm border border-2 border-dark" onchange="toggleSchedLocation(this.value)">
+                                                <option value="ONLINE" selected>ONLINE (Zoom Meeting Generated)</option>
+                                                <option value="OFFLINE">OFFLINE (Campus Physical Meeting)</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6" id="schedLocationWrap" style="display:none;">
+                                            <label class="form-label small fw-bold mb-1">Campus Location</label>
+                                            <input type="text" id="schedLocation" class="form-control form-control-sm border border-2 border-dark" placeholder="e.g. Central Library - Room 204">
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-sm btn-dark fw-bold">Confirm & Schedule</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Phase Transition Notification Banner -->
+                    ${plan.phase1Completed && plan.currentPhase === 1 ? `
+                        <div class="alert alert-info border border-2 border-dark d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3 shadow-sm">
+                            <div>
+                                <strong class="d-block text-dark"><i class="bi bi-arrow-repeat me-1 text-primary"></i> Phase 1 (${escapeHtml(plan.firstSkillName)}) Completed!</strong>
+                                <span class="small text-muted">Ready to switch teaching directions and begin Phase 2 (${escapeHtml(plan.secondSkillName)})?</span>
+                            </div>
+                            <button class="btn btn-sm btn-dark fw-bold border border-2 border-dark" onclick="confirmPhaseTransition(${exchangeId})">
+                                <i class="bi bi-check2-circle me-1 text-success"></i> Confirm Phase 2 Transition
+                            </button>
+                        </div>
+                    ` : ''}
+                    <!-- 3. Sessions List Timeline -->
+                    <div class="d-flex flex-column gap-3 mb-4">
+                        ${sessions.length > 0 ? sessions.map(s => {
+                            const isTeacher = s.teacherId === myId;
+                            const isLearner = s.learnerId === myId;
+                            const isVerified = s.verificationStatus === 'VERIFIED';
+                            const teacherDone = s.teacherReport && s.teacherReport.confirmed;
+                            const learnerDone = s.learnerReport && s.learnerReport.confirmed;
+
+                            return `
+                                <div class="card p-3 border border-2 border-dark rounded bg-white shadow-sm">
+                                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+                                        <div>
+                                            <span class="badge bg-dark text-white me-2">Session #${s.sessionNumber}</span>
+                                            <strong class="fs-6 text-dark">${escapeHtml(s.topic)}</strong>
+                                            <div class="text-muted small">
+                                                Skill: <strong>${escapeHtml(s.skillName)}</strong> &bull; Teacher: ${escapeHtml(s.teacherName)} &bull; Learner: ${escapeHtml(s.learnerName)}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <span class="badge ${isVerified ? 'bg-success text-white' : 'bg-warning text-dark'} border border-dark">
+                                                ${s.verificationStatus}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex align-items-center gap-2 flex-wrap mb-2 font-monospace small">
+                                        <span>📅 ${s.scheduledDate} at ${s.scheduledTime} (${s.durationMinutes}m)</span>
+                                        <span class="badge ${s.mode === 'ONLINE' ? 'bg-primary' : 'bg-secondary'}">${s.mode}</span>
+                                        ${s.location ? `<span>📍 ${escapeHtml(s.location)}</span>` : ''}
+                                    </div>
+
+                                    ${s.teacherReport ? `
+                                        <div class="p-2 border border-1 border-secondary-subtle rounded bg-light mb-2 small">
+                                            <strong>Teacher Report:</strong> ${escapeHtml(s.teacherReport.topicsCovered)}
+                                        </div>
+                                    ` : ''}
+
+                                    ${s.learnerReport ? `
+                                        <div class="p-2 border border-1 border-secondary-subtle rounded bg-light mb-2 small">
+                                            <strong>Learner Understanding:</strong> ${escapeHtml(s.learnerReport.understanding)}
+                                            (Confidence: ${s.learnerReport.confidence}/5)
+                                        </div>
+                                    ` : ''}
+
+                                                                        <!-- Quiz Section -->
+                                    <div class="p-2 border border-1 border-secondary-subtle rounded bg-light mb-2 small d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="bi bi-mortarboard text-primary fs-6"></i>
+                                            <strong>Session Assessment:</strong>
+                                            ${s.quiz ? `
+                                                <span class="badge bg-white text-dark border border-dark">${s.quiz.questions ? s.quiz.questions.length : 0} Questions</span>
+                                                ${s.quizAttempt ? `
+                                                    <span class="badge ${s.quizAttempt.passed ? "bg-success text-white" : "bg-warning text-dark"} border border-dark">
+                                                        Score: ${s.quizAttempt.score}/${s.quizAttempt.maxMarks} (${s.quizAttempt.percentage}%)
+                                                    </span>
+                                                ` : '<span class="badge bg-secondary text-white">Pending Learner Attempt</span>'}
+                                            ` : '<span class="text-muted fst-italic">No quiz created yet</span>'}
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            ${s.quiz && (!s.quizAttempt || !s.quizAttempt.confirmed) && (isLearner || !CurrentUser) ? `
+                                                <button class="btn btn-sm btn-warning text-dark fw-bold py-1 px-2" style="font-size:0.75rem;" onclick="openTakeQuizModal(${s.id})">
+                                                    <i class="bi bi-pencil-square me-1"></i> Take Quiz
+                                                </button>
+                                            ` : ''}
+                                            ${s.quiz ? `
+                                                <button class="btn btn-sm btn-outline-dark py-1 px-2" style="font-size:0.75rem;" onclick="openViewQuizDetailsModal(${s.id})">
+                                                    <i class="bi bi-eye me-1"></i> Review Quiz
+                                                </button>
+                                            ` : (isTeacher || !CurrentUser ? `
+                                                <button class="btn btn-sm btn-outline-primary py-1 px-2" style="font-size:0.75rem;" onclick="openCreateQuizModal(${s.id}, '${escapeHtml(s.topic)}')">
+                                                    <i class="bi bi-plus-circle me-1"></i> Create Quiz
+                                                </button>
+                                            ` : '')}
+                                        </div>
+                                    </div>
+                                    <!-- Contextual Action Buttons -->
+                                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 pt-2 border-top border-secondary-subtle">
+                                        <div class="d-flex gap-2 flex-wrap">
+                                            ${s.zoomJoinUrl ? `
+                                                <a href="${escapeHtml(s.zoomJoinUrl)}" target="_blank" class="btn btn-sm btn-primary-custom py-1 px-2" style="font-size:0.75rem;">
+                                                    <i class="bi bi-camera-video me-1"></i> Join Zoom
+                                                </a>
+                                            ` : ''}
+                                            <button class="btn btn-sm btn-outline-custom py-1 px-2" style="font-size:0.75rem;" onclick="shareSessionInChat(${s.id})">
+                                                <i class="bi bi-share me-1"></i> Share in Chat
+                                            </button>
+                                        </div>
+
+                                        <div class="d-flex gap-2 flex-wrap">
+                                            ${!teacherDone && (isTeacher || !CurrentUser) ? `
+                                                <button class="btn btn-sm btn-outline-dark py-1 px-2" style="font-size:0.75rem;" onclick="openSessionReportModal(${s.id}, 'TEACHER')">
+                                                    <i class="bi bi-pencil me-1"></i> Teacher Report
+                                                </button>
+                                            ` : ''}
+                                            ${!learnerDone && (isLearner || !CurrentUser) ? `
+                                                <button class="btn btn-sm btn-outline-success py-1 px-2" style="font-size:0.75rem;" onclick="openSessionReportModal(${s.id}, 'LEARNER')">
+                                                    <i class="bi bi-check-square me-1"></i> Learner Report
+                                                </button>
+                                            ` : ''}
+                                            ${isVerified ? `
+                                                <span class="text-success small fw-bold"><i class="bi bi-patch-check-fill me-1"></i> Fully Verified</span>
+                                            ` : ''}
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('') : `
+                            <div class="text-center py-4 text-muted small border border-2 border-dark rounded bg-light">
+                                No sessions scheduled yet. Click "Schedule Session" above to set up the first learning milestone!
+                            </div>
+                        `}
+                    </div>
+
+                    <!-- 4. Final Exchange Completion Button -->
+                    ${plan.status === 'PLAN_CONFIRMED' && sessions.length >= 2 ? `
+                        <div class="p-3 border border-2 border-dark rounded bg-light text-center">
+                            <h6 class="fw-bold mb-1">Ready to Conclude Exchange?</h6>
+                            <p class="text-muted small mb-2">Once all curriculum modules are verified, both participants finalize the exchange to unlock peer reviews and certificate history.</p>
+                            <button class="btn btn-sm btn-success fw-bold border border-2 border-dark" onclick="finalizeExchange(${exchangeId})">
+                                <i class="bi bi-check2-all me-1"></i> Complete Exchange & Finalize Progress
+                            </button>
+                        </div>
+                    ` : ''}
+                `;
+
+            } catch (err) {
+                console.error("Failed to render exchange sessions modal:", err);
+                body.innerHTML = `<div class="alert alert-danger">Error loading exchange session records.</div>`;
+            }
+        }
+
+        function toggleSchedLocation(mode) {
+            const wrap = document.getElementById('schedLocationWrap');
+            if (wrap) wrap.style.display = mode === 'OFFLINE' ? 'block' : 'none';
+        }
+
+        async function confirmExchangePlan(exchangeId) {
+            try {
+                const res = await API.put(`/api/exchanges/${exchangeId}/plan/confirm`);
+                if (res && res.success) {
+                    showAlert("Exchange Plan confirmed!", "success");
+                    openExchangeSessionsModal(exchangeId);
+                } else {
+                    showAlert(res?.message || "Failed to confirm plan", "danger");
+                }
+            } catch (err) {
+                console.error(err);
+                showAlert("Network error confirming plan", "danger");
+            }
+        }
+
+        async function handleScheduleSession(e, exchangeId) {
+            e.preventDefault();
+            const mode = document.getElementById('schedMode').value;
+            const payload = {
+                topic: document.getElementById('schedTopic').value.trim(),
+                objective: document.getElementById('schedObjective').value.trim(),
+                scheduledDate: document.getElementById('schedDate').value,
+                scheduledTime: document.getElementById('schedTime').value,
+                durationMinutes: Number(document.getElementById('schedDuration').value),
+                mode: mode,
+                location: mode === 'OFFLINE' ? document.getElementById('schedLocation').value.trim() : null
+            };
+
+            try {
+                const res = await API.post(`/api/exchanges/${exchangeId}/sessions`, payload);
+                if (res && res.success) {
+                    showAlert("Session scheduled successfully!", "success");
+                    openExchangeSessionsModal(exchangeId);
+                } else {
+                    showAlert(res?.message || "Failed to schedule session", "danger");
+                }
+            } catch (err) {
+                console.error(err);
+                showAlert("Network error scheduling session", "danger");
+            }
+        }
+
+        async function shareSessionInChat(sessionId) {
+            try {
+                const res = await API.post(`/api/sessions/${sessionId}/share-in-chat`);
+                if (res && res.success) {
+                    showAlert("Session details posted to conversation!", "success");
+                } else {
+                    showAlert(res?.message || "Failed to share in chat", "danger");
+                }
+            } catch (err) {
+                console.error(err);
+                showAlert("Network error sharing session", "danger");
+            }
+        }
+
+        function openSessionReportModal(sessionId, reportType) {
+            document.getElementById('srmSessionId').value = sessionId;
+            document.getElementById('srmType').value = reportType;
+            const titleEl = document.getElementById('srmTitle');
+            const bodyEl = document.getElementById('srmBody');
+
+            if (reportType === 'TEACHER') {
+                titleEl.innerText = "Teacher Completion Report";
+                bodyEl.innerHTML = `
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Topics Delivered *</label>
+                        <textarea id="srmTopicsCovered" class="form-control border border-2 border-dark" rows="3" placeholder="What topics and hands-on exercises were delivered in this session?" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Teacher Summary *</label>
+                        <input type="text" id="srmSummary" class="form-control border border-2 border-dark" placeholder="e.g. Explained theory and guided coding practice" required>
+                    </div>
+                    <div>
+                        <label class="form-label small fw-bold">Student Attendance</label>
+                        <select id="srmAttendance" class="form-select border border-2 border-dark">
+                            <option value="PRESENT" selected>PRESENT</option>
+                            <option value="PARTIAL">PARTIAL</option>
+                            <option value="ABSENT">ABSENT</option>
+                        </select>
+                    </div>
+                `;
+            } else {
+                titleEl.innerText = "Learner Understanding Report";
+                bodyEl.innerHTML = `
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">What Did You Understand? *</label>
+                        <textarea id="srmUnderstanding" class="form-control border border-2 border-dark" rows="3" placeholder="Describe the key concepts you understood and implemented..." required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Learner Confidence (1–5)</label>
+                        <select id="srmConfidence" class="form-select border border-2 border-dark">
+                            <option value="5" selected>5 - Very Confident</option>
+                            <option value="4">4 - Confident</option>
+                            <option value="3">3 - Moderate</option>
+                            <option value="2">2 - Needs More Practice</option>
+                            <option value="1">1 - Struggling</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">What Needs More Practice?</label>
+                        <input type="text" id="srmPracticeNeeded" class="form-control border border-2 border-dark" placeholder="e.g. Edge cases and syntax fluency">
+                    </div>
+                    <div>
+                        <label class="form-label small fw-bold">Next Topic / Follow-up</label>
+                        <input type="text" id="srmNextTopic" class="form-control border border-2 border-dark" placeholder="e.g. Collections Framework">
+                    </div>
+                `;
+            }
+
+            new bootstrap.Modal(document.getElementById('sessionReportModal')).show();
+        }
+
+        async function handleSessionReportSubmit(e) {
+            e.preventDefault();
+            const sessId = document.getElementById('srmSessionId').value;
+            const reportType = document.getElementById('srmType').value;
+
+            try {
+                let res;
+                if (reportType === 'TEACHER') {
+                    res = await API.post(`/api/sessions/${sessId}/teacher-report`, {
+                        topicsCovered: document.getElementById('srmTopicsCovered').value.trim(),
+                        summary: document.getElementById('srmSummary').value.trim(),
+                        teacherAttendance: document.getElementById('srmAttendance').value
+                    });
+                } else {
+                    res = await API.post(`/api/sessions/${sessId}/learner-report`, {
+                        understanding: document.getElementById('srmUnderstanding').value.trim(),
+                        confidence: Number(document.getElementById('srmConfidence').value),
+                        practiceNeeded: document.getElementById('srmPracticeNeeded').value.trim(),
+                        nextTopic: document.getElementById('srmNextTopic').value.trim()
+                    });
+                }
+
+                if (res && res.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('sessionReportModal')).hide();
+                    showAlert(res.message || "Report recorded successfully!", "success");
+                    if (currentModalExchangeId) openExchangeSessionsModal(currentModalExchangeId);
+                    filterHistory(currentStatusFilter);
+                } else {
+                    showAlert(res?.message || "Failed to record report", "danger");
+                }
+            } catch (err) {
+                console.error(err);
+                showAlert("Network error submitting report", "danger");
+            }
+        }
+
+        async function finalizeExchange(exchangeId) {
+            const summary = prompt("Please provide a brief closing summary of skills taught and verified:", "All planned curriculum modules completed and verified.");
+            if (!summary) return;
+
+            try {
+                const res = await API.post(`/api/exchanges/${exchangeId}/complete`, {
+                    teacherFinalSummary: summary,
+                    learnerFinalUnderstanding: "Practical comprehension demonstrated across all topics."
+                });
+                if (res && res.success) {
+                    showAlert("Exchange officially completed! Peer reviews unlocked.", "success");
+                    bootstrap.Modal.getInstance(document.getElementById('exchangeSessionsModal')).hide();
+                    filterHistory('COMPLETED');
+                } else {
+                    showAlert(res?.message || "Failed to complete exchange", "danger");
+                }
+            } catch (err) {
+                console.error(err);
+                showAlert("Network error completing exchange", "danger");
+            }
+        }
+
+        async function openCompletionReportModal(exchangeId) {
+            const crm = new bootstrap.Modal(document.getElementById('completionReportModal'));
+            crm.show();
+            const body = document.getElementById('crmBody');
+            body.innerHTML = `<div class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm me-2"></div> Loading permanent report...</div>`;
+
+            try {
+                const res = await API.get(`/api/exchanges/${exchangeId}/report`);
+                if (res && res.success && res.data) {
+                    const r = res.data;
+                    body.innerHTML = `
+                        <div class="text-center mb-4">
+                            <span class="badge bg-dark text-white px-3 py-1 font-monospace mb-2">OFFICIAL RECORD #EX-${r.exchangeId}</span>
+                            <h4 class="fw-bold mb-1">${escapeHtml(r.skillsExchanged)}</h4>
+                            <small class="text-muted">Completed on ${new Date(r.completionDate).toLocaleDateString()}</small>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-sm-6">
+                                <div class="p-3 border border-2 border-dark rounded bg-light">
+                                    <small class="text-muted text-uppercase fw-bold d-block" style="font-size:0.7rem;">Participant A</small>
+                                    <strong class="fs-6 text-dark">${escapeHtml(r.participants[0]?.name || 'Student A')}</strong>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="p-3 border border-2 border-dark rounded bg-light">
+                                    <small class="text-muted text-uppercase fw-bold d-block" style="font-size:0.7rem;">Participant B</small>
+                                    <strong class="fs-6 text-dark">${escapeHtml(r.participants[1]?.name || 'Student B')}</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-2 mb-4 text-center font-monospace">
+                            <div class="col-3 p-2 border border-1 border-secondary-subtle rounded bg-white">
+                                <small class="text-muted d-block" style="font-size:0.65rem;">DURATION</small>
+                                <strong>${r.durationWeeks} Weeks</strong>
+                            </div>
+                            <div class="col-3 p-2 border border-1 border-secondary-subtle rounded bg-white">
+                                <small class="text-muted d-block" style="font-size:0.65rem;">SESSIONS</small>
+                                <strong>${r.verifiedSessions} / ${r.plannedSessions}</strong>
+                            </div>
+                            <div class="col-3 p-2 border border-1 border-secondary-subtle rounded bg-white">
+                                <small class="text-muted d-block" style="font-size:0.65rem;">PROGRESS</small>
+                                <strong class="text-success">${r.finalProgress}%</strong>
+                            </div>
+                            <div class="col-3 p-2 border border-1 border-secondary-subtle rounded bg-white">
+                                <small class="text-muted d-block" style="font-size:0.65rem;">PEER REVIEW</small>
+                                <strong class="text-primary">${r.reviewAllowed ? 'Enabled' : 'Pending'}</strong>
+                            </div>
+                        </div>
+
+                        <div class="p-3 border border-2 border-dark rounded bg-light mb-3">
+                            <h6 class="fw-bold mb-1" style="font-size:0.85rem;">Teacher Final Evaluation</h6>
+                            <p class="mb-0 text-muted small">${escapeHtml(r.teacherFinalSummary)}</p>
+                        </div>
+
+                        <div class="p-3 border border-2 border-dark rounded bg-light">
+                            <h6 class="fw-bold mb-1" style="font-size:0.85rem;">Learner Demonstrated Comprehension</h6>
+                            <p class="mb-0 text-muted small">${escapeHtml(r.learnerFinalUnderstanding)}</p>
+                        </div>
+                    `;
+                } else {
+                    body.innerHTML = `<div class="alert alert-danger">Failed to load completion report.</div>`;
+                }
+            } catch (err) {
+                console.error(err);
+                body.innerHTML = `<div class="alert alert-danger">Error retrieving completion report.</div>`;
+            }
+        }
+
+    </script>
     <script src="js/app.js"></script>
     <script>
         let currentStatusFilter = 'ACTIVE';
@@ -193,7 +719,12 @@
                             </div>
 
                             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 pt-2 border-top" style="border-color: var(--border-color) !important;">
-                                <a href="chat.html?partnerId=${peerId}" class="btn btn-sm btn-outline-custom">
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <a href="chat.html?partnerId=${peerId}" class="btn btn-sm btn-outline-custom"><i class="bi bi-chat-dots me-1"></i> Open Chat</a>
+                                    <button class="btn btn-sm btn-primary-custom fw-bold" onclick="openExchangeSessionsModal(${e.id})"><i class="bi bi-calendar-check me-1"></i> Plan & Sessions</button>
+                                    ${status === 'COMPLETED' ? `<button class="btn btn-sm btn-dark fw-bold" onclick="openCompletionReportModal(${e.id})"><i class="bi bi-award-fill me-1 text-warning"></i> Certificate</button>` : ''}
+                                </div>
+                                <span style="display:none">
                                     <i class="bi bi-chat-dots me-1"></i> Open Chat
                                 </a>
 
@@ -265,7 +796,194 @@
             new bootstrap.Modal(document.getElementById('reviewModal')).show();
         }
 
-        async function submitReview() {
+        // =============================================================
+// TWO-WAY PHASE TRANSITION & SCHEDULE UTILITIES
+// =============================================================
+async function confirmPhaseTransition(exchangeId) {
+    try {
+        const res = await API.post(`/api/exchanges/${exchangeId}/phase-transition`, {});
+        if (res && res.success) {
+            showAlert(res.message || "Phase transition confirmed! Phase 2 active.", "success");
+            openExchangeSessionsModal(exchangeId);
+        } else {
+            showAlert(res?.message || "Failed to confirm phase transition", "danger");
+        }
+    } catch (err) {
+        console.error(err);
+        showAlert("Network error during phase transition", "danger");
+    }
+}
+
+async function extendExchangePlan(exchangeId) {
+    const addWks = prompt("Enter additional weeks to extend this exchange:", "2");
+    if (!addWks) return;
+    try {
+        const res = await API.put(`/api/exchanges/${exchangeId}/extend`, { additionalWeeks: parseInt(addWks) || 2 });
+        if (res && res.success) {
+            showAlert(res.message || "Exchange extended successfully!", "success");
+            openExchangeSessionsModal(exchangeId);
+        } else {
+            showAlert(res?.message || "Failed to extend exchange", "danger");
+        }
+    } catch (err) {
+        showAlert("Error extending exchange", "danger");
+    }
+}
+
+function openGenerateScheduleModal(exchangeId) {
+    document.getElementById("genSchedExchangeId").value = exchangeId;
+    new bootstrap.Modal(document.getElementById("generateScheduleModal")).show();
+}
+
+async function handleGenerateScheduleSubmit(e) {
+    e.preventDefault();
+    const exchangeId = document.getElementById("genSchedExchangeId").value;
+    const preferredTime = document.getElementById("genSchedTime").value;
+    const durationMinutes = parseInt(document.getElementById("genSchedDuration").value) || 60;
+    const mode = document.getElementById("genSchedMode").value;
+    const checkedDays = Array.from(document.querySelectorAll('input[name="schedDay"]:checked')).map(cb => cb.value);
+    if (checkedDays.length === 0) {
+        alert("Please select at least one preferred recurring day.");
+        return;
+    }
+    try {
+        const res = await API.post(`/api/exchanges/${exchangeId}/generate-schedule`, {
+            preferredDays: checkedDays,
+            preferredTime,
+            durationMinutes,
+            mode
+        });
+        if (res && res.success) {
+            bootstrap.Modal.getInstance(document.getElementById("generateScheduleModal")).hide();
+            showAlert(res.message || "Recurring schedule generated!", "success");
+            openExchangeSessionsModal(exchangeId);
+        } else {
+            showAlert(res?.message || "Failed to generate schedule", "danger");
+        }
+    } catch (err) {
+        showAlert("Error generating schedule", "danger");
+    }
+}
+
+// =============================================================
+// PER-SESSION QUIZ SYSTEM
+// =============================================================
+let activeQuizSessionId = null;
+let activeQuizData = null;
+
+async function openTakeQuizModal(sessionId) {
+    activeQuizSessionId = sessionId;
+    const res = await API.get(`/api/sessions/${sessionId}/quiz`);
+    if (!res || !res.success || !res.data || !res.data.hasQuiz) {
+        showAlert("No quiz available for this session.", "info");
+        return;
+    }
+    activeQuizData = res.data.quiz;
+    const questions = activeQuizData.questions || [];
+    document.getElementById("takeQuizTitle").innerText = `Session Quiz: ${activeQuizData.topic || "Module Assessment"}`;
+    document.getElementById("takeQuizSessionId").value = sessionId;
+    const container = document.getElementById("takeQuizBody");
+    container.innerHTML = questions.map((q, idx) => `
+        <div class="card p-3 border border-2 border-dark rounded bg-white mb-3 shadow-sm">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="badge bg-dark text-white font-monospace">Question ${idx + 1} (${q.marks || 1} mark)</span>
+                <span class="badge bg-light text-dark border">${q.type}</span>
+            </div>
+            <p class="fw-bold text-dark mb-3">${escapeHtml(q.text)}</p>
+            <div>
+                ${(q.options || []).map(opt => `
+                    <div class="form-check mb-2">
+                        <input class="form-check-input border-dark" type="radio" name="ans_${q.id}" id="opt_${q.id}_${escapeHtml(opt)}" value="${escapeHtml(opt)}" required>
+                        <label class="form-check-label text-dark" for="opt_${q.id}_${escapeHtml(opt)}">${escapeHtml(opt)}</label>
+                    </div>
+                `).join("")}
+            </div>
+        </div>
+    `).join("");
+    new bootstrap.Modal(document.getElementById("takeQuizModal")).show();
+}
+
+async function handleTakeQuizSubmit(e) {
+    e.preventDefault();
+    const sessionId = document.getElementById("takeQuizSessionId").value;
+    const answers = {};
+    (activeQuizData.questions || []).forEach(q => {
+        const checked = document.querySelector(`input[name="ans_${q.id}"]:checked`);
+        if (checked) answers[q.id] = checked.value;
+    });
+    try {
+        const res = await API.post(`/api/sessions/${sessionId}/quiz/submit`, { answers });
+        if (res && res.success) {
+            bootstrap.Modal.getInstance(document.getElementById("takeQuizModal")).hide();
+            const d = res.data;
+            showAlert(`Quiz Submitted! Score: ${d.score}/${d.maxMarks} (${d.percentage}%) - Topic Progress: ${d.topicStatus || "Updated"}`, "success");
+            if (currentModalExchangeId) openExchangeSessionsModal(currentModalExchangeId);
+        } else {
+            showAlert(res?.message || "Failed to submit quiz", "danger");
+        }
+    } catch (err) {
+        showAlert("Error submitting quiz", "danger");
+    }
+}
+
+function openCreateQuizModal(sessionId, topicName) {
+    document.getElementById("cqSessionId").value = sessionId;
+    document.getElementById("cqTopic").value = topicName || "Session Topic";
+    new bootstrap.Modal(document.getElementById("createQuizModal")).show();
+}
+
+async function handleCreateQuizSubmit(e) {
+    e.preventDefault();
+    const sessionId = document.getElementById("cqSessionId").value;
+    const q1Text = document.getElementById("cq1Text").value.trim();
+    const q1Opts = document.getElementById("cq1Options").value.split(",").map(s => s.trim()).filter(Boolean);
+    const q1Correct = document.getElementById("cq1Correct").value.trim();
+    const q2Text = document.getElementById("cq2Text").value.trim();
+    const q2Opts = document.getElementById("cq2Options").value.split(",").map(s => s.trim()).filter(Boolean);
+    const q2Correct = document.getElementById("cq2Correct").value.trim();
+    const payload = {
+        questions: [
+            { id: "q1", text: q1Text, type: "MULTIPLE_CHOICE", options: q1Opts, correctAnswer: q1Correct, marks: 1 },
+            { id: "q2", text: q2Text, type: "MULTIPLE_CHOICE", options: q2Opts, correctAnswer: q2Correct, marks: 1 }
+        ]
+    };
+    try {
+        const res = await API.post(`/api/sessions/${sessionId}/quiz`, payload);
+        if (res && res.success) {
+            bootstrap.Modal.getInstance(document.getElementById("createQuizModal")).hide();
+            showAlert("Session Quiz created successfully!", "success");
+            if (currentModalExchangeId) openExchangeSessionsModal(currentModalExchangeId);
+        } else {
+            showAlert(res?.message || "Failed to create quiz", "danger");
+        }
+    } catch (err) {
+        showAlert("Error creating quiz", "danger");
+    }
+}
+
+async function openViewQuizDetailsModal(sessionId) {
+    const res = await API.get(`/api/sessions/${sessionId}/quiz`);
+    if (!res || !res.success || !res.data) return;
+    const qz = res.data.quiz || {};
+    const att = res.data.attempt;
+    const body = document.getElementById("viewQuizBody");
+    let html = `<div class="mb-3"><span class="badge bg-dark text-white me-2">Topic: ${escapeHtml(qz.topic || "General")}</span><span class="badge bg-light text-dark border">Total Questions: ${(qz.questions||[]).length}</span></div>`;
+    if (att) {
+        html += `<div class="alert alert-success border border-2 border-dark mb-3"><div class="d-flex justify-content-between align-items-center"><strong>Learner Score: ${att.score}/${att.maxMarks} (${att.percentage}%)</strong><span class="badge bg-dark">${att.passed ? "Passed" : "Review Needed"}</span></div>${att.teacherFeedback ? `<div class="small mt-2 pt-1 border-top"><strong>Teacher Feedback:</strong> ${escapeHtml(att.teacherFeedback)}</div>` : ""}</div>`;
+    }
+    html += (qz.questions || []).map((q, idx) => `
+        <div class="card p-3 border border-1 border-dark rounded mb-2 bg-light small">
+            <strong>Q${idx+1}: ${escapeHtml(q.text)}</strong>
+            <div class="text-muted mt-1">Options: ${(q.options||[]).join(", ")}</div>
+            <div class="text-success fw-bold mt-1">✓ Correct Answer: ${escapeHtml(q.correctAnswer || "Shown after submission")}</div>
+            ${att && att.answers && att.answers[q.id] ? `<div class="text-primary mt-1">Learner Response: ${escapeHtml(att.answers[q.id])}</div>` : ""}
+        </div>
+    `).join("");
+    body.innerHTML = html;
+    new bootstrap.Modal(document.getElementById("viewQuizModal")).show();
+}
+
+async function submitReview() {
             const exchangeId = document.getElementById('revExchangeId').value;
             const reviewedStudentId = document.getElementById('revStudentId').value;
             const comment = document.getElementById('revComment').value.trim();
@@ -286,5 +1004,87 @@
             }
         }
     </script>
+
+    <!-- ============================================================= -->
+    <!-- EXCHANGE SESSIONS & PLAN MODAL                                -->
+    <!-- ============================================================= -->
+    <div class="modal fade modal-brutalist" id="exchangeSessionsModal" tabindex="-1" aria-hidden="true" style="z-index:1060;">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border border-3 border-dark" style="box-shadow: 8px 8px 0px #18181b;">
+                <div class="modal-header d-flex justify-content-between align-items-center bg-light border-bottom border-2 border-dark">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="brand-icon-box" style="width:36px; height:36px; font-size:1rem; background:#ede9fe; color:#4f46e5;">
+                            <i class="bi bi-calendar-check"></i>
+                        </span>
+                        <div>
+                            <h5 class="modal-title fw-bold text-dark mb-0" id="esmTitle">Exchange Learning Engine</h5>
+                            <small class="text-muted" id="esmSubtitle">Curriculum Plan, Sessions Lifecycle & Verification</small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4" id="esmBody">
+                    <div class="text-center py-5 text-muted">
+                        <div class="spinner-border spinner-border-sm me-2"></div> Loading exchange details...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- SESSION REPORT MODAL (TEACHER OR LEARNER)                     -->
+    <!-- ============================================================= -->
+    <div class="modal fade modal-brutalist" id="sessionReportModal" tabindex="-1" aria-hidden="true" style="z-index:1070;">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border border-3 border-dark" style="box-shadow: 8px 8px 0px #18181b;">
+                <div class="modal-header bg-light border-bottom border-2 border-dark">
+                    <h5 class="modal-title fw-bold text-dark mb-0" id="srmTitle">Submit Session Verification</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="sessionReportForm" onsubmit="handleSessionReportSubmit(event)">
+                    <input type="hidden" id="srmSessionId">
+                    <input type="hidden" id="srmType">
+                    <div class="modal-body p-4" id="srmBody">
+                        <!-- Populated dynamically -->
+                    </div>
+                    <div class="modal-footer bg-light border-top border-2 border-dark d-flex justify-content-between">
+                        <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-dark fw-bold" id="srmSubmitBtn">Confirm & Verify Session</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- COMPLETION REPORT MODAL                                       -->
+    <!-- ============================================================= -->
+    <div class="modal fade modal-brutalist" id="completionReportModal" tabindex="-1" aria-hidden="true" style="z-index:1060;">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border border-3 border-dark" style="box-shadow: 8px 8px 0px #18181b;">
+                <div class="modal-header bg-light border-bottom border-2 border-dark">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="brand-icon-box" style="width:36px; height:36px; font-size:1rem; background:#dcfce7; color:#166534;">
+                            <i class="bi bi-award-fill"></i>
+                        </span>
+                        <div>
+                            <h5 class="modal-title fw-bold text-dark mb-0">Official Skill Exchange Completion Certificate</h5>
+                            <small class="text-muted">Permanent verified academic learning summary</small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4" id="crmBody">
+                    <div class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm me-2"></div> Loading report...</div>
+                </div>
+                <div class="modal-footer bg-light border-top border-2 border-dark d-flex justify-content-between">
+                    <button type="button" class="btn btn-outline-dark" onclick="window.print()"><i class="bi bi-printer me-1"></i>Print Certificate</button>
+                    <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>

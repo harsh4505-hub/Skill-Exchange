@@ -19,7 +19,10 @@
     <!-- Pre-check: If already authenticated, bypass landing page directly to Main Website -->
     <script>
         (function() {
-            fetch('/api/auth/current-user')
+            const hasSeenLanding = localStorage.getItem('landingPageVisited') === 'true' || 
+                                   localStorage.getItem('se_landing_viewed') === 'true';
+
+            fetch('/api/auth/current-user', { credentials: 'include' })
                 .then(r => r.json())
                 .then(res => {
                     if (res && res.success && res.data && res.data.authenticated) {
@@ -27,10 +30,18 @@
                             localStorage.setItem('landingPageVisited', 'true');
                             localStorage.setItem('se_landing_viewed', 'true');
                         } catch (e) {}
+                        const targetMainWebsite = 'dashboard.html';
                         window.location.replace('index.html');
+                    } else if (hasSeenLanding) {
+                        // Returning visitor on this device who already completed landing page
+                        window.location.replace('login.html');
                     }
                 })
-                .catch(() => {});
+                .catch(() => {
+                    if (hasSeenLanding) {
+                        window.location.replace('login.html');
+                    }
+                });
         })();
 
         // Handler to mark landing page as seen ONLY when user enters authentication flow
@@ -628,8 +639,6 @@
                 <a href="javascript:void(0)" onclick="enterAuthFlow('login.html')" class="text-dark text-decoration-none">Log In</a>
                 <span class="text-muted">&bull;</span>
                 <a href="javascript:void(0)" onclick="enterAuthFlow('register.html')" class="text-dark text-decoration-none">Sign Up</a>
-                <span class="text-muted">&bull;</span>
-                <a href="links.html" class="text-dark text-decoration-none">All Links</a>
             </div>
 
             <small class="text-muted font-monospace" style="font-size: 0.72rem;">

@@ -66,3 +66,6 @@ Thumbs.db
 # Uploaded media & documents
 src/main/resources/static/uploads/*
 !src/main/resources/static/uploads/.gitkeep
+
+# Temporary scratch files
+scratch/

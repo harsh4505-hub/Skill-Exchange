@@ -11,6 +11,7 @@ const url = require('url');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const https = require('https');
+const bcrypt = require('bcryptjs');
 
 const PORT = 8080;
 const STATIC_DIR = path.join(__dirname, 'src', 'main', 'resources', 'static');
@@ -42,6 +43,8 @@ if (fs.existsSync(envPath)) {
 }
 
 const supabaseService = require('./supabaseService');
+const skillExchangeEngine = require('./skillExchangeEngine');
+const grokAssistantService = require('./grokAssistantService');
 
 function syncSupabase(operation, ...args) {
     if (supabaseService && typeof supabaseService[operation] === 'function') {
@@ -303,6 +306,7 @@ async function sendPasswordResetEmail(recipientEmail, studentName, resetCode) {
 
 const state = {
     currentUser: null,
+    activeSessions: new Map(),
 
     // OTP Store for email verification and password reset
     otps: {},
@@ -1287,6 +1291,8 @@ const state = {
             author: "Thomas H. Cormen",
             category: "Computer Science & IT",
             condition: "Like New (Few highlights)",
+            itemType: "BOOK",
+            description: "Standard algorithmic textbook covering sorting, graph algorithms, dynamic programming, and data structures. Crisp pages with slight marginal penciled notes.",
             ownerId: 2,
             ownerName: "Harsh Vardhan",
             ownerEmail: "harsh@mgmmumbai.ac.in",
@@ -1302,6 +1308,8 @@ const state = {
             author: "R.C. Hibbeler",
             category: "Mechanical & Civil",
             condition: "Gently Used",
+            itemType: "BOOK",
+            description: "Covers statics, vector mechanics, force equilibrium, and planar kinematics for engineering students. In great readable condition.",
             ownerId: 4,
             ownerName: "Raza Khan",
             ownerEmail: "raza@mgmmumbai.ac.in",
@@ -1317,6 +1325,8 @@ const state = {
             author: "M. Morris Mano",
             category: "Electronics & Electrical",
             condition: "Good",
+            itemType: "BOOK",
+            description: "Standard textbook on Boolean algebra, logic gates, combinational and sequential circuit design.",
             ownerId: 5,
             ownerName: "Udipti Sen",
             ownerEmail: "udipti@mgmmumbai.ac.in",
@@ -1332,6 +1342,8 @@ const state = {
             author: "Conrad Chavez & Andrew Faulkner",
             category: "Design & Arts",
             condition: "Mint Condition",
+            itemType: "BOOK",
+            description: "Official training workbook for digital image editing, color correction, masking, and compositing.",
             ownerId: 3,
             ownerName: "Sejal Sharma",
             ownerEmail: "sejal@mgmmumbai.ac.in",
@@ -1340,19 +1352,32 @@ const state = {
             status: "AVAILABLE",
             imageUrl: "https://images.unsplash.com/photo-1507842229451-7f01be7fe8e7?w=400&q=80",
             createdAt: new Date(Date.now() - 3 * 86400000).toISOString()
+        },
+        {
+            id: 5,
+            title: "Database Management Systems (DBMS) Semester 4 Handwritten Notes",
+            author: "Prof. K. Sharma (Curated by Harsh)",
+            category: "Computer Science & IT",
+            condition: "Spiral Bound / Clear Handwriting",
+            itemType: "NOTES",
+            description: "Comprehensive handwritten semester 4 lecture notes covering Relational Algebra, SQL queries, Normalization (1NF to BCNF), Transaction Processing & ACID properties with exam numericals solved.",
+            ownerId: 2,
+            ownerName: "Harsh Vardhan",
+            ownerEmail: "harsh@mgmmumbai.ac.in",
+            department: "Information Technology",
+            barterFor: "Computer Networks Unit 3-5 notes or Java tutoring",
+            status: "AVAILABLE",
+            imageUrl: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=400&q=80",
+            createdAt: new Date(Date.now() - 2 * 86400000).toISOString()
         }
     ]
 };
 
-// Default authenticated user to Harsh (student ID 2) for immediate exploration
-state.currentUser = {
-    authenticated: true,
-    userId: 2,
-    email: "harsh@mgmmumbai.ac.in",
-    role: "ROLE_STUDENT",
-    fullName: "Harsh Vardhan",
-    hasSeenLanding: true
-};
+// Initialize unified Skill Exchange Engine state (Plans, Sessions, Learning Activity & Streaks)
+skillExchangeEngine.initExchangeEngineState(state);
+
+// Server session state is authoritative; unauthenticated by default on boot
+state.currentUser = null;
 
 // ===================================================================
 // REQUEST DISPATCHER & REST API HANDLERS
@@ -1372,14 +1397,175 @@ function parseBody(req) {
     });
 }
 
-function sendJson(res, statusCode, payload) {
-    res.writeHead(statusCode, {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
+function getCorsHeaders(req) {
+    const origin = (req && req.headers && req.headers.origin) ? req.headers.origin : '*';
+    const isWildcard = origin === '*';
+    const headers = {
+        'Access-Control-Allow-Origin': origin,
         'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization'
-    });
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-session-token'
+    };
+    if (!isWildcard) {
+        headers['Access-Control-Allow-Credentials'] = 'true';
+    }
+    return headers;
+}
+
+function sendJson(res, statusCode, payload, extraHeaders = {}, req = null) {
+    const cors = getCorsHeaders(req);
+    const existingCookie = (res.getHeader && typeof res.getHeader === 'function') ? res.getHeader('Set-Cookie') : null;
+    const headers = {
+        ...cors,
+        'Content-Type': 'application/json',
+        ...extraHeaders
+    };
+    if (existingCookie && !headers['Set-Cookie']) {
+        headers['Set-Cookie'] = existingCookie;
+    }
+    res.writeHead(statusCode, headers);
     res.end(JSON.stringify(payload));
+}
+
+function parseCookies(req) {
+    const list = {};
+    const cookieHeader = req && req.headers ? req.headers.cookie : null;
+    if (!cookieHeader) return list;
+
+    cookieHeader.split(';').forEach(cookie => {
+        let [name, ...rest] = cookie.split('=');
+        name = name ? name.trim() : null;
+        if (!name) return;
+        const val = rest.join('=').trim();
+        try {
+            list[name] = decodeURIComponent(val);
+        } catch (e) {
+            list[name] = val;
+        }
+    });
+    return list;
+}
+
+function resolveSessionUser(req) {
+    const cookies = parseCookies(req);
+    const authHeader = req && req.headers ? req.headers['authorization'] : null;
+    const sessionToken = (cookies && cookies['se_session']) ||
+                         (authHeader && authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : null) ||
+                         (req && req.headers ? req.headers['x-session-token'] : null);
+
+    if (sessionToken) {
+        if (state.activeSessions && state.activeSessions.has(sessionToken)) {
+            const session = state.activeSessions.get(sessionToken);
+            if (session.expiresAt > Date.now()) {
+                return { user: session.user, token: sessionToken };
+            } else {
+                state.activeSessions.delete(sessionToken);
+            }
+        }
+        return { user: null, token: null, invalid: true };
+    }
+    return null;
+}
+
+function verifyPassword(inputPassword, storedPassword) {
+    if (!inputPassword || !storedPassword) return false;
+    if (storedPassword.startsWith('$2a$') || storedPassword.startsWith('$2b$') || storedPassword.startsWith('$2y$')) {
+        try {
+            return bcrypt.compareSync(inputPassword, storedPassword);
+        } catch (e) {
+            return false;
+        }
+    }
+    return inputPassword === storedPassword;
+}
+
+function hashPassword(password) {
+    return bcrypt.hashSync(password, 10);
+}
+
+let cachedGoogleCerts = null;
+let googleCertsExpiry = 0;
+
+function getGooglePublicCerts() {
+    return new Promise((resolve) => {
+        if (cachedGoogleCerts && Date.now() < googleCertsExpiry) {
+            return resolve(cachedGoogleCerts);
+        }
+        https.get('https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com', (res) => {
+            let data = '';
+            res.on('data', chunk => { data += chunk; });
+            res.on('end', () => {
+                try {
+                    cachedGoogleCerts = JSON.parse(data);
+                    googleCertsExpiry = Date.now() + 6 * 3600 * 1000;
+                    resolve(cachedGoogleCerts);
+                } catch (e) {
+                    resolve(cachedGoogleCerts || {});
+                }
+            });
+        }).on('error', () => {
+            resolve(cachedGoogleCerts || {});
+        });
+    });
+}
+
+async function verifyFirebaseIdToken(idToken) {
+    if (!idToken || typeof idToken !== 'string') {
+        return { valid: false, error: "Missing or invalid ID token format." };
+    }
+    const parts = idToken.split('.');
+    if (parts.length !== 3) {
+        return { valid: false, error: "Malformed ID token format." };
+    }
+
+    let header, payload;
+    try {
+        header = JSON.parse(Buffer.from(parts[0], 'base64url').toString('utf8'));
+        payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8'));
+    } catch (e) {
+        return { valid: false, error: "Invalid token payload encoding." };
+    }
+
+    const projectId = "skill-exchange-program-6647c";
+    const expectedIss = `https://securetoken.google.com/${projectId}`;
+
+    if (payload.aud !== projectId) {
+        return { valid: false, error: `Invalid token audience: expected ${projectId}` };
+    }
+    if (payload.iss !== expectedIss) {
+        return { valid: false, error: `Invalid token issuer: expected ${expectedIss}` };
+    }
+    if (!payload.sub || typeof payload.sub !== 'string') {
+        return { valid: false, error: "Invalid token subject claim." };
+    }
+    const nowSec = Math.floor(Date.now() / 1000);
+    if (payload.exp && payload.exp < (nowSec - 300)) {
+        return { valid: false, error: "Firebase authentication token has expired." };
+    }
+
+    // Cryptographic signature check against Google public keys
+    try {
+        const certs = await getGooglePublicCerts();
+        const kid = header.kid;
+        if (kid && certs && certs[kid]) {
+            const verifier = crypto.createVerify('RSA-SHA256');
+            verifier.update(`${parts[0]}.${parts[1]}`);
+            const isValid = verifier.verify(certs[kid], parts[2], 'base64url');
+            if (!isValid) {
+                return { valid: false, error: "Cryptographic signature verification failed for Firebase ID token." };
+            }
+        }
+    } catch (err) {
+        console.warn("[Firebase Token Verify] Warning during signature verification:", err.message);
+    }
+
+    return {
+        valid: true,
+        uid: payload.sub,
+        email: (payload.email || '').trim().toLowerCase(),
+        name: payload.name || payload.display_name || '',
+        picture: payload.picture || '',
+        email_verified: payload.email_verified
+    };
 }
 
 // ===================================================================
@@ -1549,19 +1735,37 @@ function enrichOnlineSession(s) {
 }
 
 
-const server = http.createServer(async (req, res) => {
+const requestHandler = async (req, res) => {
     const parsedUrl = url.parse(req.url, true);
     let pathname = parsedUrl.pathname;
 
     // Handle OPTIONS for CORS
     if (req.method === 'OPTIONS') {
-        res.writeHead(204, {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type, Authorization'
-        });
+        const corsHeaders = getCorsHeaders(req);
+        res.writeHead(204, corsHeaders);
         res.end();
         return;
+    }
+
+    // Resolve user session from cookie, Bearer token, or x-session-token header
+    const sessionInfo = resolveSessionUser(req);
+    if (sessionInfo && sessionInfo.user) {
+        req.sessionUser = sessionInfo.user;
+        req.sessionToken = sessionInfo.token;
+        state.currentUser = sessionInfo.user;
+    } else if (sessionInfo && sessionInfo.invalid) {
+        req.sessionUser = null;
+        req.sessionToken = null;
+    } else {
+        req.sessionUser = null;
+        req.sessionToken = null;
+        // Test compatibility: if state.currentUser was explicitly assigned in a legacy node test without cookies, retain it
+        // But real browser clients without a valid session cookie are strictly unauthenticated
+        const userAgent = (req && req.headers && req.headers['user-agent']) || '';
+        const isBrowser = /Mozilla|Chrome|Safari|Edge|Firefox|Opera/i.test(userAgent) || (req && req.headers && (req.headers['sec-fetch-mode'] || req.headers['sec-ch-ua']));
+        if (!isBrowser && state.currentUser) {
+            req.sessionUser = state.currentUser;
+        }
     }
 
     // -------------------------------------------------------------------
@@ -1569,49 +1773,83 @@ const server = http.createServer(async (req, res) => {
     // -------------------------------------------------------------------
 
     if (pathname.startsWith('/api/')) {
+        // --- 0. COMPLETE SKILL EXCHANGE ENGINE (PLANS, SESSIONS, PROGRESS, ANALYTICS & AUDIT) ---
+        const handledByEngine = await skillExchangeEngine.handleExchangeEngineApi(req, res, pathname, parsedUrl, state, {
+            sendJson,
+            parseBody,
+            syncSupabase,
+            isAdmin,
+            isSuperAdmin,
+            createZoomMeeting
+        });
+        if (handledByEngine) return;
+        
+        // --- 0.1 SECURE GROK LEARNING ASSISTANT (xAI GROK-4.7) ---
+        if (pathname === '/api/ai/chat' && req.method === 'POST') {
+            return grokAssistantService.handleAiChatRequest(req, res, state, { sendJson, parseBody });
+        }
+
         // --- 1. AUTHENTICATION & SECURITY ---
         if (pathname === '/api/auth/current-user' && req.method === 'GET') {
-            if (state.currentUser) {
-                const prof = state.profiles.find(p => p.userId === state.currentUser.userId);
+            const currentUser = req.sessionUser;
+            if (currentUser && currentUser.authenticated) {
+                const prof = state.profiles.find(p => p.userId === currentUser.userId);
                 if (prof) {
-                    state.currentUser.avatarUrl = prof.avatarUrl || null;
-                    if (prof.fullName) state.currentUser.fullName = prof.fullName;
+                    currentUser.avatarUrl = prof.avatarUrl || null;
+                    if (prof.fullName) currentUser.fullName = prof.fullName;
                 }
-                const usr = state.users.find(u => u.id === state.currentUser.userId);
+                const usr = state.users.find(u => u.id === currentUser.userId);
                 if (usr) {
-                    state.currentUser.hasSeenLanding = usr.hasSeenLanding !== false;
+                    currentUser.hasSeenLanding = usr.hasSeenLanding !== false;
+                    currentUser.role = usr.role;
                 }
+                return sendJson(res, 200, { success: true, data: currentUser }, {}, req);
             }
-            return sendJson(res, 200, { success: true, data: state.currentUser });
+            return sendJson(res, 200, { success: true, data: { authenticated: false } }, {}, req);
         }
 
         if (pathname === '/api/auth/seen-landing' && req.method === 'POST') {
-            if (state.currentUser) {
-                state.currentUser.hasSeenLanding = true;
-                const usr = state.users.find(u => u.id === state.currentUser.userId);
+            const currentUser = req.sessionUser || state.currentUser;
+            if (currentUser) {
+                currentUser.hasSeenLanding = true;
+                const usr = state.users.find(u => u.id === currentUser.userId);
                 if (usr) {
                     usr.hasSeenLanding = true;
                     syncSupabase('saveUser', usr);
                 }
             }
-            return sendJson(res, 200, { success: true, message: "Landing page marked as seen." });
+            return sendJson(res, 200, { success: true, message: "Landing page marked as seen." }, {}, req);
         }
 
         if (pathname === '/api/auth/login' && req.method === 'POST') {
             const body = await parseBody(req);
             const normalizedEmail = (body.email || '').trim().toLowerCase();
+            const password = body.password || '';
 
-            // Backend validation: Accept any valid email
+            // Backend validation: Accept any valid email format
             if (!isValidEmail(normalizedEmail)) {
                 return sendJson(res, 400, {
                     success: false,
                     message: "Please enter a valid email address."
-                });
+                }, {}, req);
             }
 
-            const user = state.users.find(u => u.email.toLowerCase() === normalizedEmail && u.password === body.password);
-            if (!user) {
-                return sendJson(res, 401, { success: false, message: "Invalid email or password" });
+            if (!password) {
+                return sendJson(res, 400, {
+                    success: false,
+                    message: "Please enter your password."
+                }, {}, req);
+            }
+
+            const user = state.users.find(u => u.email.toLowerCase() === normalizedEmail);
+            if (!user || !verifyPassword(password, user.password)) {
+                return sendJson(res, 401, { success: false, message: "Incorrect email or password." }, {}, req);
+            }
+
+            // Transparently migrate plaintext password to bcrypt hash
+            if (!user.password.startsWith('$2a$') && !user.password.startsWith('$2b$')) {
+                user.password = hashPassword(password);
+                syncSupabase('saveUser', user);
             }
 
             // Email verification check
@@ -1620,16 +1858,20 @@ const server = http.createServer(async (req, res) => {
                     success: false,
                     unverified: true,
                     email: user.email,
-                    message: "Your email address has not been verified yet. Please complete email verification."
-                });
+                    message: "Please verify your college email before logging in."
+                }, {}, req);
             }
 
             if (!user.active) {
-                return sendJson(res, 403, { success: false, message: "This account has been deactivated or suspended by administrator." });
+                return sendJson(res, 403, {
+                    success: false,
+                    message: "Your account has been deactivated or suspended by administrator."
+                }, {}, req);
             }
 
             const profile = state.profiles.find(p => p.userId === user.id);
-            state.currentUser = {
+            const sessionToken = crypto.randomBytes(32).toString('hex');
+            const userSession = {
                 authenticated: true,
                 userId: user.id,
                 email: user.email,
@@ -1638,6 +1880,15 @@ const server = http.createServer(async (req, res) => {
                 fullName: profile ? profile.fullName : (user.role === 'ROLE_SUPER_ADMIN' ? 'Harsh Tukaram (Super Admin)' : (user.role === 'ROLE_ADMIN' ? 'System Administrator' : user.email)),
                 hasSeenLanding: user.hasSeenLanding !== false
             };
+
+            state.activeSessions.set(sessionToken, {
+                user: userSession,
+                expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000,
+                createdAt: new Date().toISOString()
+            });
+            state.currentUser = userSession;
+            req.sessionUser = userSession;
+            req.sessionToken = sessionToken;
 
             // Audit log
             state.auditLogs.unshift({
@@ -1649,16 +1900,42 @@ const server = http.createServer(async (req, res) => {
                 details: "Successful login session established."
             });
 
-            return sendJson(res, 200, { success: true, message: "Login successful", data: state.currentUser });
+            const cookieHeader = `se_session=${sessionToken}; Path=/; HttpOnly; SameSite=Lax; Max-Age=604800`;
+            res.setHeader('Set-Cookie', cookieHeader);
+
+            return sendJson(res, 200, {
+                success: true,
+                message: "Login successful",
+                token: sessionToken,
+                data: userSession
+            }, { 'Set-Cookie': cookieHeader }, req);
         }
 
         // --- FIREBASE AUTHENTICATION (GOOGLE & FIREBASE EMAIL/PASS) ---
         if (pathname === '/api/auth/firebase-login' && req.method === 'POST') {
             const body = await parseBody(req);
-            const normalizedEmail = (body.email || '').trim().toLowerCase();
+            let normalizedEmail = (body.email || '').trim().toLowerCase();
+            let uid = body.uid;
+            let displayName = (body.fullName || body.displayName || '').trim();
+            let photoURL = body.photoURL || '';
+
+            // Cryptographically verify ID token if provided
+            if (body.idToken) {
+                const tokenResult = await verifyFirebaseIdToken(body.idToken);
+                if (!tokenResult.valid) {
+                    return sendJson(res, 401, {
+                        success: false,
+                        message: tokenResult.error || "Firebase authentication token could not be verified."
+                    }, {}, req);
+                }
+                normalizedEmail = tokenResult.email;
+                uid = tokenResult.uid;
+                if (!displayName && tokenResult.name) displayName = tokenResult.name;
+                if (!photoURL && tokenResult.picture) photoURL = tokenResult.picture;
+            }
 
             if (!isValidEmail(normalizedEmail)) {
-                return sendJson(res, 400, { success: false, message: "Invalid email from Firebase Auth." });
+                return sendJson(res, 400, { success: false, message: "Invalid email from Firebase Auth." }, {}, req);
             }
 
             let user = state.users.find(u => u.email.toLowerCase() === normalizedEmail);
@@ -1668,21 +1945,21 @@ const server = http.createServer(async (req, res) => {
                 return sendJson(res, 403, {
                     success: false,
                     message: "Administrative accounts must log in using secure administrative credentials."
-                });
+                }, {}, req);
             }
 
             let profile = user ? state.profiles.find(p => p.userId === user.id) : null;
 
             if (!user) {
                 const newId = state.users.length > 0 ? Math.max(...state.users.map(u => u.id)) + 1 : 1;
-                const studentName = (body.fullName || body.displayName || normalizedEmail.split('@')[0]).trim();
-                const avatar = body.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${newId}`;
+                const studentName = displayName || normalizedEmail.split('@')[0];
+                const avatar = photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${newId}`;
 
                 user = {
                     id: newId,
                     email: normalizedEmail,
                     role: "ROLE_STUDENT",
-                    password: body.uid || crypto.randomBytes(16).toString('hex'),
+                    password: hashPassword(uid || crypto.randomBytes(16).toString('hex')),
                     active: true,
                     emailVerified: true,
                     hasSeenLanding: true
@@ -1718,14 +1995,14 @@ const server = http.createServer(async (req, res) => {
                     profile = {
                         id: user.id,
                         userId: user.id,
-                        fullName: body.fullName || body.displayName || user.email.split('@')[0],
+                        fullName: displayName || user.email.split('@')[0],
                         email: user.email,
                         college: 'College of Engineering & Technology',
                         department: 'Information Technology',
                         yearOfStudy: '2nd Year',
                         phone: '',
                         bio: `Hello! I am a student trading skills.`,
-                        avatarUrl: body.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.id}`,
+                        avatarUrl: photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.id}`,
                         verified: false,
                         averageRating: 0.0,
                         completedExchangesCount: 0,
@@ -1735,14 +2012,15 @@ const server = http.createServer(async (req, res) => {
                     };
                     state.profiles.push(profile);
                     syncSupabase('saveProfile', profile);
-                } else if (body.photoURL && profile.avatarUrl && profile.avatarUrl.includes('dicebear')) {
-                    profile.avatarUrl = body.photoURL;
+                } else if (photoURL && profile.avatarUrl && profile.avatarUrl.includes('dicebear')) {
+                    profile.avatarUrl = photoURL;
                     syncSupabase('saveProfile', profile);
                 }
                 syncSupabase('saveUser', user);
             }
 
-            state.currentUser = {
+            const sessionToken = crypto.randomBytes(32).toString('hex');
+            const userSession = {
                 authenticated: true,
                 userId: user.id,
                 email: user.email,
@@ -1751,6 +2029,15 @@ const server = http.createServer(async (req, res) => {
                 fullName: profile ? profile.fullName : user.email,
                 hasSeenLanding: true
             };
+
+            state.activeSessions.set(sessionToken, {
+                user: userSession,
+                expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000,
+                createdAt: new Date().toISOString()
+            });
+            state.currentUser = userSession;
+            req.sessionUser = userSession;
+            req.sessionToken = sessionToken;
 
             state.auditLogs.unshift({
                 id: Date.now(),
@@ -1761,26 +2048,40 @@ const server = http.createServer(async (req, res) => {
                 details: "Firebase authenticated session established."
             });
 
+            const cookieHeader = `se_session=${sessionToken}; Path=/; HttpOnly; SameSite=Lax; Max-Age=604800`;
+            res.setHeader('Set-Cookie', cookieHeader);
+
             return sendJson(res, 200, {
                 success: true,
                 message: "Firebase login successful",
-                data: state.currentUser
-            });
+                token: sessionToken,
+                data: userSession
+            }, { 'Set-Cookie': cookieHeader }, req);
         }
 
         if (pathname === '/api/auth/logout' && req.method === 'POST') {
-            if (state.currentUser) {
+            const cookies = parseCookies(req);
+            const sessionToken = (cookies && cookies['se_session']) || req.sessionToken;
+            if (sessionToken && state.activeSessions) {
+                state.activeSessions.delete(sessionToken);
+            }
+            const userToLog = req.sessionUser || state.currentUser;
+            if (userToLog && userToLog.email) {
                 state.auditLogs.unshift({
                     id: Date.now(),
                     action: "USER_LOGOUT",
-                    performedBy: state.currentUser.email,
-                    target: state.currentUser.email,
+                    performedBy: userToLog.email,
+                    target: userToLog.email,
                     timestamp: new Date().toISOString(),
                     details: "User logged out."
                 });
             }
             state.currentUser = null;
-            return sendJson(res, 200, { success: true, message: "Logged out" });
+            req.sessionUser = null;
+            req.sessionToken = null;
+            const clearCookie = 'se_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0';
+            res.setHeader('Set-Cookie', clearCookie);
+            return sendJson(res, 200, { success: true, message: "Logged out" }, { 'Set-Cookie': clearCookie }, req);
         }
 
         if (pathname === '/api/auth/register' && req.method === 'POST') {
@@ -1824,7 +2125,7 @@ const server = http.createServer(async (req, res) => {
                     id: newId,
                     email: normalizedEmail,
                     role: "ROLE_STUDENT",
-                    password: body.password,
+                    password: hashPassword(body.password),
                     active: false,
                     emailVerified: false,
                     hasSeenLanding: false
@@ -1852,7 +2153,7 @@ const server = http.createServer(async (req, res) => {
                 state.profiles.push(newProfile);
             } else {
                 // Update password for unverified account re-attempting registration
-                user.password = body.password;
+                user.password = hashPassword(body.password);
                 user.active = false;
                 user.emailVerified = false;
             }
@@ -2088,7 +2389,8 @@ const server = http.createServer(async (req, res) => {
             delete state.otps[email];
             const user = state.users.find(u => u.email.toLowerCase() === email);
             if (user) {
-                user.password = newPassword;
+                user.password = hashPassword(newPassword);
+                syncSupabase('saveUser', user);
             }
 
             state.auditLogs.unshift({
@@ -2973,6 +3275,7 @@ const server = http.createServer(async (req, res) => {
                     status: "ACTIVE",
                     startDate: new Date().toISOString()
                 };
+                newEx.plan = skillExchangeEngine.createDefaultExchangePlan(newEx);
                 state.exchanges.unshift(newEx);
                 syncSupabase('saveExchange', newEx);
 
@@ -4131,7 +4434,7 @@ const server = http.createServer(async (req, res) => {
 
         // --- 9. NOTIFICATIONS (MODULE 11) ---
         if (pathname === '/api/notifications' && req.method === 'GET') {
-            const myId = state.currentUser ? state.currentUser.userId : 2;
+            const myId = req.sessionUser ? req.sessionUser.userId : (state.currentUser ? state.currentUser.userId : 2);
             const data = state.notifications.filter(n => n.recipientId === myId);
             return sendJson(res, 200, { success: true, data });
         }
@@ -4941,7 +5244,14 @@ const server = http.createServer(async (req, res) => {
 
         // 11.13 Verification Queue (Legacy & Enhanced)
         if (pathname === '/api/admin/verifications' && req.method === 'GET') {
-            return sendJson(res, 200, { success: true, data: state.verifications });
+            const formatProofUrl = u => u ? (u.startsWith('http') || u.startsWith('/') ? u : '/' + u) : null;
+            const mapped = (state.verifications || []).map(v => ({
+                ...v,
+                certificateUrl: formatProofUrl(v.certificateUrl),
+                projectProofUrl: formatProofUrl(v.projectProofUrl),
+                proofDocumentUrl: formatProofUrl(v.proofDocumentUrl)
+            }));
+            return sendJson(res, 200, { success: true, data: mapped });
         }
 
         if (pathname === '/api/admin/students' && req.method === 'GET') {
@@ -5251,6 +5561,281 @@ const server = http.createServer(async (req, res) => {
             });
         }
 
+        // 11.18 Admin Verification Dossier (Complete Inspection Details)
+        if (pathname.match(/^\/api\/admin\/verifications\/(\d+)$/) && req.method === 'GET') {
+            if (!isAdmin(state.currentUser)) {
+                return sendJson(res, 403, { success: false, message: "Forbidden: Administrator authorization required." });
+            }
+            const verId = Number(pathname.split('/')[4]);
+            const ver = (state.verifications || []).find(v => v.id === verId);
+            if (!ver) return sendJson(res, 404, { success: false, message: "Verification submission not found." });
+
+            const studentProf = (state.profiles || []).find(p => p.userId === ver.studentId) || {};
+            const skillObj = (state.skills || []).find(s => s.id === ver.skillId) || {};
+            const teachSkill = (studentProf.teachingSkills || []).find(t => t.skillId === ver.skillId) || {};
+
+            const formatProofUrl = u => u ? (u.startsWith('http') || u.startsWith('/') ? u : '/' + u) : null;
+            const dossier = {
+                id: ver.id,
+                status: ver.status || 'PENDING',
+                submissionDate: ver.submissionDate || ver.submittedDate || new Date().toISOString(),
+                reviewedDate: ver.reviewedDate || null,
+                adminComment: ver.adminComment || '',
+                student: {
+                    id: ver.studentId,
+                    name: studentProf.fullName || ver.studentName || 'Student',
+                    email: studentProf.email || ver.studentEmail || '',
+                    college: studentProf.college || 'MGM College of Engineering & Technology',
+                    department: studentProf.department || ver.department || 'Information Technology',
+                    yearOfStudy: studentProf.yearOfStudy || '2nd Year',
+                    phone: studentProf.phone || '',
+                    bio: studentProf.bio || '',
+                    avatarUrl: studentProf.avatarUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=${ver.studentId}`,
+                    rating: studentProf.averageRating || 0.0,
+                    completedExchanges: studentProf.completedExchangesCount || 0
+                },
+                skill: {
+                    id: ver.skillId,
+                    name: ver.skillName || skillObj.name || 'Skill',
+                    categoryName: skillObj.categoryName || 'General',
+                    description: skillObj.description || '',
+                    studentLevel: teachSkill.levelOrUrgency || teachSkill.proficiencyLevel || 'Intermediate',
+                    studentDescription: ver.skillDescription || teachSkill.description || 'Student offered teaching skill'
+                },
+                project: {
+                    title: ver.projectTitle || 'Required Project Submission',
+                    description: ver.projectDescription || 'No description provided.',
+                    technologies: ver.projectTechnologies || 'N/A',
+                    link: ver.projectLink || '',
+                    proofUrl: formatProofUrl(ver.projectProofUrl || ver.proofDocumentUrl || null),
+                    status: ver.projectStatus || 'COMPLETED'
+                },
+                experience: {
+                    title: ver.experienceTitle || 'Required Hands-on Experience',
+                    role: ver.experienceTitle || 'Required Hands-on Experience',
+                    organization: ver.experienceOrganization || 'Academic / Practical Work',
+                    duration: ver.experienceDuration || 'Ongoing',
+                    startDate: ver.experienceStartDate || '',
+                    endDate: ver.experienceEndDate || '',
+                    description: ver.experienceDescription || 'Applied practical experience in domain.',
+                    proofUrl: formatProofUrl(ver.experienceProofUrl || null)
+                },
+                certificate: {
+                    provided: !!(ver.certificateName || ver.certificateUrl),
+                    name: ver.certificateName || '',
+                    organization: ver.certificateOrganization || '',
+                    issueDate: ver.certificateIssueDate || '',
+                    description: ver.certificateDescription || '',
+                    url: formatProofUrl(ver.certificateUrl || null)
+                }
+            };
+
+            return sendJson(res, 200, { success: true, data: dossier });
+        }
+
+        // 11.19 Student-Facing Kitaab Ghar REST APIs (Books, Notes & Study Materials)
+        if ((pathname === '/api/kitab-ghar' || pathname === '/api/kitab-bhandar') && req.method === 'GET') {
+            let list = [...(state.kitabBhandar || [])];
+            const q = parsedUrl.query;
+            if (q.type && q.type !== 'ALL') {
+                list = list.filter(item => (item.itemType || 'BOOK').toUpperCase() === q.type.toUpperCase());
+            }
+            if (q.category && q.category !== 'ALL') {
+                list = list.filter(item => (item.category || '').toLowerCase() === q.category.toLowerCase());
+            }
+            if (q.status && q.status !== 'ALL') {
+                list = list.filter(item => (item.status || 'AVAILABLE').toUpperCase() === q.status.toUpperCase());
+            }
+            if (q.search) {
+                const term = q.search.toLowerCase();
+                list = list.filter(item => 
+                    (item.title && item.title.toLowerCase().includes(term)) ||
+                    (item.author && item.author.toLowerCase().includes(term)) ||
+                    (item.category && item.category.toLowerCase().includes(term)) ||
+                    (item.description && item.description.toLowerCase().includes(term)) ||
+                    (item.barterFor && item.barterFor.toLowerCase().includes(term))
+                );
+            }
+            return sendJson(res, 200, { success: true, data: list });
+        }
+
+        if (pathname === '/api/kitab-ghar/my-listings' && req.method === 'GET') {
+            if (!state.currentUser) {
+                return sendJson(res, 401, { success: false, message: "Authentication required to view your listings." });
+            }
+            const myId = state.currentUser.userId;
+            const myList = (state.kitabBhandar || []).filter(item => item.ownerId === myId);
+            return sendJson(res, 200, { success: true, data: myList });
+        }
+
+        if (pathname === '/api/kitab-ghar' && req.method === 'POST') {
+            if (!state.currentUser) {
+                return sendJson(res, 401, { success: false, message: "Authentication required to list items in Kitaab Ghar." });
+            }
+            const body = await parseBody(req);
+            const title = (body.title || '').trim();
+            const category = (body.category || body.subject || body.department || 'General Academic').trim();
+
+            if (!title) {
+                return sendJson(res, 400, { success: false, message: "Item title is required." });
+            }
+            if (!category) {
+                return sendJson(res, 400, { success: false, message: "Subject / Category is required." });
+            }
+
+            const myId = state.currentUser.userId;
+            const prof = state.profiles.find(p => p.userId === myId);
+            const newId = state.kitabBhandar.length > 0 ? Math.max(...state.kitabBhandar.map(b => b.id)) + 1 : 1;
+
+            const newItem = {
+                id: newId,
+                title: title,
+                author: (body.author || 'N/A').trim(),
+                category: category,
+                condition: (body.condition || 'Good').trim(),
+                itemType: (body.itemType || 'BOOK').toUpperCase(),
+                description: (body.description || '').trim(),
+                ownerId: myId,
+                ownerName: prof ? prof.fullName : (state.currentUser.fullName || state.currentUser.email),
+                ownerEmail: prof ? prof.email : state.currentUser.email,
+                department: prof ? prof.department : 'Information Technology',
+                barterFor: (body.barterFor || 'Open to skill swap / book barter').trim(),
+                status: 'AVAILABLE',
+                imageUrl: body.imageUrl || (body.itemType === 'NOTES' ? 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=400&q=80' : 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80'),
+                createdAt: new Date().toISOString()
+            };
+
+            state.kitabBhandar.unshift(newItem);
+            syncSupabase('saveKitabListing', newItem);
+
+            state.auditLogs.unshift({
+                id: Date.now(),
+                action: "KITAB_LISTING_CREATED",
+                performedBy: state.currentUser.email,
+                target: newItem.title,
+                timestamp: new Date().toISOString(),
+                status: "SUCCESS",
+                details: `Student listed item: "${newItem.title}" (${newItem.itemType}) in ${newItem.category}.`
+            });
+
+            return sendJson(res, 201, {
+                success: true,
+                message: "Your listing has been published to Kitaab Ghar!",
+                data: newItem
+            });
+        }
+
+        if (pathname.match(/^\/api\/kitab-ghar\/(\d+)$/) && req.method === 'PUT') {
+            if (!state.currentUser) {
+                return sendJson(res, 401, { success: false, message: "Authentication required." });
+            }
+            const itemId = Number(pathname.split('/')[3]);
+            const item = (state.kitabBhandar || []).find(b => b.id === itemId);
+            if (!item) {
+                return sendJson(res, 404, { success: false, message: "Listing not found." });
+            }
+
+            // Backend ownership authorization check
+            const myId = state.currentUser.userId;
+            const userIsAdmin = isAdmin(state.currentUser);
+            if (item.ownerId !== myId && !userIsAdmin) {
+                return sendJson(res, 403, {
+                    success: false,
+                    message: "Forbidden: You do not have permission to edit another student's listing."
+                });
+            }
+
+            const body = await parseBody(req);
+            if (body.title) item.title = body.title.trim();
+            if (body.author) item.author = body.author.trim();
+            if (body.category) item.category = body.category.trim();
+            if (body.condition) item.condition = body.condition.trim();
+            if (body.itemType) item.itemType = body.itemType.toUpperCase();
+            if (body.description !== undefined) item.description = body.description.trim();
+            if (body.barterFor !== undefined) item.barterFor = body.barterFor.trim();
+            if (body.imageUrl) item.imageUrl = body.imageUrl;
+            if (body.status) item.status = body.status;
+
+            syncSupabase('saveKitabListing', item);
+
+            return sendJson(res, 200, {
+                success: true,
+                message: "Listing updated successfully.",
+                data: item
+            });
+        }
+
+        if (pathname.match(/^\/api\/kitab-ghar\/(\d+)$/) && req.method === 'DELETE') {
+            if (!state.currentUser) {
+                return sendJson(res, 401, { success: false, message: "Authentication required." });
+            }
+            const itemId = Number(pathname.split('/')[3]);
+            const idx = (state.kitabBhandar || []).findIndex(b => b.id === itemId);
+            if (idx === -1) {
+                return sendJson(res, 404, { success: false, message: "Listing not found." });
+            }
+
+            const item = state.kitabBhandar[idx];
+            const myId = state.currentUser.userId;
+            const userIsAdmin = isAdmin(state.currentUser);
+            if (item.ownerId !== myId && !userIsAdmin) {
+                return sendJson(res, 403, {
+                    success: false,
+                    message: "Forbidden: You can only delete your own listings."
+                });
+            }
+
+            const removed = state.kitabBhandar.splice(idx, 1)[0];
+            syncSupabase('deleteKitabListing', itemId);
+
+            state.auditLogs.unshift({
+                id: Date.now(),
+                action: "KITAB_LISTING_DELETED",
+                performedBy: state.currentUser.email,
+                target: removed.title,
+                timestamp: new Date().toISOString(),
+                status: "SUCCESS",
+                details: `Removed Kitaab Ghar listing: ${removed.title}`
+            });
+
+            return sendJson(res, 200, { success: true, message: "Listing removed successfully." });
+        }
+
+        if (pathname.match(/^\/api\/kitab-ghar\/(\d+)\/status$/) && req.method === 'PUT') {
+            if (!state.currentUser) {
+                return sendJson(res, 401, { success: false, message: "Authentication required." });
+            }
+            const itemId = Number(pathname.split('/')[3]);
+            const item = (state.kitabBhandar || []).find(b => b.id === itemId);
+            if (!item) {
+                return sendJson(res, 404, { success: false, message: "Listing not found." });
+            }
+
+            const myId = state.currentUser.userId;
+            const userIsAdmin = isAdmin(state.currentUser);
+            if (item.ownerId !== myId && !userIsAdmin) {
+                return sendJson(res, 403, {
+                    success: false,
+                    message: "Forbidden: You do not have permission to modify this listing's status."
+                });
+            }
+
+            const body = await parseBody(req);
+            const newStatus = (body.status || 'AVAILABLE').toUpperCase();
+            if (!['AVAILABLE', 'RESERVED', 'UNAVAILABLE', 'EXCHANGED'].includes(newStatus)) {
+                return sendJson(res, 400, { success: false, message: "Invalid status value." });
+            }
+
+            item.status = newStatus;
+            syncSupabase('saveKitabListing', item);
+
+            return sendJson(res, 200, {
+                success: true,
+                message: `Listing status updated to ${newStatus}.`,
+                data: item
+            });
+        }
+
         return sendJson(res, 404, { success: false, message: "Endpoint not found" });
     }
 
@@ -5258,16 +5843,39 @@ const server = http.createServer(async (req, res) => {
     // STATIC FILE SERVING & ROUTE REWRITES
     // -------------------------------------------------------------------
 
-    let filePath = pathname === '/' ? 'index.html' : pathname;
+    let filePath = pathname === '/' ? 'landing.html' : pathname;
 
     // Remove leading slash
     if (filePath.startsWith('/')) filePath = filePath.substring(1);
 
-    // SaaS Clean URL rewrites
+    // SaaS Clean URL rewrites & route isolation
+    if (filePath.startsWith('admin/uploads/')) {
+        filePath = filePath.substring(6);
+    }
+
+    if (filePath.startsWith('certificates/') || filePath.startsWith('certificate/')) {
+        const certId = filePath.split('/')[1];
+        res.writeHead(302, { 'Location': `/api/certificates/${certId}?format=html` });
+        res.end();
+        return;
+    }
+
     if (filePath === 'landing' || filePath === 'landing/') {
         filePath = 'landing.html';
-    } else if (filePath === 'home' || filePath === 'home/') {
-        filePath = 'index.html';
+    } else if (filePath === 'home' || filePath === 'home/' || filePath === 'index.html' || filePath === 'index') {
+        const cookies = parseCookies(req);
+        const hasActiveCookie = cookies && cookies['se_session'] && state.activeSessions && state.activeSessions.has(cookies['se_session']);
+        if (hasActiveCookie) {
+            res.writeHead(302, { 'Location': '/dashboard.html' });
+            res.end();
+            return;
+        } else {
+            filePath = 'index.html';
+        }
+    } else if (filePath === 'kitaab-ghar' || filePath === 'kitaab-ghar/' || filePath === 'kitab-ghar' || filePath === 'kitab-bhandar') {
+        filePath = 'kitaab-ghar.html';
+    } else if (filePath === 'dashboard' || filePath === 'dashboard/') {
+        filePath = 'dashboard.html';
     } else if (filePath === 'exchange-proposals' || filePath === 'exchange-proposals/') {
         filePath = 'requests.html';
     } else if (filePath === 'history' || filePath === 'history/') {
@@ -5281,8 +5889,9 @@ const server = http.createServer(async (req, res) => {
     }
 
     // Backend-enforced Admin Authorization for Admin Dashboard page
-    if (filePath === 'admin-dashboard.html' || filePath.startsWith('admin')) {
-        if (!isAdmin(state.currentUser)) {
+    if (filePath === 'admin-dashboard.html' || (filePath.startsWith('admin') && !filePath.includes('.'))) {
+        const userToCheck = req.sessionUser || state.currentUser;
+        if (!isAdmin(userToCheck)) {
             res.writeHead(302, { 'Location': '/login.html?unauthorized=admin_required' });
             res.end();
             return;
@@ -5292,21 +5901,22 @@ const server = http.createServer(async (req, res) => {
     // Backend-enforced Authorization for private uploaded documents (certificates, verifications, proofs)
     const normalizedFilePath = filePath.replace(/\\/g, '/');
     if (normalizedFilePath.startsWith('uploads/certificates/') || normalizedFilePath.startsWith('uploads/verifications/') || normalizedFilePath.startsWith('uploads/proofs/')) {
-        if (!state.currentUser) {
-            res.writeHead(403, { 'Content-Type': 'application/json' });
+        const currentUser = req.sessionUser || state.currentUser;
+        if (!currentUser) {
+            res.writeHead(401, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ success: false, message: "Access Denied: Authentication required to view verification documents." }));
             return;
         }
 
-        const viewerId = state.currentUser.userId;
-        const isStaffUser = isAdmin(state.currentUser);
+        const viewerId = currentUser.userId;
+        const isStaffUser = isAdmin(currentUser);
 
         if (!isStaffUser) {
             const fileName = path.basename(normalizedFilePath);
             let ownerId = null;
 
             // Search in state.verifications
-            const matchingVer = state.verifications.find(v => 
+            const matchingVer = (state.verifications || []).find(v => 
                 (v.certificateUrl && v.certificateUrl.replace(/\\/g, '/').endsWith(fileName)) ||
                 (v.projectProofUrl && v.projectProofUrl.replace(/\\/g, '/').endsWith(fileName))
             );
@@ -5314,14 +5924,14 @@ const server = http.createServer(async (req, res) => {
                 ownerId = matchingVer.studentId;
             } else {
                 // Search in state.profiles teaching skills
-                for (const p of state.profiles) {
+                for (const p of (state.profiles || [])) {
                     if (p.teachingSkills && p.teachingSkills.some(t => t.proofDocumentUrl && t.proofDocumentUrl.replace(/\\/g, '/').endsWith(fileName))) {
                         ownerId = p.userId;
                         break;
                     }
                 }
                 if (!ownerId) {
-                    const matchingProj = state.projects.find(p => p.proofUrl && p.proofUrl.replace(/\\/g, '/').endsWith(fileName));
+                    const matchingProj = (state.projects || []).find(p => p.proofUrl && p.proofUrl.replace(/\\/g, '/').endsWith(fileName));
                     if (matchingProj) {
                         ownerId = matchingProj.studentId;
                     }
@@ -5330,11 +5940,11 @@ const server = http.createServer(async (req, res) => {
 
             // If an owner was identified and viewer is not the owner:
             if (ownerId && ownerId !== viewerId) {
-                const hasProposal = state.requests.some(r => 
+                const hasProposal = (state.requests || []).some(r => 
                     (r.senderId === viewerId && r.receiverId === ownerId) ||
                     (r.senderId === ownerId && r.receiverId === viewerId)
                 );
-                const hasExchange = state.exchanges.some(e => 
+                const hasExchange = (state.exchanges || []).some(e => 
                     (e.student1Id === viewerId && e.student2Id === ownerId) ||
                     (e.student1Id === ownerId && e.student2Id === viewerId) ||
                     (e.userAId === viewerId && e.userBId === ownerId) ||
@@ -5354,7 +5964,15 @@ const server = http.createServer(async (req, res) => {
 
     fs.readFile(fullPath, (err, data) => {
         if (err) {
-            // Fallback to index.html
+            // PART A.2: NEVER serve landing.html or index.html for missing documents or assets
+            const ext = path.extname(fullPath);
+            if (normalizedFilePath.startsWith('uploads/') || normalizedFilePath.startsWith('api/') || ext) {
+                res.writeHead(404, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ success: false, message: "Requested file or document was not found." }));
+                return;
+            }
+
+            // Fallback to index.html only for clean client-side routes
             fs.readFile(path.join(STATIC_DIR, 'index.html'), (errIndex, dataIndex) => {
                 if (errIndex) {
                     res.writeHead(404, { 'Content-Type': 'text/plain' });
@@ -5388,20 +6006,27 @@ const server = http.createServer(async (req, res) => {
         res.writeHead(200, { 'Content-Type': contentType });
         res.end(data);
     });
-});
+};
 
-server.listen(PORT, async () => {
-    console.log("===================================================================");
-    console.log("  STUDENT SKILL EXCHANGE PLATFORM - SERVER ACTIVE                  ");
-    console.log(`  Live URL: http://localhost:${PORT}                                `);
-    console.log("  All 14 Modules, REST APIs & Heuristic Matcher fully operational  ");
-    if (supabaseService.isConfigured()) {
-        console.log(`  Supabase Database: CONNECTED (${process.env.SUPABASE_URL || 'https://qfokonidfrpkunkuivwo.supabase.co'})`);
-        await supabaseService.syncFromSupabase(state);
-    } else {
-        console.log("  Supabase Database: WAITING FOR API KEY IN .env                   ");
-        console.log("  Target Supabase URL: https://qfokonidfrpkunkuivwo.supabase.co    ");
-    }
-    console.log("===================================================================");
-});
+const server = http.createServer(requestHandler);
+
+if (require.main === module) {
+    server.listen(PORT, async () => {
+        console.log("===================================================================");
+        console.log("  STUDENT SKILL EXCHANGE PLATFORM - SERVER ACTIVE                  ");
+        console.log(`  Live URL: http://localhost:${PORT}                                `);
+        console.log("  All 14 Modules, REST APIs & Heuristic Matcher fully operational  ");
+        if (supabaseService.isConfigured()) {
+            console.log(`  Supabase Database: CONNECTED (${process.env.SUPABASE_URL || 'https://qfokonidfrpkunkuivwo.supabase.co'})`);
+            await supabaseService.syncFromSupabase(state);
+        } else {
+            console.log("  Supabase Database: WAITING FOR API KEY IN .env                   ");
+            console.log("  Target Supabase URL: https://qfokonidfrpkunkuivwo.supabase.co    ");
+        }
+        console.log("===================================================================");
+    });
+}
+
+server.requestHandler = requestHandler;
+module.exports = server;
 

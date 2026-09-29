@@ -2370,14 +2370,18 @@ footer {
 .admin-content-body {
     flex: 1;
     overflow-y: auto;
-    overflow-x: hidden;
+    overflow-x: auto;
+    min-width: 0;
+    max-width: 100%;
     padding: 1.75rem 1.75rem 3rem;
     scroll-behavior: smooth;
     position: relative;
+    box-sizing: border-box;
 }
 
 .admin-content-body::-webkit-scrollbar {
     width: 6px;
+    height: 6px;
 }
 
 .admin-content-body::-webkit-scrollbar-thumb {
@@ -2392,6 +2396,8 @@ footer {
 /* Page View Isolation & Transition (Prevents Stacking) */
 .admin-view-pane {
     display: none !important;
+    min-width: 0;
+    max-width: 100%;
 }
 
 .admin-view-pane.active {
@@ -2416,20 +2422,50 @@ footer {
 .admin-stat-card,
 .admin-view-pane .modal-content {
     background-color: #FFFFFF !important;
+    min-width: 0;
 }
 
-.admin-view-pane .table {
-    background-color: #FFFFFF !important;
-}
-
+/* Robust Responsive Table Container: Horizontal Scroll Inside Table Container ONLY */
 .admin-view-pane .table-responsive {
     background-color: #FFFFFF;
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-sm);
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border: 1.5px solid var(--border-color);
+    margin-bottom: 0;
+}
+
+.admin-view-pane .table-responsive::-webkit-scrollbar {
+    height: 6px;
+}
+
+.admin-view-pane .table-responsive::-webkit-scrollbar-thumb {
+    background: #CBD5E1;
+    border-radius: 4px;
+}
+
+.admin-view-pane .table {
+    background-color: #FFFFFF !important;
+    width: 100%;
+    min-width: 720px;
+    margin-bottom: 0;
 }
 
 .admin-view-pane .table tr:hover td {
     background-color: #F8FAFC !important;
+}
+
+.admin-view-pane .table th,
+.admin-view-pane .table td {
+    vertical-align: middle;
+}
+
+.admin-view-pane .table td .btn {
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 /* KPI Metric Cards */

@@ -597,6 +597,14 @@ async function runTests() {
         acceptReq4.statusCode === 200 && acceptReq4.data.data.status === 'ACCEPTED'
     );
 
+    // Clean up session state
+    await makeRequest({
+        hostname: 'localhost',
+        port: 8080,
+        path: '/api/auth/logout',
+        method: 'POST'
+    });
+
     console.log('\n====================================================');
     console.log(`  TEST RESULTS: ${passed} PASSED, ${failed} FAILED `);
     console.log('====================================================');

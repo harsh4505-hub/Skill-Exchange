@@ -173,7 +173,7 @@
                     </button>
 
                     <!-- Return to Main Website -->
-                    <a href="index.html" class="btn btn-sm btn-admin-action btn-admin-back" title="Return to Student Skill Exchange Website">
+                    <a href="dashboard.html" class="btn btn-sm btn-admin-action btn-admin-back" title="Return to Student Skill Exchange Website">
                         <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>
                         <span>Back to Website</span>
                     </a>
@@ -1516,7 +1516,7 @@
 
     <!-- User Profile Modal -->
     <div class="modal fade" id="adminUserModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content border-2 border-dark" style="border-radius: var(--radius-lg); box-shadow: var(--shadow-xl);">
                 <div class="modal-header border-bottom border-2 border-dark">
                     <h5 class="modal-title fw-bold">Student Profile Details</h5>
@@ -1644,6 +1644,33 @@
                 </div>
                 <div class="modal-body p-4" id="adminExchangeModalBody">
                     <!-- Dynamic -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <!-- Admin Single Session Detail Modal -->
+    <div class="modal fade" id="adminSessionDetailModal" tabindex="-1" aria-hidden="true" style="z-index: 1075;">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-3 border-dark" style="border-radius: 12px; box-shadow: 8px 8px 0px #18181b;">
+                <div class="modal-header border-bottom border-2 border-dark bg-light px-4 py-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="stat-icon-wrapper bg-primary text-white p-1 rounded border border-1 border-dark" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;">
+                            <i class="bi bi-journal-text"></i>
+                        </span>
+                        <div>
+                            <h5 class="modal-title fw-bold mb-0" id="asdmTitle">Session Audit Dossier</h5>
+                            <small class="text-muted font-monospace" id="asdmSubtitle">Detailed peer teaching and verification records</small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4" id="asdmBody">
+                    <div class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm me-2"></div> Loading session audit...</div>
+                </div>
+                <div class="modal-footer border-top border-2 border-dark bg-light">
+                    <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
@@ -1887,7 +1914,45 @@
         </div>
     </div>
 
-    <!-- Bootstrap 5 JS -->
+    <!-- ===================================================================
+         ADMIN VERIFICATION DOSSIER INSPECTION MODAL (FULL SUBMISSION DETAILS)
+         =================================================================== -->
+    <div class="modal fade" id="adminVerificationDossierModal" tabindex="-1" aria-labelledby="adminVerificationDossierModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border border-2 border-dark" style="box-shadow: 6px 6px 0 #0f172a; border-radius: 8px;">
+                <div class="modal-header bg-light border-bottom border-2 border-dark py-3 px-4 d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="d-flex align-items-center justify-content-center rounded-2 border border-2 border-dark bg-primary text-white" style="width: 36px; height: 36px; box-shadow: 2px 2px 0 #0f172a;">
+                            <i class="bi bi-shield-check fs-6"></i>
+                        </span>
+                        <div>
+                            <h5 class="modal-title fw-bold mb-0 text-dark" id="adminVerificationDossierModalLabel">Verification Dossier Review</h5>
+                            <small class="text-muted" id="dossierSubtitle">Auditing student credentials and proof submissions</small>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span id="dossierStatusBadge" class="badge px-3 py-2 border border-2 border-dark">PENDING REVIEW</span>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                </div>
+
+                <div class="modal-body p-4 bg-light" id="dossierModalBody">
+                    <div class="text-center py-5">
+                        <span class="spinner-border spinner-border-sm me-2"></span> Loading complete verification dossier...
+                    </div>
+                </div>
+
+                <div class="modal-footer border-top border-2 border-dark bg-white p-3 d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                    <div class="text-muted small">
+                        <i class="bi bi-shield-lock me-1"></i> Admin Decision: Verification decisions award/revoke verified skill badges immediately.
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-outline-custom" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Core Application API and System Utilities -->
     <script src="js/app.js"></script>
@@ -2915,62 +2980,157 @@
             `).join('');
         }
 
-        function openExchangeModal(id) {
-            const ex = adminData.exchanges.find(e => e.id === id);
-            if (!ex) return;
-
+        async function openExchangeModal(id) {
             const modalBody = document.getElementById('adminExchangeModalBody');
-            const isCompleted = ex.status === 'COMPLETED';
-            const isAccepted = ex.status === 'ACCEPTED' || ex.status === 'IN_PROGRESS' || isCompleted;
+            modalBody.innerHTML = `<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2"></div> Loading full exchange audit...</div>`;
+            const modalEl = document.getElementById('adminExchangeModal');
+            new bootstrap.Modal(modalEl).show();
 
-            modalBody.innerHTML = `
-                <div class="mb-4 text-center">
-                    <span class="badge bg-light text-dark border px-3 py-1 mb-2 font-monospace">TRADE #EX-${ex.id}</span>
-                    <h4 class="fw-bold mb-1">${escapeHtml(ex.userAName)} ⇄ ${escapeHtml(ex.userBName)}</h4>
-                    <span class="text-muted small">${escapeHtml(ex.skillA)} for ${escapeHtml(ex.skillB)}</span>
-                </div>
+            try {
+                const res = await API.get(`/api/admin/exchanges/${id}/audit`);
+                if (!res || !res.success) {
+                    modalBody.innerHTML = `<div class="alert alert-danger">Failed to load exchange audit.</div>`;
+                    return;
+                }
 
-                <!-- 5-Step Visual Timeline Pipeline -->
-                <div class="exchange-timeline mb-4">
-                    <div class="timeline-step completed">
-                        <div class="timeline-step-icon"><i class="bi bi-send-check"></i></div>
-                        <div class="timeline-step-title">1. Created</div>
-                        <div class="timeline-step-time">Initiated</div>
-                    </div>
-                    <div class="timeline-step ${isAccepted ? 'completed' : 'active'}">
-                        <div class="timeline-step-icon"><i class="bi bi-check2"></i></div>
-                        <div class="timeline-step-title">2. Accepted</div>
-                        <div class="timeline-step-time">${isAccepted ? 'Confirmed' : 'Pending'}</div>
-                    </div>
-                    <div class="timeline-step ${isAccepted ? 'completed' : ''}">
-                        <div class="timeline-step-icon"><i class="bi bi-calendar2-event"></i></div>
-                        <div class="timeline-step-title">3. Scheduled</div>
-                        <div class="timeline-step-time">${escapeHtml(ex.notes || 'Online Meet')}</div>
-                    </div>
-                    <div class="timeline-step ${isCompleted ? 'completed' : (isAccepted ? 'active' : '')}">
-                        <div class="timeline-step-icon"><i class="bi bi-mortarboard"></i></div>
-                        <div class="timeline-step-title">4. Exchange</div>
-                        <div class="timeline-step-time">${isCompleted ? 'Finished' : 'In Progress'}</div>
-                    </div>
-                    <div class="timeline-step ${isCompleted ? 'completed' : ''}">
-                        <div class="timeline-step-icon"><i class="bi bi-clipboard-check"></i></div>
-                        <div class="timeline-step-title">5. Feedback</div>
-                        <div class="timeline-step-time">${isCompleted ? 'Reviewed (Completed)' : 'Pending'}</div>
-                    </div>
-                </div>
+                const d = res.data;
+                const ex = d.exchange;
+                const plan = d.plan;
+                const sessions = d.sessionsTimeline || [];
 
-                <div class="d-flex justify-content-between align-items-center pt-3 border-top">
-                    <div>
+                modalBody.innerHTML = `
+                    <div class="mb-3 text-center">
+                        <span class="badge bg-light text-dark border px-3 py-1 mb-2 font-monospace">AUDIT DOSSIER #EX-${ex.id}</span>
+                        <h4 class="fw-bold mb-1">${escapeHtml(ex.userAName || ex.student1Name)} ⇄ ${escapeHtml(ex.userBName || ex.student2Name)}</h4>
+                        <span class="text-muted small">${escapeHtml(ex.skillA || ex.skill1Name)} for ${escapeHtml(ex.skillB || ex.skill2Name)} &bull; Mode: <strong>${ex.learningMode}</strong></span>
+                    </div>
+
+                    ${d.inactivityWarning ? `
+                        <div class="alert alert-warning border border-2 border-dark mb-3">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i><strong>Attention Required:</strong> ${escapeHtml(d.inactivityWarning)}
+                        </div>
+                    ` : ''}
+
+                    <!-- Exchange Plan Card -->
+                    <div class="card p-3 border border-2 border-dark rounded bg-light mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+                            <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-card-checklist me-1"></i>Exchange Plan & Learning Order</h6>
+                            <span class="badge ${plan.status === 'PLAN_CONFIRMED' ? 'bg-success text-white' : 'bg-warning text-dark'} border border-dark">
+                                ${plan.status}
+                            </span>
+                        </div>
+                        <div class="row g-2 small mb-2">
+                            <div class="col-sm-6">
+                                <div class="p-2 border border-1 border-secondary-subtle rounded bg-white">
+                                    <strong>First Teacher:</strong> ${escapeHtml(plan.firstTeacherName)} (${escapeHtml(plan.firstSkillName)})
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="p-2 border border-1 border-secondary-subtle rounded bg-white">
+                                    <strong>Reciprocal Teacher:</strong> ${escapeHtml(plan.secondTeacherName)} (${escapeHtml(plan.secondSkillName)})
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between small text-muted font-monospace">
+                            <span>Duration: ${plan.durationWeeks} wks &bull; Planned: ${plan.plannedSessionsCount} sessions</span>
+                            <span>Overall Progress: <strong>${ex.overallProgress || 0}%</strong></span>
+                        </div>
+                    </div>
+
+                    <!-- Quizzes & Learning Assessments -->
+                    <div class="card p-3 border border-2 border-dark rounded bg-light mb-3">
+                        <h6 class="fw-bold mb-2 text-dark"><i class="bi bi-mortarboard me-1"></i>Curriculum Quizzes & Learner Assessments (${(d.quizzes || []).length} Quizzes)</h6>
+                        ${(d.quizzes && d.quizzes.length > 0) ? `
+                            <div class="d-flex flex-column gap-2">
+                                ${d.quizzes.map(qz => {
+                                    const attempt = (d.quizAttempts || []).find(a => a.quizId === qz.id);
+                                    return `
+                                        <div class="p-2 border border-1 border-secondary-subtle rounded bg-white small">
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <strong>${escapeHtml(qz.topic || "Module Quiz")}</strong>
+                                                ${attempt ? `<span class="badge ${attempt.passed ? "bg-success text-white" : "bg-warning text-dark"}">Score: ${attempt.score}/${attempt.maxMarks} (${attempt.percentage}%)</span>` : '<span class="badge bg-secondary text-white">Pending Learner Attempt</span>'}
+                                            </div>
+                                            <span class="text-muted d-block">${(qz.questions || []).length} questions &bull; Created by Teacher #${qz.teacherId}</span>
+                                            ${attempt && attempt.teacherFeedback ? `<div class="mt-1 text-primary">Teacher Review: "${escapeHtml(attempt.teacherFeedback)}"</div>` : ""}
+                                        </div>
+                                    `;
+                                }).join("")}
+                            </div>
+                        ` : '<span class="text-muted small fst-italic">No quizzes created for this exchange yet.</span>'}
+                    </div>
+                    <!-- Issued Certificates -->
+                    <div class="card p-3 border border-2 border-dark rounded bg-light mb-3">
+                        <h6 class="fw-bold mb-2 text-dark"><i class="bi bi-patch-check-fill text-success me-1"></i>Official Issued Certificates (${(d.certificates || []).length})</h6>
+                        ${(d.certificates && d.certificates.length > 0) ? `
+                            <div class="d-flex flex-column gap-2">
+                                ${d.certificates.map(cert => `
+                                    <div class="p-2 border border-1 border-secondary-subtle rounded bg-white small d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                        <div>
+                                            <strong class="text-dark font-monospace">${escapeHtml(cert.id)}</strong> &bull; Recipient: <strong>${escapeHtml(cert.studentName)}</strong>
+                                            <div class="text-muted">Skill: <strong>${escapeHtml(cert.skillLearned)}</strong> &bull; Issued: ${new Date(cert.issueDate || cert.completionDate).toLocaleDateString()}</div>
+                                        </div>
+                                        <div class="d-flex gap-1">
+                                            <a href="/api/certificates/${cert.id}?format=html" target="_blank" class="btn btn-sm btn-outline-dark py-1 px-2" style="font-size:0.75rem;"><i class="bi bi-file-earmark-pdf me-1"></i>View Parchment</a>
+                                            <a href="/api/certificates/verify/${cert.id}" target="_blank" class="btn btn-sm btn-outline-primary py-1 px-2" style="font-size:0.75rem;"><i class="bi bi-shield-check me-1"></i>Verify</a>
+                                        </div>
+                                    </div>
+                                `).join("")}
+                            </div>
+                        ` : '<span class="text-muted small fst-italic">Certificates will be issued upon 100% mutual completion and verification.</span>'}
+                    </div>
+                    <!-- Sessions Timeline -->
+                    <div class="mb-3">
+                        <h6 class="fw-bold mb-2 text-dark"><i class="bi bi-clock-history me-1"></i>Sessions Timeline (${sessions.length} sessions)</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover align-middle border mb-0" style="font-size:0.8rem;">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Date</th>
+                                        <th>Topic</th>
+                                        <th>Teacher</th>
+                                        <th>Mode</th>
+                                        <th>Attendance</th>
+                                        <th>Status</th>
+                                        <th class="text-end">Detail</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${sessions.length > 0 ? sessions.map(s => `
+                                        <tr>
+                                            <td><strong>#${s.sessionNumber}</strong></td>
+                                            <td class="font-monospace">${s.scheduledDate}</td>
+                                            <td><strong>${escapeHtml(s.topic)}</strong></td>
+                                            <td>${escapeHtml(s.teacherName)}</td>
+                                            <td><span class="badge ${s.mode === 'ONLINE' ? 'bg-primary' : 'bg-warning text-dark'}">${s.mode}</span></td>
+                                            <td><span class="badge bg-light text-dark border">${s.attendance ? s.attendance.teacher : 'PRESENT'}</span></td>
+                                            <td><span class="badge ${s.verificationStatus === 'VERIFIED' ? 'bg-success text-white' : 'bg-warning text-dark'} border">${s.verificationStatus}</span></td>
+                                            <td class="text-end">
+                                                <button class="btn btn-sm btn-outline-dark py-0 px-2" style="font-size:0.72rem;" onclick="openAdminSessionDetailModal(${s.id})">
+                                                    Inspect
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    `).join('') : `
+                                        <tr><td colspan="8" class="text-center py-3 text-muted">No sessions logged yet.</td></tr>
+                                    `}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center pt-3 border-top">
                         <span class="small fw-bold text-muted text-uppercase">Administrative Status Override</span>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-success" onclick="overrideExchangeStatus(${ex.id}, 'COMPLETED')">Mark Completed</button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="overrideExchangeStatus(${ex.id}, 'CANCELLED')">Cancel Exchange</button>
+                        </div>
                     </div>
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-sm btn-outline-success" onclick="overrideExchangeStatus(${ex.id}, 'COMPLETED')">Mark Completed</button>
-                        <button class="btn btn-sm btn-outline-danger" onclick="overrideExchangeStatus(${ex.id}, 'CANCELLED')">Cancel Exchange</button>
-                    </div>
-                </div>
-            `;
-
-            new bootstrap.Modal(document.getElementById('adminExchangeModal')).show();
+                `;
+            } catch (err) {
+                console.error(err);
+                modalBody.innerHTML = `<div class="alert alert-danger">Error retrieving audit dossier.</div>`;
+            }
         }
 
         async function overrideExchangeStatus(id, status) {
@@ -3426,7 +3586,7 @@
         }
 
         // ===================================================================
-        // VERIFICATION REVIEW QUEUE CONTROLLER
+        // VERIFICATION REVIEW QUEUE & FULL SUBMISSION DOSSIER CONTROLLER
         // ===================================================================
         async function loadVerificationsList() {
             const tbody = document.getElementById('verificationsTableTbody');
@@ -3440,77 +3600,353 @@
                         tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-muted">No submissions in verification queue.</td></tr>`;
                         return;
                     }
-                    tbody.innerHTML = adminData.verifications.map(v => `
+                    tbody.innerHTML = adminData.verifications.map(v => {
+                        const statusBadge = renderVerificationStatusBadge(v.status);
+                        const rawProof = v.projectProofUrl || v.proofDocumentUrl || v.certificateUrl;
+                        const proofUrl = rawProof ? (rawProof.startsWith("http") ? rawProof : "/" + rawProof.replace(/^\/+/, "")) : null;
+
+                        return `
                         <tr>
                             <td>
                                 <strong class="text-dark d-block">${escapeHtml(v.studentName || v.fullName || 'Student')}</strong>
-                                <small class="text-muted">${escapeHtml(v.studentEmail || '')}</small>
+                                <small class="text-muted font-monospace">${escapeHtml(v.studentEmail || '')}</small>
                             </td>
                             <td><strong class="text-primary">${escapeHtml(v.skillName)}</strong></td>
-                            <td><span class="small text-dark">${escapeHtml(v.department || 'IT Department')}</span></td>
-                            <td><span class="badge bg-light text-dark border">Project & Experience Validated</span></td>
+                            <td><span class="small text-dark">${escapeHtml(v.department || 'Information Technology')}</span></td>
                             <td>
-                                ${v.proofDocumentUrl ? `<a href="${v.proofDocumentUrl}" target="_blank" class="badge bg-light text-primary border text-decoration-none"><i class="bi bi-file-earmark-pdf me-1"></i>View Document</a>` : '<span class="text-muted small">Portfolio Submission</span>'}
+                                <div class="d-flex flex-column gap-1">
+                                    <span class="badge bg-light text-dark border"><i class="bi bi-code-slash me-1 text-primary"></i> ${escapeHtml(v.projectTitle || 'Compulsory Project')}</span>
+                                    <span class="badge bg-light text-dark border"><i class="bi bi-briefcase me-1 text-success"></i> ${escapeHtml(v.experienceTitle || 'Compulsory Experience')}</span>
+                                </div>
                             </td>
-                            <td><span class="small text-muted">${formatDate(v.submittedDate)}</span></td>
-                            <td>${renderStatusPill(v.status)}</td>
+                            <td>
+                                ${proofUrl ? `
+                                    <a href="${proofUrl}" target="_blank" class="badge bg-light text-primary border text-decoration-none">
+                                        <i class="bi bi-file-earmark-check me-1"></i> Proof Attached
+                                    </a>
+                                ` : '<span class="text-muted small fst-italic">Repository Link</span>'}
+                            </td>
+                            <td><span class="small text-muted font-monospace">${formatDate(v.submissionDate || v.submittedDate)}</span></td>
+                            <td>${statusBadge}</td>
                             <td class="text-end">
-                                ${v.status === 'PENDING' ? `
-                                    <div class="d-inline-flex gap-1">
-                                        <button class="btn btn-sm btn-success" onclick="approveVerification(${v.id})" title="Approve & Award Badge">
-                                            <i class="bi bi-check-lg me-1"></i> Approve
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-danger" onclick="openRejectVerificationModal(${v.id})" title="Reject with Reason">
-                                            <i class="bi bi-x-lg me-1"></i> Reject
-                                        </button>
-                                    </div>
-                                ` : '<span class="badge bg-light text-muted border">Audited</span>'}
+                                <button class="btn btn-sm btn-primary-custom d-inline-flex align-items-center gap-1 fw-bold" onclick="openVerificationDossierModal(${v.id})" title="Inspect complete student dossier and proofs">
+                                    <i class="bi bi-eye-fill"></i> Review & Inspect
+                                </button>
                             </td>
                         </tr>
-                    `).join('');
+                        `;
+                    }).join('');
                 }
             } catch (err) {
                 tbody.innerHTML = `<tr><td colspan="8" class="text-center text-danger py-4">Failed to load verifications.</td></tr>`;
             }
         }
 
-        async function approveVerification(id) {
-            try {
-                const res = await API.put(`/api/verifications/${id}/approve`, { adminComment: "Approved by administrator: project and experience verified." });
-                if (res && res.success) {
-                    showAdminAlert("Skill verification approved! Student awarded ✓ Verified badge.", "success");
-                    await loadVerificationsList();
-                    await loadAdminStats();
-                }
-            } catch (err) {
-                showAdminAlert("Failed to approve verification.", "danger");
+        function renderVerificationStatusBadge(status) {
+            const st = (status || 'PENDING').toUpperCase();
+            if (st === 'VERIFIED' || st === 'APPROVED') {
+                return '<span class="badge border border-2 border-dark bg-success text-white fw-bold px-2 py-1"><i class="bi bi-patch-check-fill me-1"></i> APPROVED</span>';
+            } else if (st === 'REJECTED') {
+                return '<span class="badge border border-2 border-dark bg-danger text-white fw-bold px-2 py-1"><i class="bi bi-x-circle-fill me-1"></i> REJECTED</span>';
+            } else if (st === 'NEEDS_RESUBMISSION' || st === 'NEEDS_ATTENTION') {
+                return '<span class="badge border border-2 border-dark bg-warning text-dark fw-bold px-2 py-1"><i class="bi bi-exclamation-triangle-fill me-1"></i> NEEDS ATTENTION</span>';
+            } else {
+                return '<span class="badge border border-2 border-dark bg-warning text-dark fw-bold px-2 py-1"><i class="bi bi-hourglass-split me-1"></i> PENDING REVIEW</span>';
             }
         }
 
-        function openRejectVerificationModal(id) {
-            document.getElementById('rejectVerificationId').value = id;
-            document.getElementById('rejectVerificationReason').value = '';
-            new bootstrap.Modal(document.getElementById('adminRejectProofModal')).show();
+        function renderDocumentViewer(url, label) {
+            if (!url) return '<div class="text-muted small fst-italic py-2">No document attached.</div>';
+            const cleanUrl = url.replace(/\\/g, '/');
+            const formattedUrl = cleanUrl.startsWith('http') ? cleanUrl : '/' + cleanUrl.replace(/^\/+/, '');
+            const ext = cleanUrl.split('.').pop().toLowerCase();
+            const isImage = ['png', 'jpg', 'jpeg', 'webp', 'gif'].includes(ext);
+
+            if (isImage) {
+                return `
+                    <div class="border border-2 border-dark rounded p-2 bg-white mt-2" style="max-width: 320px; box-shadow: 2px 2px 0 #0f172a;">
+                        <div class="d-flex align-items-center justify-content-between mb-1">
+                            <small class="fw-bold text-dark"><i class="bi bi-image me-1 text-primary"></i> ${escapeHtml(label || 'Proof Image')}</small>
+                            <a href="${formattedUrl}" target="_blank" rel="noopener noreferrer" class="badge bg-light text-dark border text-decoration-none">Open Full &nearr;</a>
+                        </div>
+                        <a href="${formattedUrl}" target="_blank" rel="noopener noreferrer">
+                            <img src="${formattedUrl}" alt="Proof Document" class="img-fluid rounded border" style="max-height: 180px; width: 100%; object-fit: cover;">
+                        </a>
+                    </div>
+                `;
+            } else {
+                return `
+                    <div class="border border-2 border-dark rounded p-3 bg-white mt-2 d-flex align-items-center justify-content-between gap-3 flex-wrap" style="box-shadow: 2px 2px 0 #0f172a;">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="d-flex align-items-center justify-content-center bg-danger-subtle text-danger rounded border border-dark p-2" style="width: 38px; height: 38px;">
+                                <i class="bi bi-file-earmark-pdf fs-5"></i>
+                            </span>
+                            <div>
+                                <strong class="text-dark small d-block">${escapeHtml(label || 'Proof Document')}</strong>
+                                <small class="text-muted font-monospace">${cleanUrl.split('/').pop()}</small>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <a href="${formattedUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-custom">
+                                <i class="bi bi-box-arrow-up-right me-1"></i> View Document
+                            </a>
+                            <a href="${formattedUrl}" download class="btn btn-sm btn-primary-custom">
+                                <i class="bi bi-download me-1"></i> Download
+                            </a>
+                        </div>
+                    </div>
+                `;
+            }
         }
 
-        async function confirmRejectVerification() {
-            const id = document.getElementById('rejectVerificationId').value;
-            const adminComment = document.getElementById('rejectVerificationReason').value.trim();
-            if (!adminComment) {
-                alert("Please provide a constructive rejection reason for the student.");
+        async function openVerificationDossierModal(id) {
+            const modalEl = document.getElementById('adminVerificationDossierModal');
+            const bodyEl = document.getElementById('dossierModalBody');
+            const statusBadge = document.getElementById('dossierStatusBadge');
+            const subtitle = document.getElementById('dossierSubtitle');
+
+            bodyEl.innerHTML = `
+                <div class="text-center py-5">
+                    <span class="spinner-border spinner-border-sm me-2"></span> Fetching complete verification dossier and submission documents...
+                </div>
+            `;
+            const modal = new bootstrap.Modal(modalEl);
+            modal.show();
+
+            try {
+                const res = await API.get(`/api/admin/verifications/${id}`);
+                if (!res || !res.success || !res.data) {
+                    bodyEl.innerHTML = `<div class="alert alert-danger">Failed to load verification dossier. Submission may not exist.</div>`;
+                    return;
+                }
+
+                const d = res.data;
+                subtitle.textContent = `Dossier #${d.id} • Submitted by ${d.student.name} (${d.student.department})`;
+                statusBadge.innerHTML = renderVerificationStatusBadge(d.status);
+
+                bodyEl.innerHTML = `
+                    <div class="row g-4">
+                        <!-- SECTION 1: STUDENT PROFILE INFORMATION -->
+                        <div class="col-12">
+                            <div class="card card-custom p-4 bg-white border border-2 border-dark">
+                                <span class="section-tag mb-2">01 / APPLICANT PROFILE</span>
+                                <div class="d-flex align-items-center gap-3 flex-wrap">
+                                    <img src="${d.student.avatarUrl}" class="rounded-circle border border-2 border-dark" width="60" height="60" alt="Student Avatar">
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                                            <h4 class="fw-bold mb-0 text-dark">${escapeHtml(d.student.name)}</h4>
+                                            <span class="badge bg-light text-dark border font-monospace">${escapeHtml(d.student.email)}</span>
+                                        </div>
+                                        <div class="text-muted small mt-1 d-flex gap-3 flex-wrap">
+                                            <span><i class="bi bi-building me-1"></i> ${escapeHtml(d.student.college)}</span>
+                                            <span><i class="bi bi-mortarboard me-1"></i> ${escapeHtml(d.student.department)}</span>
+                                            <span><i class="bi bi-calendar3 me-1"></i> ${escapeHtml(d.student.yearOfStudy)}</span>
+                                            <span><i class="bi bi-star-fill text-warning me-1"></i> ${d.student.rating ? d.student.rating.toFixed(1) : 'New'} (${d.student.completedExchanges} swaps)</span>
+                                        </div>
+                                        ${d.student.bio ? `<p class="small text-muted mt-2 mb-0 border-top pt-2">${escapeHtml(d.student.bio)}</p>` : ''}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SECTION 2: SKILL UNDER VERIFICATION -->
+                        <div class="col-12">
+                            <div class="card card-custom p-4 bg-white border border-2 border-dark">
+                                <span class="section-tag mb-2">02 / SKILL UNDER AUDIT</span>
+                                <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap mb-2">
+                                    <div>
+                                        <h4 class="fw-bold mb-1 text-primary">${escapeHtml(d.skill.name)}</h4>
+                                        <span class="badge bg-primary-subtle text-primary border border-primary">${escapeHtml(d.skill.categoryName)}</span>
+                                    </div>
+                                    <span class="badge bg-dark text-white font-monospace px-3 py-2">Offered Level: ${escapeHtml(d.skill.studentLevel)}</span>
+                                </div>
+                                <p class="text-muted small mb-0">${escapeHtml(d.skill.description || 'Teaching syllabus and practical exercises.')}</p>
+                            </div>
+                        </div>
+
+                        <!-- SECTION 3: COMPULSORY PROJECT INFORMATION & PROOF -->
+                        <div class="col-lg-6">
+                            <div class="card card-custom p-4 bg-white border border-2 border-dark h-100">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <span class="section-tag mb-0">03 / REQUIRED PROJECT</span>
+                                    <span class="badge bg-success text-white border border-dark"><i class="bi bi-check-circle-fill me-1"></i> Compulsory</span>
+                                </div>
+                                <h5 class="fw-bold text-dark mt-2 mb-1">${escapeHtml(d.project.title)}</h5>
+                                <div class="mb-2">
+                                    <small class="text-muted fw-bold">Technologies Used:</small>
+                                    <span class="badge bg-light text-dark border font-monospace ms-1">${escapeHtml(d.project.technologies)}</span>
+                                </div>
+                                <p class="small text-muted mb-3" style="line-height: 1.6;">${escapeHtml(d.project.description)}</p>
+                                
+                                ${d.project.link ? `
+                                    <div class="mb-3">
+                                        <a href="${escapeHtml(d.project.link)}" target="_blank" class="btn btn-sm btn-outline-custom">
+                                            <i class="bi bi-github me-1"></i> View Project Code / Repository &nearr;
+                                        </a>
+                                    </div>
+                                ` : ''}
+
+                                <div class="border-top pt-3">
+                                    <strong class="d-block small text-dark mb-1"><i class="bi bi-file-earmark-check text-primary me-1"></i> Uploaded Project Proof / Artifact:</strong>
+                                    ${renderDocumentViewer(d.project.proofUrl, 'Project Proof')}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SECTION 4: COMPULSORY EXPERIENCE INFORMATION & PROOF -->
+                        <div class="col-lg-6">
+                            <div class="card card-custom p-4 bg-white border border-2 border-dark h-100">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <span class="section-tag mb-0">04 / REQUIRED EXPERIENCE</span>
+                                    <span class="badge bg-success text-white border border-dark"><i class="bi bi-check-circle-fill me-1"></i> Compulsory</span>
+                                </div>
+                                <h5 class="fw-bold text-dark mt-2 mb-1">${escapeHtml(d.experience.title)}</h5>
+                                <div class="text-muted small mb-2 d-flex gap-2 flex-wrap">
+                                    <span><i class="bi bi-building me-1"></i> <strong>${escapeHtml(d.experience.organization)}</strong></span>
+                                    <span>&bull;</span>
+                                    <span><i class="bi bi-clock me-1"></i> ${escapeHtml(d.experience.duration || 'Ongoing')}</span>
+                                </div>
+                                <p class="small text-muted mb-3" style="line-height: 1.6;">${escapeHtml(d.experience.description)}</p>
+
+                                <div class="border-top pt-3">
+                                    <strong class="d-block small text-dark mb-1"><i class="bi bi-file-earmark-check text-success me-1"></i> Uploaded Experience Proof:</strong>
+                                    ${renderDocumentViewer(d.experience.proofUrl, 'Experience Proof')}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SECTION 5: OPTIONAL CERTIFICATE INFORMATION -->
+                        <div class="col-12">
+                            <div class="card card-custom p-4 bg-white border border-2 border-dark">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <span class="section-tag mb-0">05 / CERTIFICATION</span>
+                                    <span class="badge bg-light text-muted border border-dark">Optional</span>
+                                </div>
+                                ${d.certificate.provided ? `
+                                    <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+                                        <div>
+                                            <h5 class="fw-bold text-dark mb-1">${escapeHtml(d.certificate.name || 'Professional Certificate')}</h5>
+                                            <small class="text-muted d-block">${escapeHtml(d.certificate.organization || 'Issuing Academy / Organization')}</small>
+                                            ${d.certificate.issueDate ? `<small class="text-muted font-monospace">Issued: ${escapeHtml(d.certificate.issueDate)}</small>` : ''}
+                                        </div>
+                                    </div>
+                                    ${renderDocumentViewer(d.certificate.url, 'Certificate File')}
+                                ` : `
+                                    <div class="p-3 border border-2 border-dark rounded bg-light d-flex align-items-center gap-3">
+                                        <i class="bi bi-info-circle-fill text-primary fs-4"></i>
+                                        <div>
+                                            <strong class="d-block text-dark">Certificate: Not Provided (Optional)</strong>
+                                            <small class="text-muted">The student fulfilled official credential requirements through the mandatory project and experience submissions above. Missing certificate is not an error.</small>
+                                        </div>
+                                    </div>
+                                `}
+                            </div>
+                        </div>
+
+                        <!-- SECTION 6: REVIEWER DECISION & FEEDBACK -->
+                        <div class="col-12">
+                            <div class="card card-custom p-4 bg-light border border-2 border-dark">
+                                <span class="section-tag mb-2">06 / AUDITOR DECISION</span>
+                                <h5 class="fw-bold mb-3 text-dark">Administrative Determination & Reason</h5>
+                                
+                                ${d.adminComment ? `
+                                    <div class="alert alert-info border border-2 border-dark mb-3">
+                                        <strong class="d-block small"><i class="bi bi-chat-quote-fill me-1"></i> Current / Previous Feedback:</strong>
+                                        <p class="mb-0 small">${escapeHtml(d.adminComment)}</p>
+                                    </div>
+                                ` : ''}
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold text-dark small">Constructive Feedback / Approval Note / Rejection Reason <span class="text-danger">*</span></label>
+                                    <textarea id="dossierFeedbackReason" class="form-control border border-2 border-dark" rows="3" placeholder="Explain your decision clearly for the student (e.g., 'GitHub repo verified with working commit history' or 'Please provide a clear screenshot of project demo or lab sign-off')..."></textarea>
+                                </div>
+
+                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                    <button type="button" class="btn btn-success fw-bold px-3 border border-2 border-dark shadow-sm" onclick="approveDossier(${d.id})">
+                                        <i class="bi bi-patch-check-fill me-1"></i> APPROVE & AWARD VERIFIED BADGE
+                                    </button>
+                                    <button type="button" class="btn btn-outline-danger fw-bold px-3 border border-2 border-dark shadow-sm" onclick="rejectDossier(${d.id})">
+                                        <i class="bi bi-x-circle-fill me-1"></i> REJECT SUBMISSION
+                                    </button>
+                                    <button type="button" class="btn btn-outline-warning fw-bold px-3 border border-2 border-dark shadow-sm text-dark" onclick="requestRevisionDossier(${d.id})">
+                                        <i class="bi bi-exclamation-triangle-fill me-1"></i> REQUEST REVISION / MORE INFO
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } catch (err) {
+                bodyEl.innerHTML = `<div class="alert alert-danger">Error rendering verification dossier: ${err.message}</div>`;
+            }
+        }
+
+        async function approveDossier(id) {
+            const reasonInput = document.getElementById('dossierFeedbackReason');
+            const comment = (reasonInput ? reasonInput.value : '').trim() || "Approved by administrator: project and experience verified.";
+
+            try {
+                const res = await API.put(`/api/verifications/${id}/approve`, { adminComment: comment });
+                if (res && res.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('adminVerificationDossierModal')).hide();
+                    showAdminAlert("Skill verification approved! Student awarded ✓ Verified badge.", "success");
+                    await loadVerificationsList();
+                    await loadAdminStats();
+                } else {
+                    alert((res && res.message) || "Failed to approve verification.");
+                }
+            } catch (err) {
+                alert("Failed to communicate with server: " + err.message);
+            }
+        }
+
+        async function rejectDossier(id) {
+            const reasonInput = document.getElementById('dossierFeedbackReason');
+            const comment = (reasonInput ? reasonInput.value : '').trim();
+
+            if (!comment) {
+                alert("Please provide a constructive rejection reason explaining why the submission does not satisfy requirements.");
+                if (reasonInput) reasonInput.focus();
                 return;
             }
 
             try {
-                const res = await API.put(`/api/verifications/${id}/reject`, { adminComment });
+                const res = await API.put(`/api/verifications/${id}/reject`, { adminComment: comment });
                 if (res && res.success) {
-                    bootstrap.Modal.getInstance(document.getElementById('adminRejectProofModal')).hide();
-                    showAdminAlert("Verification rejected and feedback sent to student.", "warning");
+                    bootstrap.Modal.getInstance(document.getElementById('adminVerificationDossierModal')).hide();
+                    showAdminAlert("Verification rejected and feedback dispatched to student.", "warning");
                     await loadVerificationsList();
                     await loadAdminStats();
+                } else {
+                    alert((res && res.message) || "Failed to reject verification.");
                 }
             } catch (err) {
-                showAdminAlert("Failed to reject verification.", "danger");
+                alert("Failed to communicate with server: " + err.message);
+            }
+        }
+
+        async function requestRevisionDossier(id) {
+            const reasonInput = document.getElementById('dossierFeedbackReason');
+            const comment = (reasonInput ? reasonInput.value : '').trim();
+
+            if (!comment) {
+                alert("Please provide instructions on what additional details or documents the student needs to submit.");
+                if (reasonInput) reasonInput.focus();
+                return;
+            }
+
+            try {
+                const res = await API.put(`/api/verifications/${id}/request-resubmission`, { adminComment: comment });
+                if (res && res.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('adminVerificationDossierModal')).hide();
+                    showAdminAlert("Revision requested. Student notified to supply additional proof.", "info");
+                    await loadVerificationsList();
+                    await loadAdminStats();
+                } else {
+                    alert((res && res.message) || "Failed to request revision.");
+                }
+            } catch (err) {
+                alert("Failed to communicate with server: " + err.message);
             }
         }
 
@@ -3793,6 +4229,85 @@
                 }
             } catch (err) {
                 console.error("Failed to load analytics:", err);
+            }
+        }
+
+        
+        async function openAdminSessionDetailModal(sessionId) {
+            const modalEl = document.getElementById('adminSessionDetailModal');
+            new bootstrap.Modal(modalEl).show();
+            const body = document.getElementById('asdmBody');
+            body.innerHTML = `<div class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm me-2"></div> Loading session detail...</div>`;
+
+            try {
+                const res = await API.get(`/api/admin/sessions/${sessionId}`);
+                if (!res || !res.success) {
+                    body.innerHTML = `<div class="alert alert-danger">Failed to load session details.</div>`;
+                    return;
+                }
+
+                const s = res.data.session;
+                const rec = res.data.auditRecord;
+
+                body.innerHTML = `
+                    <div class="p-3 border border-2 border-dark rounded bg-light mb-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <span class="badge bg-dark text-white me-2">Session #${s.sessionNumber}</span>
+                                <h5 class="fw-bold mb-0 d-inline text-dark">${escapeHtml(s.topic)}</h5>
+                                <div class="text-muted small mt-1">
+                                    Skill: <strong>${escapeHtml(s.skillName)}</strong> &bull; Objective: ${escapeHtml(s.objective || 'Not specified')}
+                                </div>
+                            </div>
+                            <span class="badge ${s.verificationStatus === 'VERIFIED' ? 'bg-success text-white' : 'bg-warning text-dark'} border border-dark">
+                                ${s.verificationStatus}
+                            </span>
+                        </div>
+                        <div class="row g-2 small font-monospace pt-2 border-top border-secondary-subtle">
+                            <div class="col-sm-6">Teacher: <strong>${escapeHtml(s.teacherName)}</strong> (Attendance: ${rec.teacherAttendance})</div>
+                            <div class="col-sm-6">Learner: <strong>${escapeHtml(s.learnerName)}</strong> (Attendance: ${rec.learnerAttendance})</div>
+                            <div class="col-sm-6">Scheduled: ${s.scheduledDate} at ${s.scheduledTime} (${s.durationMinutes}m)</div>
+                            <div class="col-sm-6">Mode: <strong>${s.mode}</strong> ${s.location ? `(${escapeHtml(s.location)})` : ''}</div>
+                        </div>
+                    </div>
+
+                    <!-- Teacher Report -->
+                    <div class="p-3 border border-2 border-dark rounded bg-white mb-3 shadow-sm">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-person-video3 me-1 text-primary"></i>Teacher Report (What Was Taught)</h6>
+                            <span class="badge ${rec.teacherConfirmed ? 'bg-success text-white' : 'bg-secondary text-white'} border">
+                                ${rec.teacherConfirmed ? 'Confirmed' : 'Pending'}
+                            </span>
+                        </div>
+                        <div class="small mb-2">
+                            <strong>Topics Covered:</strong> ${escapeHtml(s.teacherReport?.topicsCovered || 'Not yet submitted.')}
+                        </div>
+                        <div class="small text-muted">
+                            <strong>Summary:</strong> ${escapeHtml(s.teacherReport?.summary || 'N/A')}
+                        </div>
+                    </div>
+
+                    <!-- Learner Report -->
+                    <div class="p-3 border border-2 border-dark rounded bg-white mb-3 shadow-sm">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-mortarboard me-1 text-success"></i>Learner Report (What Was Understood)</h6>
+                            <span class="badge ${rec.learnerConfirmed ? 'bg-success text-white' : 'bg-secondary text-white'} border">
+                                ${rec.learnerConfirmed ? 'Confirmed' : 'Pending'}
+                            </span>
+                        </div>
+                        <div class="small mb-2">
+                            <strong>Demonstrated Understanding:</strong> ${escapeHtml(s.learnerReport?.understanding || 'Not yet submitted.')}
+                        </div>
+                        <div class="d-flex gap-3 small text-muted flex-wrap">
+                            <span>Confidence: <strong>${s.learnerReport?.confidence || 0}/5</strong></span>
+                            <span>Practice Needed: <strong>${escapeHtml(s.learnerReport?.practiceNeeded || 'None stated')}</strong></span>
+                            <span>Next Topic: <strong>${escapeHtml(s.learnerReport?.nextTopic || 'Continuing')}</strong></span>
+                        </div>
+                    </div>
+                `;
+            } catch (err) {
+                console.error(err);
+                body.innerHTML = `<div class="alert alert-danger">Error retrieving session detail.</div>`;
             }
         }
 
@@ -4141,7 +4656,60 @@
         // ===================================================================
         // KITAB BHANDAR BOOK BARTER MARKETPLACE CONTROLLER
         // ===================================================================
-        async function loadKitabBhandarList() {
+        // =============================================================
+// KITAAB GHAR ADMIN ORDERS MONITORING
+// =============================================================
+async function openAdminKitabOrdersModal() {
+    const body = document.getElementById("adminKitabOrdersBody");
+    body.innerHTML = `<div class="text-center py-4 text-muted"><span class="spinner-border spinner-border-sm me-2"></span>Loading campus orders...</div>`;
+    new bootstrap.Modal(document.getElementById("adminKitabOrdersModal")).show();
+    try {
+        const res = await API.get("/api/admin/kitab-ghar/orders");
+        if (!res || !res.success || !res.data) {
+            body.innerHTML = `<div class="alert alert-danger">Failed to load orders.</div>`;
+            return;
+        }
+        const orders = res.data;
+        if (orders.length === 0) {
+            body.innerHTML = `<div class="text-center py-4 text-muted">No Kitaab Ghar transactions recorded yet.</div>`;
+            return;
+        }
+        body.innerHTML = `
+            <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle border mb-0 small">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#ID</th>
+                            <th>Item Title</th>
+                            <th>Buyer</th>
+                            <th>Seller</th>
+                            <th>Handover Location</th>
+                            <th>Date & Time</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${orders.map(o => `
+                            <tr>
+                                <td class="font-monospace">#ORD-${o.id}</td>
+                                <td class="fw-bold">${escapeHtml(o.itemTitle)}</td>
+                                <td>${escapeHtml(o.buyerName)}</td>
+                                <td>${escapeHtml(o.sellerName)}</td>
+                                <td>📍 ${escapeHtml(o.handoverLocation || "College Library")}</td>
+                                <td>📅 ${o.handoverDate} @ ${o.handoverTime}</td>
+                                <td><span class="badge ${o.status === "COMPLETED" ? "bg-success text-white" : (o.status === "READY_FOR_HANDOVER" ? "bg-info text-dark" : "bg-warning text-dark")}">${o.status}</span></td>
+                            </tr>
+                        `).join("")}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    } catch (err) {
+        body.innerHTML = `<div class="alert alert-danger">Error: ${err.message}</div>`;
+    }
+}
+
+async function loadKitabBhandarList() {
             const tbody = document.getElementById('kitabTableTbody');
             if (!tbody) return;
             tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-muted"><span class="spinner-border spinner-border-sm me-2"></span>Loading Kitab Bhandar marketplace...</td></tr>`;

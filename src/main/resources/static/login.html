@@ -134,12 +134,7 @@
                             localStorage.setItem('landingPageVisited', 'true');
                             localStorage.setItem('se_landing_viewed', 'true');
                         } catch (e) {}
-                        const role = res.data.role || (res.data.user && res.data.user.role);
-                        if (role === 'ROLE_SUPER_ADMIN' || role === 'SUPER_ADMIN' || role === 'ROLE_ADMIN' || role === 'ADMIN') {
-                            window.location.replace('admin-dashboard.html');
-                        } else {
-                            window.location.replace('index.html');
-                        }
+                        window.location.replace('index.html');
                         return;
                     }
                 } catch (e) {}
@@ -166,8 +161,15 @@
         async function handleLogin(e) {
             e.preventDefault();
             const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
             const email = (emailInput.value || '').trim();
-            const password = document.getElementById('password').value;
+            const password = passwordInput ? passwordInput.value : '';
+
+            if (!email) {
+                showAlert("Please enter your college email address.", "danger");
+                emailInput.focus();
+                return;
+            }
 
             // Any valid email pattern
             const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -177,38 +179,51 @@
                 return;
             }
 
+            if (!password) {
+                showAlert("Please enter your password.", "danger");
+                if (passwordInput) passwordInput.focus();
+                return;
+            }
+
             const btn = document.getElementById('loginBtn');
             btn.disabled = true;
             btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>Authenticating...`;
 
-            const res = await API.post('/api/auth/login', { email, password });
-            if (res && res.success) {
-                try {
-                    localStorage.setItem('landingPageVisited', 'true');
-                    localStorage.setItem('se_landing_viewed', 'true');
-                } catch (e) {}
-                showAlert("Login successful! Redirecting...", "success");
-                setTimeout(() => {
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const userRole = (res.data && res.data.role) || (res.user && res.user.role);
-                    if (redirectUrl) {
-                        window.location.href = redirectUrl;
-                    } else if (userRole === 'ROLE_SUPER_ADMIN' || userRole === 'SUPER_ADMIN' || userRole === 'ROLE_ADMIN' || userRole === 'ADMIN') {
-                        window.location.href = 'admin-dashboard.html';
-                    } else {
-                        // Direct to normal Home Page
-                        window.location.href = 'index.html';
-                    }
-                }, 700);
-            } else {
-                if (res && res.unverified) {
-                    showAlert(res.message + " Redirecting to verification...", "warning");
+            try {
+                const res = await API.post('/api/auth/login', { email, password });
+                if (res && res.success) {
+                    try {
+                        localStorage.setItem('landingPageVisited', 'true');
+                        localStorage.setItem('se_landing_viewed', 'true');
+                    } catch (e) {}
+                    showAlert("Login successful! Redirecting...", "success");
                     setTimeout(() => {
-                        window.location.href = `verify-email.html?email=${encodeURIComponent(email)}`;
-                    }, 1500);
-                    return;
+                        const redirectUrl = new URLSearchParams(window.location.search).get('redirect') || '';
+                        const userRole = (res.data && res.data.role) || (res.user && res.user.role);
+                        const isStaff = userRole === 'ROLE_SUPER_ADMIN' || userRole === 'SUPER_ADMIN' || userRole === 'ROLE_ADMIN' || userRole === 'ADMIN';
+                        if (redirectUrl && redirectUrl !== 'index.html' && redirectUrl !== 'landing.html' && redirectUrl !== '/' && !redirectUrl.includes('landing')) {
+                            window.location.href = redirectUrl;
+                        } else if (isStaff) {
+                            window.location.href = 'admin-dashboard.html';
+                        } else {
+                            // Always open Dashboard directly
+                            window.location.href = 'dashboard.html';
+                        }
+                    }, 700);
+                } else {
+                    if (res && res.unverified) {
+                        showAlert(res.message || "Please verify your college email before logging in. Redirecting to verification...", "warning");
+                        setTimeout(() => {
+                            window.location.href = `verify-email.html?email=${encodeURIComponent(email)}`;
+                        }, 1500);
+                        return;
+                    }
+                    showAlert(res.message || "Incorrect email or password.", "danger");
+                    btn.disabled = false;
+                    btn.innerHTML = `<i class="bi bi-box-arrow-in-right me-2"></i>Sign In`;
                 }
-                showAlert(res.message || "Invalid credentials. Please verify your email and password.", "danger");
+            } catch (err) {
+                showAlert("Unable to reach the authentication service. Please try again.", "danger");
                 btn.disabled = false;
                 btn.innerHTML = `<i class="bi bi-box-arrow-in-right me-2"></i>Sign In`;
             }

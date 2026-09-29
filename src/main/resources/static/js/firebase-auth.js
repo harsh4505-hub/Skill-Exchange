@@ -64,19 +64,32 @@ window.handleGoogleAuth = async function(btnElement) {
         const res = await fetch('/api/auth/firebase-login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify(payload)
         });
 
         const data = await res.json();
 
         if (data && data.success) {
+            try {
+                localStorage.setItem('landingPageVisited', 'true');
+                localStorage.setItem('se_landing_viewed', 'true');
+            } catch (e) {}
             if (typeof showAlert === 'function') {
                 showAlert("Welcome! Redirecting to platform...", "success");
             }
             setTimeout(() => {
                 const urlParams = new URLSearchParams(window.location.search);
-                const redirect = urlParams.get('redirect') || 'index.html';
-                window.location.href = redirect;
+                const redirect = urlParams.get('redirect');
+                const userRole = (data.data && data.data.role) || (data.user && data.user.role);
+                const isStaff = userRole === 'ROLE_SUPER_ADMIN' || userRole === 'SUPER_ADMIN' || userRole === 'ROLE_ADMIN' || userRole === 'ADMIN';
+                if (redirect && redirect !== 'index.html' && redirect !== 'landing.html' && redirect !== '/' && !redirect.includes('landing')) {
+                    window.location.href = redirect;
+                } else if (isStaff) {
+                    window.location.href = 'admin-dashboard.html';
+                } else {
+                    window.location.href = 'dashboard.html';
+                }
             }, 600);
         } else {
             throw new Error(data.message || "Failed to establish platform session.");

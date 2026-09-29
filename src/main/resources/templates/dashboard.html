@@ -13,7 +13,7 @@
     <!-- Navigation Header -->
     <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container">
-            <a class="navbar-brand" href="index.html">
+            <a class="navbar-brand" href="dashboard.html">
                 <span class="brand-icon-box"><i class="bi bi-arrow-left-right"></i></span>
                 <span class="brand-title">Skill<strong>Exchange</strong></span>
             </a>
@@ -28,6 +28,7 @@
                     <li class="nav-item"><a class="nav-link" href="skills.html">My Skills</a></li>
                     <li class="nav-item"><a class="nav-link" href="requests.html">Exchange Proposals</a></li>
                     <li class="nav-item"><a class="nav-link" href="chat.html">Chat</a></li>
+                    <li class="nav-item"><a class="nav-link" href="kitaab-ghar.html">Kitaab Ghar</a></li>
                     <li class="nav-item"><a class="nav-link" href="verification.html">Verification</a></li>
                     <li class="nav-item"><a class="nav-link" href="exchange-history.html">History</a></li>
                 </ul>
@@ -129,6 +130,77 @@
                 </div>
             </div>
         </div>
+        <!-- Real Peer Learning Analytics & Skill Progress Section -->
+        <div class="card card-custom p-4 mb-4 bg-white">
+            <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-2 border-dark flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="brand-icon-box" style="width:36px; height:36px; font-size:1rem; background:#ede9fe; color:#4f46e5;">
+                        <i class="bi bi-graph-up-arrow"></i>
+                    </span>
+                    <div>
+                        <h5 class="fw-bold mb-0">Learning Progress & Skill Health</h5>
+                        <small class="text-muted">Real topic completion, active streaks, and peer verification records</small>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge border border-2 border-dark px-3 py-1" style="background:#fef08a; color:#854d0e; font-weight:700;" id="analyticsStreakBadge">
+                        🔥 0-Day Streak
+                    </span>
+                    <a href="exchange-history.html" class="btn btn-sm btn-outline-custom">View Exchange Timelines</a>
+                </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="row g-3 mb-4 text-center">
+                <div class="col-sm-3 col-6">
+                    <div class="p-2 border border-2 border-dark rounded bg-light">
+                        <small class="text-muted fw-bold text-uppercase d-block" style="font-size:0.68rem;">Verified Sessions</small>
+                        <h4 class="fw-bold mb-0 text-dark" id="anVerifiedCount">0</h4>
+                    </div>
+                </div>
+                <div class="col-sm-3 col-6">
+                    <div class="p-2 border border-2 border-dark rounded bg-light">
+                        <small class="text-muted fw-bold text-uppercase d-block" style="font-size:0.68rem;">Learning Time</small>
+                        <h4 class="fw-bold mb-0 text-dark" id="anLearningTime">0 mins</h4>
+                    </div>
+                </div>
+                <div class="col-sm-3 col-6">
+                    <div class="p-2 border border-2 border-dark rounded bg-light">
+                        <small class="text-muted fw-bold text-uppercase d-block" style="font-size:0.68rem;">Topics Mastered</small>
+                        <h4 class="fw-bold mb-0 text-dark" id="anTopicsMastered">0</h4>
+                    </div>
+                </div>
+                <div class="col-sm-3 col-6">
+                    <div class="p-2 border border-2 border-dark rounded bg-light">
+                        <small class="text-muted fw-bold text-uppercase d-block" style="font-size:0.68rem;">Longest Streak</small>
+                        <h4 class="fw-bold mb-0 text-dark" id="anLongestStreak">0 days</h4>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Skill Progress & Health Cards Grid -->
+            <div class="row g-3 mb-3" id="analyticsSkillsContainer">
+                <div class="col-12 text-center py-3 text-muted small">
+                    <span class="spinner-border spinner-border-sm me-2"></span>Loading verified skill progress...
+                </div>
+            </div>
+
+            <!-- Upcoming Session Banner & Recent Learning Record -->
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="p-3 border border-2 border-dark rounded bg-light h-100" id="anUpcomingSessionBox">
+                        <span class="badge bg-dark text-white mb-2"><i class="bi bi-calendar-event me-1"></i>Next Scheduled Session</span>
+                        <div id="anUpcomingContent" class="small text-muted">No upcoming sessions scheduled.</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="p-3 border border-2 border-dark rounded bg-light h-100" id="anRecentRecordBox">
+                        <span class="badge bg-success text-white mb-2"><i class="bi bi-patch-check me-1"></i>Latest Verified Milestone</span>
+                        <div id="anRecentRecordContent" class="small text-muted">No verified milestones recorded yet.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <div class="row g-4">
             <!-- Left Column: Recommended Matches & Pending Proposals -->
@@ -194,7 +266,125 @@
     </div>
 
     <!-- Bootstrap 5 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+        async function loadLearningAnalytics() {
+            try {
+                const res = await API.get('/api/students/analytics');
+                if (res && res.success && res.data) {
+                    const d = res.data;
+
+                    // 1. Streak & Stats
+                    const currentStreak = d.streak ? d.streak.currentStreak : 0;
+                    const longestStreak = d.streak ? d.streak.longestStreak : 0;
+                    const streakBadge = document.getElementById('analyticsStreakBadge');
+                    if (streakBadge) streakBadge.innerHTML = `🔥 ${currentStreak}-Day Active Streak`;
+                    
+                    const vCount = document.getElementById('anVerifiedCount');
+                    if (vCount) vCount.innerText = d.overview ? d.overview.verifiedSessions : 0;
+
+                    const lTime = document.getElementById('anLearningTime');
+                    if (lTime) lTime.innerText = (d.learningActivity ? d.learningActivity.totalLearningMinutes : 0) + ' mins';
+
+                    const tMastered = document.getElementById('anTopicsMastered');
+                    if (tMastered) tMastered.innerText = d.learningActivity ? d.learningActivity.topicsCompleted : 0;
+
+                    const lStreak = document.getElementById('anLongestStreak');
+                    if (lStreak) lStreak.innerText = longestStreak + ' days';
+
+                    // 2. Skill Progress Cards
+                    const skillContainer = document.getElementById('analyticsSkillsContainer');
+                    const skills = d.skillProgress || [];
+                    if (skillContainer) {
+                        if (skills.length > 0) {
+                            skillContainer.innerHTML = skills.map(sp => {
+                                let healthBadgeClass = 'bg-success text-white';
+                                if (sp.healthStatus === 'NEEDS ATTENTION') healthBadgeClass = 'bg-danger text-white';
+                                else if (sp.healthStatus === 'INACTIVE') healthBadgeClass = 'bg-secondary text-white';
+                                else if (sp.healthStatus === 'ON TRACK') healthBadgeClass = 'bg-primary text-white';
+
+                                return `
+                                    <div class="col-md-6">
+                                        <div class="p-3 border border-2 border-dark rounded bg-white shadow-sm h-100">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <div>
+                                                    <h6 class="fw-bold mb-0 text-dark">${escapeHtml(sp.skillName)}</h6>
+                                                    <small class="text-muted">${sp.completedTopics.length} of ${sp.totalTopics} topics completed</small>
+                                                </div>
+                                                <span class="badge ${healthBadgeClass} border border-dark" style="font-size:0.7rem;">
+                                                    ${escapeHtml(sp.healthStatus)}
+                                                </span>
+                                            </div>
+                                            <div class="progress mb-2" style="height: 12px; border: 1.5px solid #18181b; border-radius: 4px; background: #e2e8f0;">
+                                                <div class="progress-bar bg-dark" role="progressbar" style="width: ${sp.progressPercentage}%;"></div>
+                                            </div>
+                                            <div class="d-flex justify-content-between small text-muted mb-2 font-monospace" style="font-size:0.75rem;">
+                                                <span>Progress: <strong>${sp.progressPercentage}%</strong></span>
+                                                <span>Remaining: ${sp.remainingTopics.length} topics</span>
+                                            </div>
+                                            <div class="p-2 border border-1 border-secondary-subtle rounded bg-light" style="font-size:0.75rem;">
+                                                <i class="bi bi-heart-pulse text-danger me-1"></i>
+                                                <strong>Health Signal:</strong> ${escapeHtml(sp.healthReason || 'On track with regular peer sessions.')}
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('');
+                        } else {
+                            skillContainer.innerHTML = `
+                                <div class="col-12 text-center py-3 text-muted small">
+                                    <p class="mb-1">No active exchange curriculums yet.</p>
+                                    <a href="matches.html" class="btn btn-sm btn-outline-custom">Propose a Skill Exchange</a>
+                                </div>
+                            `;
+                        }
+                    }
+
+                    // 3. Upcoming Session
+                    const up = d.upcoming;
+                    const upContainer = document.getElementById('anUpcomingContent');
+                    if (upContainer) {
+                        if (up) {
+                            upContainer.innerHTML = `
+                                <div class="fw-bold text-dark fs-6">${escapeHtml(up.topic)}</div>
+                                <div class="text-muted mb-2">${escapeHtml(up.skillName)} &bull; Teacher: <strong>${escapeHtml(up.teacherName)}</strong></div>
+                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                    <span class="badge bg-light text-dark border border-dark"><i class="bi bi-clock me-1"></i>${up.scheduledDate} at ${up.scheduledTime} (${up.durationMinutes}m)</span>
+                                    <span class="badge ${up.mode === 'ONLINE' ? 'bg-primary' : 'bg-warning text-dark'} border border-dark">${up.mode}</span>
+                                    ${up.zoomJoinUrl ? `<a href="${escapeHtml(up.zoomJoinUrl)}" target="_blank" class="btn btn-sm btn-dark py-0 px-2" style="font-size:0.75rem;"><i class="bi bi-box-arrow-up-right me-1"></i>Join Zoom</a>` : ''}
+                                    ${up.location ? `<span class="small text-muted"><i class="bi bi-geo-alt me-1"></i>${escapeHtml(up.location)}</span>` : ''}
+                                </div>
+                            `;
+                        } else {
+                            upContainer.innerHTML = `<span class="text-muted">No upcoming sessions. Next exchange session will appear here once scheduled.</span>`;
+                        }
+                    }
+
+                    // 4. Recent Verified Record
+                    const rec = d.recentRecord;
+                    const recContainer = document.getElementById('anRecentRecordContent');
+                    if (recContainer) {
+                        if (rec) {
+                            recContainer.innerHTML = `
+                                <div class="fw-bold text-dark fs-6">${escapeHtml(rec.topic)} (${escapeHtml(rec.skillName)})</div>
+                                <div class="text-muted mb-2" style="font-size:0.75rem;">Verified on ${rec.verifiedAt ? new Date(rec.verifiedAt).toLocaleDateString() : rec.scheduledDate} &bull; Teacher: <strong>${escapeHtml(rec.teacherName)}</strong></div>
+                                <div class="p-2 border border-1 border-secondary-subtle rounded bg-white mb-2" style="font-size:0.78rem;">
+                                    <strong>What Was Taught:</strong> ${escapeHtml(rec.teacherReport?.topicsCovered || 'Curriculum delivered.')}
+                                </div>
+                                <div class="p-2 border border-1 border-secondary-subtle rounded bg-white" style="font-size:0.78rem;">
+                                    <strong>Learner Understanding:</strong> ${escapeHtml(rec.learnerReport?.understanding || 'Hands-on practice completed.')} (Confidence: ${rec.learnerReport?.confidence || 5}/5)
+                                </div>
+                            `;
+                        } else {
+                            recContainer.innerHTML = `<span class="text-muted">No verified milestones recorded yet. Conduct and confirm peer sessions to log verified learning records.</span>`;
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to load learning analytics:", err);
+            }
+        }
+
+    </script>
     <script src="js/app.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", async () => {
@@ -233,6 +423,9 @@
 
             // Recent notifications
             loadRecentNotifications();
+
+            // Real Learning Analytics, Streaks & Skill Health
+            loadLearningAnalytics();
         }
 
         async function loadRecommendedMatches() {

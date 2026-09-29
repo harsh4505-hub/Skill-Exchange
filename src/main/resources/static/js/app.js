@@ -6,7 +6,9 @@
 const API = {
     async get(endpoint) {
         try {
-            const res = await fetch(endpoint);
+            const res = await fetch(endpoint, {
+                credentials: 'include'
+            });
             return await res.json();
         } catch (err) {
             console.error("GET Error on " + endpoint, err);
@@ -19,6 +21,7 @@ const API = {
             const res = await fetch(endpoint, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
+                credentials: 'include',
                 body: JSON.stringify(data)
             });
             return await res.json();
@@ -33,6 +36,7 @@ const API = {
             const res = await fetch(endpoint, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
+                credentials: 'include',
                 body: data ? JSON.stringify(data) : null
             });
             return await res.json();
@@ -44,7 +48,10 @@ const API = {
 
     async delete(endpoint) {
         try {
-            const res = await fetch(endpoint, { method: "DELETE" });
+            const res = await fetch(endpoint, {
+                method: "DELETE",
+                credentials: 'include'
+            });
             return await res.json();
         } catch (err) {
             console.error("DELETE Error on " + endpoint, err);
@@ -68,10 +75,26 @@ async function checkCurrentUser() {
         CurrentUser = res.data;
         updateNavbarLoggedIn(CurrentUser);
         enforceRouteProtection(true);
+        loadGrokAssistant(CurrentUser);
     } else {
         CurrentUser = null;
         updateNavbarLoggedOut();
         enforceRouteProtection(false);
+        if (typeof window.initGrokAssistant === 'function') window.initGrokAssistant(null);
+    }
+}
+
+function loadGrokAssistant(user) {
+    if (!user || !user.authenticated) return;
+    if (typeof window.initGrokAssistant === 'function') {
+        window.initGrokAssistant(user);
+    } else {
+        const s = document.createElement('script');
+        s.src = '/js/grok-assistant.js';
+        s.onload = () => {
+            if (typeof window.initGrokAssistant === 'function') window.initGrokAssistant(user);
+        };
+        document.body.appendChild(s);
     }
 }
 
@@ -90,11 +113,15 @@ function enforceRouteProtection(isAuthenticated) {
                            localStorage.getItem("se_landing_viewed") === "true";
 
     if (isAuthenticated) {
-        // If already authenticated and accessing landing, login, or register
+        const role = (CurrentUser && CurrentUser.role) ? CurrentUser.role.toUpperCase() : '';
+        const userIsAdmin = role.includes('ADMIN') || (CurrentUser && CurrentUser.isAdmin === true);
+
+        // Never show Landing Page, Login, Register, or index to an authenticated user
         if (page === "landing.html" || page === "landing" ||
             (page === "login.html" && !window.location.search.includes("logout=true")) ||
-            page === "register.html") {
-            window.location.replace("index.html");
+            page === "register.html" || page === "index.html" || page === "home") {
+            const targetDashboard = "dashboard.html";
+            window.location.replace(targetDashboard);
         }
     } else {
         // If unauthenticated and attempting to access a protected page
@@ -104,7 +131,7 @@ function enforceRouteProtection(isAuthenticated) {
                 window.location.replace("landing.html");
             } else {
                 // Returning visitor -> Login / Sign Up
-                const redirectParam = page !== "index.html" ? `?redirect=${encodeURIComponent(page)}` : "";
+                const redirectParam = (page !== "index.html" && page !== "landing.html") ? `?redirect=${encodeURIComponent(page)}` : "";
                 window.location.replace(`login.html${redirectParam}`);
             }
         }
@@ -125,7 +152,7 @@ function updateNavbarLoggedIn(user) {
     userControls.innerHTML = `
         <div class="d-flex align-items-center gap-2">
             ${isAdmin ? `
-            <!-- Direct Quick-Access Admin Panel Button -->
+            <!-- Direct Quick-Access Admin Panel Button (Staff Only) -->
             <a href="admin-dashboard.html" class="btn btn-sm btn-danger d-inline-flex align-items-center gap-1 shadow-sm border border-2 border-dark fw-bold text-white px-2 py-1" style="font-size:0.75rem;" title="${isSuperAdmin ? 'Open Super Admin Panel' : 'Open Admin Panel'}">
                 <i class="bi ${isSuperAdmin ? 'bi-shield-lock-fill' : 'bi-shield-check'}"></i>
                 <span class="d-none d-sm-inline">${isSuperAdmin ? 'Super Admin' : 'Admin Panel'}</span>
@@ -174,6 +201,7 @@ function updateNavbarLoggedIn(user) {
                     <li><a class="dropdown-item py-2" href="matches.html"><i class="bi bi-stars me-2 text-danger"></i>Find Matches</a></li>
                     <li><a class="dropdown-item py-2" href="requests.html"><i class="bi bi-arrow-left-right me-2 text-primary"></i>Exchange Proposals</a></li>
                     <li><a class="dropdown-item py-2" href="chat.html"><i class="bi bi-chat-dots me-2 text-primary"></i>Messages</a></li>
+                    <li><a class="dropdown-item py-2" href="kitaab-ghar.html"><i class="bi bi-book me-2 text-success"></i>Kitaab Ghar (Books & Notes)</a></li>
                     <li><a class="dropdown-item py-2" href="verification.html"><i class="bi bi-patch-check me-2 text-success"></i>Skill Verification</a></li>
                     <li><a class="dropdown-item py-2" href="exchange-history.html"><i class="bi bi-clock-history me-2 text-primary"></i>Exchange History</a></li>
                     <li><hr class="dropdown-divider border-dark"></li>
@@ -192,6 +220,9 @@ function updateNavbarLoggedIn(user) {
         if (isAdmin) {
             el.classList.remove("d-none");
             el.style.display = "";
+        } else {
+            el.classList.add("d-none");
+            el.style.display = "none";
         }
     });
 }
